@@ -1,6 +1,7 @@
-# __Plant Partner__
+# **Plant Partner**
 
 ## Introduction and Overview
+
 ### Table of Contents
 - [Introduction and Overview](#introduction-and-overview)
 - [System Architecture](#system-architecture)
@@ -13,76 +14,94 @@
 - [User Interface Design](#user-interface-design)
 - [Assumptions and Dependencies](#assumptions-and-dependencies)
 
+---
+
 ### Purpose
-  This document will describe the design of the *Plant Partner* app. It is a simple application that helps users keep track
-  of their plants, including water schedules, health status, and basic plant information.
+This document describes the design of the **Plant Partner** application. Plant Partner is a simple system that helps users manage and monitor their plants by tracking watering schedules, health status, and essential plant information.
+
 ### Scope
-  This app allows users to:
-  - Add and Remove plants
-  - Track watering frequency
-  - Record plant health notes
-  - Receive reminders for watering
-  - House information on stored plants
+The Plant Partner app allows users to:
+- Add and remove plants  
+- Track watering frequency  
+- Record plant health notes  
+- Receive watering reminders  
+- Store and view detailed plant information  
+
+---
 
 ## System Architecture
-  The *Plant Partner* app follows a client-server architecture.
 
-### Components:
-  - **Frontend**: Web-based interface for user interaction
-  - **Backend**: Handles data processing
-  - **Databse**: Stores plant data
-  
+The **Plant Partner** app follows a client–server architecture.
+
+### Components
+- **Frontend:** Web-based interface that allows users to interact with the application  
+- **Backend:** Handles data processing and application logic  
+- **Database:** Stores plant and plant-related information  
+
+---
+
 ## Data Design
+
 ### Database Tables
+
 #### Plants
-  - `plantID` - INT, AUTO_INCREMENT, NOT NULL, Primary Key
-  - `name` - varchar(100), NOT NULL
-  - `plantInfoID` - INT, NOT NULL, Foreign Key
-  - `lastWatered` - DATE, NOT NULL
-  - `lastFertilized` - DATE, NOT NULL
-  - `healthStatus` - varchar(45), NOT NULL
-  - `notes` - TEXT, NULL
+Stores user-specific plant records and current status information.
+
+- `plantID` — INT, AUTO_INCREMENT, NOT NULL, Primary Key  
+- `name` — VARCHAR(100), NOT NULL  
+- `plantInfoID` — INT, NOT NULL, Foreign Key  
+- `lastWatered` — DATE, NOT NULL  
+- `lastFertilized` — DATE, NOT NULL  
+- `healthStatus` — VARCHAR(45), NOT NULL  
+- `notes` — TEXT, NULL  
 
 #### PlantInformation
-  - `plantInfoID` - INT, AUTO_INCREMENT, NOT NULL, Primary Key
-  - `preferredSun` - varchar(255), NULL
-  - `waterNeeds` - varchar(255), NULL
-  - `waterFrequency` - INT, NOT NULL
-  - `tempRange` - varchar(255), NULL
-  - `usdaZones` - varchar(255), NULL
-  - `soilType` - varchar(255), NULL
-  - `toxicity` - varchar(255), NULL
-  - `drought` - varchar(255), NULL
-  - `plantType` - varchar(255), NULL
-  - `fertilizer` - varchar(255), NULL
-  - `pruning` - varchar(255), NULL
-  - `lifespan` - varchar(255), NULL
-  - `matureSize` - varchar(255), NULL
-  - `idealSoilPH` - varchar(255), NULL
-  - `difficulty` - varchar(255), NULL
-  - `careLink` - varchar(255), NULL
+Stores reference data describing plant care requirements.
+
+- `plantInfoID` — INT, AUTO_INCREMENT, NOT NULL, Primary Key  
+- `preferredSun` — VARCHAR(255), NULL  
+- `waterNeeds` — VARCHAR(255), NULL  
+- `waterFrequency` — INT, NOT NULL  
+- `tempRange` — VARCHAR(255), NULL  
+- `usdaZones` — VARCHAR(255), NULL  
+- `soilType` — VARCHAR(255), NULL  
+- `toxicity` — VARCHAR(255), NULL  
+- `drought` — VARCHAR(255), NULL  
+- `plantType` — VARCHAR(255), NULL  
+- `fertilizer` — VARCHAR(255), NULL  
+- `pruning` — VARCHAR(255), NULL  
+- `lifespan` — VARCHAR(255), NULL  
+- `matureSize` — VARCHAR(255), NULL  
+- `idealSoilPH` — VARCHAR(255), NULL  
+- `difficulty` — VARCHAR(255), NULL  
+- `careLink` — VARCHAR(255), NULL  
 
 ### Data Rules
-  - `wateringFrequency` > 0
-  - `lastWatered` <= current date
+- `wateringFrequency` must be greater than 0  
+- `lastWatered` must not be a future date  
+
+---
 
 ## Interface Design
+
 ### Error Handling
-  - Invalid input returns a clear error message
-  - Missing data is rejected with a 400 response
+- Invalid input returns a clear and descriptive error message  
+- Missing or malformed data results in a `400 Bad Request` response  
+
+---
 
 ## Component Design
 
-The Plant Tracker App is divided into several logical components. Each component is responsible for a specific part of the system’s functionality.
+The **Plant Partner** app is divided into several logical components. Each component is responsible for a specific portion of the system’s functionality.
 
 ### 1.1 Plant Management Component
 
 **Purpose:**  
-Manages all plant-related data in the system.
+Manages all plant-related data within the system.
 
 **Responsibilities:**
 - Add new plants  
-- Update plant information  
+- Update existing plant information  
 - Delete plants  
 - Retrieve plant details for display  
 
@@ -94,19 +113,21 @@ Manages all plant-related data in the system.
 - Notes  
 
 **Outputs:**
-- Confirmation of successful actions  
+- Confirmation messages  
 - Plant data for the user interface  
 
 **Dependencies:**
-- Database component
+- Database component  
+
+---
 
 ### 1.2 Watering Reminder Component
 
 **Purpose:**  
-Tracks when plants need to be watered and notifies the user.
+Determines when plants need to be watered and generates reminders.
 
 **Responsibilities:**
-- Calculate next watering date  
+- Calculate next watering dates  
 - Identify overdue plants  
 - Trigger reminder notifications  
 
@@ -115,49 +136,57 @@ Tracks when plants need to be watered and notifies the user.
 - Watering frequency  
 
 **Outputs:**
-- List of plants needing water  
+- List of plants requiring watering  
 - Reminder messages  
 
 **Dependencies:**
 - Plant Management Component  
 
+---
+
 ### 1.3 User Interface Component
 
 **Purpose:**  
-Handles user interaction with the system.
+Facilitates interaction between the user and the system.
 
 **Responsibilities:**
-- Display plant lists and details  
+- Display plant lists and detailed views  
 - Collect user input  
 - Send requests to backend components  
 
 **Inputs:**
-- User actions (button clicks, form submissions)  
+- User actions (e.g., button clicks, form submissions)  
 
 **Outputs:**
 - API requests  
-- Updated screens  
+- Updated interface screens  
 
 **Dependencies:**
 - Plant Management Component  
 - Watering Reminder Component  
 
+---
+
 ## User Interface Design
+
 ### Key Screens
-  - Dashboard: List of all plants and their next watering date
-  - Add Plant Screen: Form to fill out to add new plants
-  - Plant Details Screen: Displays plant health, notes, and detailed plant information
+- **Dashboard:** Displays all plants and their next watering dates  
+- **Add Plant Screen:** Form for entering new plant information  
+- **Plant Details Screen:** Shows plant health, notes, and detailed care information  
 
 ### Usability Considerations
-  - Simple forms
-  - Clear icons for plant health
-  - Readable color palette
+- Simple and intuitive forms  
+- Clear visual indicators for plant health  
+- Readable and accessible color palette  
+
+---
 
 ## Assumptions and Dependencies
+
 ### Assumptions
-  - Users have familiarity with web apps
-  - There is only one person using the app per database
+- Users have basic familiarity with web applications  
+- Each database instance supports a single user  
 
 ### Dependencies
-  - Backend framework: Node.js
-  - Database system: Firebase
+- **Backend framework:** Node.js  
+- **Database system:** Firebase  
