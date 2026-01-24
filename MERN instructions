@@ -1,0 +1,291 @@
+Introduction
+In this assignment, you will use the MERN stack to write a Single Page Application (SPA) that tracks exercises completed by a user. You will use React for the frontend user interface app. You will write a REST API using Node and Express for the backend web service using Model View Controller (MVC) methods. You will use MongoDB for data persistence.
+
+This is the "Portfolio Assignment" for the course. This means that you are allowed to post the entirety of the assignment publicly (e.g., GitHub, personal website, etc.) after the term ends. You can use this as an opportunity to showcase your work to potential employers. 
+
+Be sure to periodically review Assignment 9: FAQs and Tips thread in the Ed discussion board (pinned at the top of the feed). 
+
+Learning Outcomes
+What is the lifecycle of a React component? (Module 9 MLO 1)
+What are the useEffect and useNavigate React hooks? (Module 9 MLO  2)
+How can a React app downloaded from one server send requests to a REST API running on a different server? (Module 9 MLO 3)
+What is the Fetch API? (Module 9 MLO 4)
+Why do we need to lift up state in some React apps? (Module 9 MLO 5)?
+
+File Structure
+For this MERN app, you'll set up your workspace folder like the following screenshot; with your ONID username. 
+The workspace folder should be named with your ONID username and assignment number. 
+
+
+MongoDB stores data for the App
+The data for your app will be stored in a MongoDB Atlas Cluster collection named exercises. Each document in the collection must have the following properties. All the properties are required.
+
+Data Parameters
+Property	Data Type	Comments
+name	String	The name of the exercise.
+reps	Number	The number of times the exercise was performed, or the distance. The value must be an integer greater than 0.
+weight	Number	The amount of the weight used for the exercise. The value must be an integer equal to or greater than 0.
+unit	String	The unit of measurement of the weight or the reps. Values are kgs,  lbs, and miles.
+date	Date 	The date the exercise was performed. Specified as the ISO string for date and time. Set the default to Date.now.
+_id	Object	
+Unique ID is automatically assigned by MongoDB when a document is created.
+
+Internally, MongoDB creates an instance of the class ObjectId. In HTTP requests and responses, its string representation is used.
+
+
+Backend REST API Models and Controllers
+Starter Code: the REST API for this assignment uses the MVC method, which is similar to the work you did for Assignment 7.   
+
+Follow these technical requirements: 
+
+MVC Requirements
+Models	Controllers	Views (React)
+Accesses the database connection string and port via .env*.
+Connects to the database.
+Interacts with MongoDB using Mongoose.
+Cannot import Express or use request/response objects.
+Do not export the model class by default.
+Defines CRUD functions.
+Uses async/await for database operations (not .then). 
+To prevent your Express server from crashing due to any uncaught exception, wrap the functions inside async.  📌  Not asynchandler
+Review Writing Asynchronous Code.
+Place all model functions in a single file called exercise-models.mjs
+Use ES modules with the .mjs file extension.
+Handles Express routes and HTTP requests.
+Imports functions from the model to interact with the database.
+Cannot directly use Mongoose.
+Responsible for route endpoints using POST, GET, PUT, and DELETE.
+Route handler functions are async and wrapped with asyncHandler
+Performs request validation** before calling model functions.
+Sends proper HTTP responses for success/failure.
+Place all endpoint routes in a single file called exercise-controllers.mjs.
+Calls REST API endpoints exposed by controllers.
+Uses fetch to send/receive JSON data.
+Handles returned promises with async/await in React components.
+Displays data in components: row, table, page.
+Handles user input for Create and Edit and sends it to controllers.
+Updates local component state based on API responses
+Accesses the /exercises collection using a proxy in the vite.config.js file.
+You must implement a REST API that supports CRUD operations by implementing the following 5 endpoints. 📌 Required: use the app.method endpoints, rather than router.method endpoints.
+
+Controller Endpoints
+Operation	Request	Response
+POST
+/exercises	
+Body:
+JSON object with required properties:
+- name: non-empty string
+- reps: integer > 0
+- weight: integer => 0
+- unit: "kgs", "lbs", or "miles"
+- date: ISO format YYYY-MM-DD
+Validation:
+Must validate body and return failure if invalid.**
+Success:
+JSON object of created document
+status 201
+Failure:
+{ "Error": "Invalid request" }
+status 400
+GET
+/exercises	No request body or path parameters.	
+Success:
+JSON array of all documents
+status 200
+Empty array if collection is empty.
+GET
+/exercises/:_id	
+Path parameter:
+document ID
+No request body
+no validation needed.
+Success:
+JSON object of the document
+status 200
+Failure:
+{ "Error": "Not found" }
+status 404
+PUT
+/exercises/:_id	
+Path parameter:
+document ID
+Body:
+JSON object (same validation rules as POST)
+First check the validity of the request body, and if it is invalid, return the response with status code 400. Only look for the existence of the document if the request body is valid.**
+
+Success:
+JSON object of updated document
+status 200
+Failure:
+Invalid request body***: { "Error": "Invalid request" }
+status 400
+Document not found: { "Error": "Not found" }
+status 404
+DELETE
+/exercises/:_id	
+Path parameter:
+document ID
+No request body:
+No validation needed.
+Success:
+No response body
+status 204
+Failure:
+{ "Error": "Not found" }
+status 404
+* Use a .env file
+The backend REST API must use a .env file with 2 variables:
+
+PORT with value 3000, which is the port on which the Express server for the REST API will receive HTTP requests.
+MONGODB_CONNECT_STRING with the connect string that must be used in your code to connect to the MongoDB server.
+When testing your program we will change the value of this string to our own MongoDB cluster to avoid connection issues.
+** Validation
+The code to validate the request body can be from scratch, or by using the express-validator.Links to an external site. Here are some guidelines to use as comments as you write the code:
+
+Ensure all required fields (except date) are present.
+Ensure name is not empty.
+Ensure reps is greater than 0.
+Ensure weight is equal to or greater than 0.
+Ensure unit is one of these values: "kgs", "lbs", or "miles".
+If date is provided, ensure it is valid.
+Date.parse() returns NaN if the string is not a valid date.
+The acceptable format is ISO 8601 (e.g., "2025-08-27T00:00:00Z") or "YYYY-MM-DD".
+Additional notes:
+The a9-test-requests.http Download a9-test-requests.http test file uses the 4-digit year, 2-digit month, and 2-digit day format like this: YYYY-MM-DD, which renders like this example: 2025-08-27.
+
+View ~ React frontend user interface
+To allow users to interact with your database in a friendly manner, you'll design the View aspect of the MVC method using Vite+React's Single Page Application (SPA) structure. You explored that in Module 8 and 9. The React app for this assignment is very similar to the movie-ui React app implemented in Module 9. Follow along with the videos in that module to code the movie-ui React app and that will help you implement the React app for this assignment.  📌 Refer back to Implementing a Full Stack MERN App pt 1 for the movies-ui-starter.zip archive.
+
+Your app must:
+Use the React functionality discussed in the course. You cannot use any React functionality we didn't cover in the course without getting instructor approval. For example, you cannot use frameworks like Next.js, Redux, or TypeScript.
+Use the Vite and the SPA methods. This means, for example, you cannot create the React app using npx.
+Use port 5173.
+Use the .jsx file extension (not .js).
+Include the proxy property for the URL /exercises in the React app's vite.config.js file as discussed in Exploration — Implementing a Full-Stack MERN App - Part 1.
+Optional:
+You may incorporate the useContext hook.
+You may use the express-validator package.
+📌  You may use <NavLink> instead of <Link> for the navigation.
+Off Limits:
+📌  router.method is not allowed.
+Axios, CORS, TypeScript, set(), and payload are not allowed for the app. 
+
+index.html
+Open the index.html page and update the <title> tag so it displays your first and last name, rather than Vite React. 
+
+
+App.jsx 
+The App.jsx file will provide global design using semantic HTML page layout elements. The file will route the backend database collection's data into the Retrieve function. That Retrieve function will call a Table component, which maps each document, built from a single Row component. These components will be function-based, not class-based. 
+
+Incorporate these semantic HTML elements:
+
+<header> which includes <h1> and <p> with unique text about your app. Keep it short. 
+<Router> which wraps around the following:
+<nav> which includes <Link>s to the Retrieve and Create pages. Use the Link componentLinks to an external site. from react-router-dom.
+<main> which includes <Routes> and a <Route> for each of the three pages.
+<footer> which includes a <p> that provides a typical copyright statement using the current year and your first and last name. 
+
+Pages and Components
+Retrieve Exercises	
+Retrieves/Reads the collection's list of documents into an HTML table as well as provide Delete and Edit functionality. 
+
+Displayed when the app starts up.
+Calls GET /exercises to retrieve all exercises
+Displays exercises in an HTML table
+Each row shows 5 properties (excluding ID)
+Each row includes 2 React Icons:
+Delete → calls DELETE /exercises/:id
+Edit → navigates to Edit Exercise page.
+Is implemented with React components:
+HTML Table component
+Maps the data from the collection of documents by calling the Row component into the <tbody> of the <table>.
+HTML Row component
+Fetches a single document into a single <tr>. 
+To ensure that date displays as YYYY-MM-DD, append .date?.split('T')[0] to the param, which will remove the timestamp.
+Includes a clickable React IconLinks to an external site. for Edit which loads the Edit page.
+Includes a clickable React Icon for Delete, which immediately deletes the row/document.
+Create Exercise	
+Allows the user to Create/Add a single document to the collection using an HTML form.
+
+<form> with <input>s for 5 required properties (name, reps, weight, unit, date)
+All inputs must include <p> wrapped around <label> <input> pairs. 
+The Unit of measurement  control must use <p> wrapped around the <label>,  <select> and <option>s.
+To ensure the user provides the correct date format, use: <input type="date" />.
+On submit it calls POST /exercises
+If successful (201):
+Shows success alert.
+Automatically navigates back to Retrieve page with useNavigate.
+If failure (not 201):
+Shows failure alert.
+Automatically navigates back to Retrieve page with useNavigate.
+Edit Exercise	
+Updates a single document/row based on its ID.
+
+Form controls are pre-populated with existing exercise data based on the row that was selected for Edit (no new fetch request).
+Do that using either technique of "lifting up the state" described in the Exploration.
+All inputs must include <p> wrapped around <label> <input> pairs. 
+The Unit of measurement form control must use <p> wrapped around the <label>,  <select> and <option>s.
+To ensure that date displays as YYYY-MM-DD, append .date?.split('T')[0] to the param when setting the update state.
+On submit calls PUT /exercises/:id
+If success (200):
+Shows success alert.
+Automatically navigates back to Retrieve page with useNavigate.
+If failure (not 200):
+Shows failure alert.
+Automatically navigates back to Retrieve page with useNavigate.
+CSS
+Replace the style rules in the existing src/index.css file with your existing Assignment 2 styles (with corrections as per that assignment's Rubric feedback, if any).
+
+📌 Do not copy the colors, fonts, and values of any of the demos; use your own values so your site looks unique. Feel free to improve the styles as well. 
+
+Note that specifying black, white, and Times New Roman font are not allowed, because they are the defaults.
+Note about fonts: see Ed Discussion if you want to choose from the Google Font repository.
+
+Edit and add rules for these selectors and property:values. You are allowed to add additional rules beyond the required rules listed above. However, all text must be legible!
+CSS Selectors and Required Properties
+Selector(s)	Required Properties
+body{}	
+font-family
+background-color
+color
+margin
+padding
+Ensure all parts of each page are visible in a skinny browser viewport (usability).
+header{},
+main{},
+footer{}	
+background-color
+color
+margin
+padding
+nav a{},
+nav a:hover{}	
+background-color (variety)
+border
+color
+margin
+padding
+text-decoration set to :none
+tr th{},
+tr td{}	
+border
+color
+padding
+Use subtle, easy-to-read color combinations (not bright).
+input{},
+button{}	
+padding (improves accessibility)
+Do not waste time styling select{}, option{} 
+ 
+
+What to Turn In?
+A9 file structure includes public, src with assets, components, pages, stylesheets, app, main, index, package, and config files.A9 backend file structure with data, env, test file, controller, model, and package.
+
+Submit a single .zip archive named with your ONID user name and assignment number, like this:  youronid-a9.zip.
+The zip must include a backend-rest folder without node_modules.
+The zip must include a frontend-react folder without node_modules.
+Include a .env file in the backend-rest folder, but remove your credentials; because you should not share your credentials with anyone (as per Module 10). We will test your work with our own MongoDB accounts. 
+The grader will:
+Unzip each of your zip files.
+Go to the root directory of the REST API run npm install and then npm start to start the REST API and test it with the a9-test-requests.http Download a9-test-requests.http.
+Go the root directory of the React app, run npm install and then npm run dev to start the React app and test it by filling in each form and clicking each icon and button.
