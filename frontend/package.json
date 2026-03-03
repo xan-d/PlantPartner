@@ -1,0 +1,30 @@
+{
+  "name": "xdeno-a9-frontend",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "dev": "vite",
+    "start": "vite",
+    "build": "vite build",
+    "production": "npx forever start app.cjs",
+    "stop_production": "npx forever stop app.cjs",
+    "preview": "vite preview --port 5173"
+  },
+  "dependencies": {
+    "@vitejs/plugin-react": "^5.1.2",
+    "cors": "^2.8.5",
+    "dotenv": "^17.2.3",
+    "express": "^5.2.1",
+    "express-async-handler": "^1.2.0",
+    "forever": "^4.0.3",
+    "path-to-regexp": "^0.1.7",
+    "react": "^18.2.0",
+    "react-dom": "^18.2.0",
+    "react-icons": "^4.8.0",
+    "react-router-dom": "^6.15.0"
+  },
+  "devDependencies": {
+    "vite": "^5.2.0"
+  }
+}

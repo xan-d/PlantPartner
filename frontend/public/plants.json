@@ -1,0 +1,16 @@
+[
+  {
+    "id": 1,
+    "name": "Golden Pothos",
+    "scientific": "Epipremnum aureum",
+    "image": "/plantImages/Golden_Pothos_1.jpeg",
+    "room": "Game Room",
+    "light": "Indirect",
+    "lastWatered": 2,
+    "waterFreq": 10,
+    "lastFed": 14,
+    "health": "happy",
+    "careLink": "https://gardenish.co/plants/epipremnum-aureum",
+    "color": "#4a7c59"
+  }
+]
