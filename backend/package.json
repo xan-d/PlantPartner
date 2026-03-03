@@ -25,6 +25,7 @@
         "express": "^5.2.1",
         "multer": "^2.1.0",
         "mysql2": "^3.17.0",
-        "path-to-regexp": "^0.1.7"
+        "path-to-regexp": "^0.1.7",
+        "puppeteer": "^24.37.5"
     }
 }
