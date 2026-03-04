@@ -14,7 +14,7 @@ export default function PlantGrid() {
 
     async function fetchPlants() {
         try {
-            const res = await fetch(`${API_URL}/plants`);
+            const res = await fetch(`${API_URL}/api/plants`);
             if (!res.ok) {
                 console.error("Failed to fetch plants", res.status);
                 setPlants([]);
@@ -30,7 +30,7 @@ export default function PlantGrid() {
 
     async function handleWaterPlant(id) {
         try {
-            const res = await fetch(`${API_URL}/plants/${id}/water`, { method: "PUT" });
+            const res = await fetch(`${API_URL}/api/plants/${id}/water`, { method: "PUT" });
             if (!res.ok) return;
 
             setPlants(prev =>
@@ -45,7 +45,7 @@ export default function PlantGrid() {
 
     async function handleDelete(id) {
         try {
-            const res = await fetch(`${API_URL}/plants/${id}`, { method: "DELETE" });
+            const res = await fetch(`${API_URL}/api/plants/${id}`, { method: "DELETE" });
             if (res.status === 204) {
                 setPlants(prev => prev.filter(p => p.plantID !== id));
             } else {

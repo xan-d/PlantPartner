@@ -171,7 +171,9 @@ function parseGardenishCare(html) {
 const puppeteer = require('puppeteer');
 
 async function fetchRenderedHTML(url) {
-    const browser = await puppeteer.launch({ headless: 'new' });
+    const browser = await puppeteer.launch({
+        args: ['--no-sandbox', '--disable-setuid-sandbox']
+    });
     const page = await browser.newPage();
     await page.goto(url, { waitUntil: 'networkidle2', timeout: 15000 });
     const html = await page.content();
@@ -187,15 +189,15 @@ exports.getPlantCare = async (req, res) => {
             [plantId]
         );
         if (!rows.length) return res.status(404).json({ error: 'Plant not found' });
-        
+
         const careLink = rows[0].careLink;
         if (!careLink) return res.status(400).json({ error: 'No care link set for this plant' });
-        
+
         const html = await fetchRenderedHTML(careLink);
         console.log('HTML length:', html?.length);
         const care = parseGardenishCare(html);
         console.log('Parsed care:', care);
-        
+
         if (Object.keys(care).length === 0) {
             return res.status(422).json({ error: 'Could not parse care info from that page' });
         }

@@ -83,7 +83,7 @@ export default function AddPlant() {
         Object.entries(form).forEach(([key, val]) => formData.append(key, val));
 
         try {
-            const res = await fetch(`${API_URL}/plants`, {
+            const res = await fetch(`${API_URL}/api/plants`, {
                 method: 'POST',
                 body: formData,
             });

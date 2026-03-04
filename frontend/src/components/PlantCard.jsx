@@ -73,7 +73,7 @@ export default function PlantCard({ plant, onWater, onDelete }) {
         setCareError(null);
         setFlipped(true);
         try {
-            const res = await fetch(`${API_URL}/plants/${plant.plantID}/care`);
+            const res = await fetch(`${API_URL}/api/plants/${plant.plantID}/care`);
             const data = await res.json();
             if (!res.ok) throw new Error(data.error || 'Failed to load care info');
             setCareData(data);

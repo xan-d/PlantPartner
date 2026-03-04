@@ -1,0 +1,447 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Plant Partner — Deploy Cheatsheet</title>
+    <style>
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+        }
+
+        body {
+            font-family: 'Segoe UI', system-ui, sans-serif;
+            background: #f5f7fa;
+            color: #1a1a2e;
+            line-height: 1.6;
+        }
+
+        .cover {
+            background: linear-gradient(135deg, #EDF1E3 0%, #F2EFE8 60%, #FAF8F3 100%);
+            color: #2D3A28;
+            padding: 48px;
+        }
+
+        .cover h1 {
+            font-size: 2rem;
+            font-weight: 700;
+            margin-bottom: 8px;
+        }
+
+        .cover p {
+            opacity: 0.7;
+            font-size: 0.95rem;
+        }
+
+        .cover .badges {
+            margin-top: 16px;
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(212, 212, 212, 0.2);
+            border: 1px solid rgba(120, 120, 120, 0.4);
+            border-radius: 20px;
+            padding: 3px 12px;
+            font-size: 0.78rem;
+            color: #8A9E80;
+        }
+
+        .content {
+            max-width: 780px;
+            margin: 0 auto;
+            padding: 40px;
+        }
+
+        .scenario {
+            margin-bottom: 32px;
+        }
+
+        .scenario-header {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            margin-bottom: 16px;
+        }
+
+        .scenario-icon {
+            width: 44px;
+            height: 44px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 1.3rem;
+            flex-shrink: 0;
+        }
+
+        .icon-frontend {
+            background: #e8f4fd;
+        }
+
+        .icon-backend {
+            background: #fef3e8;
+        }
+
+        .icon-both {
+            background: #f0fdf4;
+        }
+
+        .scenario-header h2 {
+            font-size: 1.15rem;
+            font-weight: 600;
+            color: #1a1a2e;
+        }
+
+        .scenario-header p {
+            font-size: 0.85rem;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        .steps {
+            display: flex;
+            flex-direction: column;
+            gap: 10px;
+        }
+
+        .step {
+            background: white;
+            border-radius: 10px;
+            border: 1px solid #e8edf5;
+            overflow: hidden;
+            box-shadow: 0 1px 4px rgba(0, 0, 0, 0.05);
+        }
+
+        .step-header {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            padding: 14px 18px 10px;
+        }
+
+        .step-num {
+            width: 24px;
+            height: 24px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 0.75rem;
+            font-weight: 700;
+            flex-shrink: 0;
+        }
+
+        .num-blue {
+            background: #dbeafe;
+            color: #1d4ed8;
+        }
+
+        .num-orange {
+            background: #ffedd5;
+            color: #c2410c;
+        }
+
+        .num-green {
+            background: #dcfce7;
+            color: #15803d;
+        }
+
+        .step-label {
+            font-size: 0.8rem;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+        }
+
+        .label-blue {
+            color: #1d4ed8;
+        }
+
+        .label-orange {
+            color: #c2410c;
+        }
+
+        .label-green {
+            color: #15803d;
+        }
+
+        .step-where {
+            margin-left: auto;
+            font-size: 0.75rem;
+            color: #999;
+            background: #f5f7fa;
+            padding: 3px 10px;
+            border-radius: 10px;
+        }
+
+        .pre-wrap {
+            position: relative;
+        }
+
+        pre {
+            background: #1a1a2e;
+            color: #e2e8f0;
+            padding: 14px 18px;
+            font-size: 0.82rem;
+            font-family: 'Fira Code', 'Consolas', monospace;
+            line-height: 1.7;
+            overflow-x: auto;
+            margin: 0;
+        }
+
+        .copy-btn {
+            position: absolute;
+            top: 8px;
+            right: 8px;
+            background: rgba(255, 255, 255, 0.1);
+            border: 1px solid rgba(255, 255, 255, 0.2);
+            color: #e2e8f0;
+            border-radius: 6px;
+            padding: 4px 10px;
+            font-size: 0.72rem;
+            cursor: pointer;
+            transition: all 0.15s;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .copy-btn:hover {
+            background: rgba(255, 255, 255, 0.2);
+        }
+
+        .copy-btn.copied {
+            background: #15803d;
+            border-color: #15803d;
+            color: white;
+        }
+
+        .cmd-row {
+            border-bottom: 1px solid #0d1424;
+        }
+
+        .cmd-row:last-child {
+            border-bottom: none;
+        }
+
+        .cmd-desc {
+            font-size: 0.78rem;
+            color: #94a3b8;
+            padding: 5px 18px 10px;
+            background: #1a1a2e;
+        }
+
+        .divider {
+            border: none;
+            border-top: 2px dashed #e8edf5;
+            margin: 36px 0;
+        }
+
+        .note {
+            background: #fff8e6;
+            border-left: 4px solid #f59e0b;
+            border-radius: 0 8px 8px 0;
+            padding: 12px 16px;
+            font-size: 0.88rem;
+            color: #555;
+            margin-top: 24px;
+        }
+
+        .note strong {
+            color: #b45309;
+        }
+    </style>
+</head>
+
+<body>
+
+    <div class="cover">
+        <h1>🌿 Plant Partner — Deploy Cheatsheet</h1>
+        <p>Quick reference for pushing changes to production</p>
+        <div class="badges">
+            <span class="badge">Local → WSL → Proxmox</span>
+            <a href="https://plant-partner.com" class="badge" target="_blank">
+                Plant Partner Website
+            </a>
+            <a href="https://account.squarespace.com/domains/managed/plant-partner.com" class="badge" target="_blank">
+                Squarespace Domain
+            </a>
+            <span class="badge">port 9275</span>
+        </div>
+    </div>
+
+    <div class="content">
+
+        <!-- SCENARIO 1 -->
+        <div class="scenario">
+            <div class="scenario-header">
+                <div class="scenario-icon icon-frontend">🎨</div>
+                <div>
+                    <h2>Frontend Change</h2>
+                    <p>Modified anything in <code
+                            style="background:#eef2f7;padding:1px 5px;border-radius:3px;font-size:0.85em">/frontend/src</code>
+                        — components, styles, pages</p>
+                </div>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-num num-blue">1</div>
+                        <span class="step-label label-blue">Build</span>
+                        <span class="step-where">💻 Local machine</span>
+                    </div>
+                    <div class="pre-wrap">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>npm run build</pre>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-num num-orange">2</div>
+                        <span class="step-label label-orange">Sync</span>
+                        <span class="step-where">🐧 WSL</span>
+                    </div>
+                    <div class="pre-wrap">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>rsync -av --exclude='node_modules' --exclude='.git' \
+  /mnt/c/Users/xande/OneDrive/Documents/GitHub/PlantPartner/ \
+  root@192.168.1.50:/var/www/myapp/</pre>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-num num-green">3</div>
+                        <span class="step-label label-green">Restart</span>
+                        <span class="step-where">🖥️ Proxmox server</span>
+                    </div>
+                    <div class="pre-wrap">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>pm2 restart plantpartner</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- SCENARIO 2 -->
+        <div class="scenario">
+            <div class="scenario-header">
+                <div class="scenario-icon icon-backend">⚙️</div>
+                <div>
+                    <h2>Backend Only Change</h2>
+                    <p>Modified <code
+                            style="background:#eef2f7;padding:1px 5px;border-radius:3px;font-size:0.85em">server.js</code>,
+                        routes, or other backend files — no frontend changes</p>
+                </div>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-num num-orange">1</div>
+                        <span class="step-label label-orange">Sync</span>
+                        <span class="step-where">🐧 WSL</span>
+                    </div>
+                    <div class="pre-wrap">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>rsync -av --exclude='node_modules' --exclude='.git' \
+  /mnt/c/Users/xande/OneDrive/Documents/GitHub/PlantPartner/ \
+  root@192.168.1.50:/var/www/myapp/</pre>
+                    </div>
+                </div>
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-num num-green">2</div>
+                        <span class="step-label label-green">Restart</span>
+                        <span class="step-where">🖥️ Proxmox server</span>
+                    </div>
+                    <div class="pre-wrap">
+                        <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                        <pre>pm2 restart plantpartner</pre>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <hr class="divider">
+
+        <!-- SCENARIO 3 -->
+        <div class="scenario">
+            <div class="scenario-header">
+                <div class="scenario-icon icon-both">🔄</div>
+                <div>
+                    <h2>Useful Server Commands</h2>
+                    <p>Handy commands for checking status and debugging on the Proxmox server</p>
+                </div>
+            </div>
+            <div class="steps">
+                <div class="step">
+                    <div class="step-header">
+                        <div class="step-num num-green">▶</div>
+                        <span class="step-label label-green">Status &amp; Logs</span>
+                        <span class="step-where">🖥️ Proxmox server</span>
+                    </div>
+
+                    <div class="cmd-row">
+                        <div class="pre-wrap">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre>pm2 status</pre>
+                        </div>
+                        <div class="cmd-desc">Check if app is running</div>
+                    </div>
+
+                    <div class="cmd-row">
+                        <div class="pre-wrap">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre>pm2 logs plantpartner</pre>
+                        </div>
+                        <div class="cmd-desc">View live logs</div>
+                    </div>
+
+                    <div class="cmd-row">
+                        <div class="pre-wrap">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre>pm2 logs plantpartner --lines 30</pre>
+                        </div>
+                        <div class="cmd-desc">View last 30 lines of logs</div>
+                    </div>
+
+                    <div class="cmd-row">
+                        <div class="pre-wrap">
+                            <button class="copy-btn" onclick="copyCode(this)">Copy</button>
+                            <pre>systemctl status cloudflared</pre>
+                        </div>
+                        <div class="cmd-desc">Check tunnel is running</div>
+                    </div>
+
+                </div>
+            </div>
+        </div>
+
+        <div class="note"><strong>Remember:</strong> if you add new npm packages locally, run <code
+                style="background:#fff3cd;padding:1px 5px;border-radius:3px">npm install</code> on the server after
+            syncing — packages in <code style="background:#fff3cd;padding:1px 5px;border-radius:3px">node_modules</code>
+            are excluded from rsync.</div>
+
+    </div>
+
+    <script>
+        function copyCode(btn) {
+            const pre = btn.parentElement.querySelector('pre');
+            navigator.clipboard.writeText(pre.innerText.trim()).then(() => {
+                btn.textContent = '✓ Copied!';
+                btn.classList.add('copied');
+                setTimeout(() => {
+                    btn.textContent = 'Copy';
+                    btn.classList.remove('copied');
+                }, 2000);
+            });
+        }
+    </script>
+</body>
+
+</html>

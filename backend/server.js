@@ -12,11 +12,20 @@ const PORT = process.env.PORT || 3000;
 app.use(cors());
 app.use(express.json());
 
-app.use('/plants', plantCardsRoutes);
+app.use('/api/plants', plantCardsRoutes);
+
+/* if (process.env.NODE_ENV === 'production') {
+    app.use(express.static(path.join(__dirname, '../frontend/dist')));
+    app.use((req, res) => {
+        res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
+    });
+}
+*/
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../frontend/dist')));
-    app.use((req, res) => {
+
+    app.get('/{*path}', (req, res) => {
         res.sendFile(path.join(__dirname, '../frontend/dist/index.html'));
     });
 }

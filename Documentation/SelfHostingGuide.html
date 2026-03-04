@@ -1,0 +1,560 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Self-Hosting Guide: Node.js + MySQL on Proxmox with Cloudflare Tunnel</title>
+  <style>
+    /* ── Reset ── */
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    /* ── Base ── */
+    body { font-family: 'Segoe UI', system-ui, sans-serif; background: #f5f7fa; color: #1a1a2e; line-height: 1.7; }
+
+    /* ── Cover ── */
+    .cover { background: linear-gradient(135deg, #EDF1E3 0%, #F2EFE8 60%, #FAF8F3 100%);
+    color: #2D3A28;padding: 48px; }
+    .cover h1 { font-size: 2rem; font-weight: 700; margin-bottom: 8px; }
+    .cover p { opacity: 0.7; font-size: 0.95rem; max-width: 600px; }
+    .cover .badges { margin-top: 16px; display: flex; gap: 8px; flex-wrap: wrap; }
+    .badge { background: rgba(212, 212, 212, 0.2);
+    border: 1px solid rgba(120, 120, 120, 0.4);
+    color: #8A9E80; border-radius: 20px; padding: 3px 12px; font-size: 0.78rem; }
+    a.badge { color: white; text-decoration: none; cursor: pointer; transition: background 0.15s; }
+    a.badge:hover { background: rgba(255,255,255,0.2); }
+
+    /* ── TOC ── */
+    .toc { background: white; border-left: 4px solid #15803d; margin: 32px 40px; padding: 24px 32px; border-radius: 0 8px 8px 0; box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+    .toc h2 { font-size: 0.8rem; text-transform: uppercase; letter-spacing: 0.08em; color: #666; margin-bottom: 12px; font-weight: 600; }
+    .toc ol { padding-left: 20px; }
+    .toc li { margin: 6px 0; }
+    .toc a { color: #15803d; text-decoration: none; font-weight: 500; font-size: 0.92rem; }
+    .toc a:hover { text-decoration: underline; }
+
+    /* ── Content ── */
+    .content { max-width: 860px; margin: 0 auto; padding: 0 40px 60px; }
+
+    /* ── Phase ── */
+    .phase { margin-top: 48px; }
+    .phase-header { display: flex; align-items: center; gap: 16px; margin-bottom: 20px; padding-bottom: 12px; border-bottom: 2px solid #e8edf5; }
+    .phase-num { background: #1a1a2e; color: white; width: 40px; height: 40px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-weight: 700; font-size: 1.1rem; flex-shrink: 0; }
+    .phase-header h2 { font-size: 1.15rem; font-weight: 600; color: #1a1a2e; }
+
+    /* ── Step cards ── */
+    .step { background: white; border-radius: 10px; border: 1px solid #e8edf5; overflow: hidden; box-shadow: 0 1px 4px rgba(0,0,0,0.05); margin-bottom: 12px; }
+    .step-header { display: flex; align-items: center; gap: 12px; padding: 14px 18px 10px; }
+    .step-num { width: 24px; height: 24px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 0.75rem; font-weight: 700; flex-shrink: 0; background: #dcfce7; color: #15803d; }
+    .step-label { font-size: 0.8rem; font-weight: 600; text-transform: uppercase; letter-spacing: 0.06em; color: #15803d; }
+    .step-body { padding: 0 18px 16px; }
+    .step-body p { color: #444; font-size: 0.92rem; margin-bottom: 10px; }
+    .step-body p:last-child { margin-bottom: 0; }
+
+    /* ── Code blocks ── */
+    .pre-wrap { position: relative; margin: 10px 0; }
+    pre { background: #1a1a2e; color: #e2e8f0; padding: 14px 18px; font-size: 0.82rem; font-family: 'Fira Code', 'Consolas', monospace; line-height: 1.7; overflow-x: auto; margin: 0; }
+    .copy-btn { position: absolute; top: 8px; right: 8px; background: rgba(255,255,255,0.1); border: 1px solid rgba(255,255,255,0.2); color: #e2e8f0; border-radius: 6px; padding: 4px 10px; font-size: 0.72rem; cursor: pointer; transition: all 0.15s; font-family: 'Segoe UI', sans-serif; }
+    .copy-btn:hover { background: rgba(255,255,255,0.2); }
+    .copy-btn.copied { background: #15803d; border-color: #15803d; color: white; }
+    .comment { color: #7ec8a4; }
+    .cmd { color: #93c5fd; }
+
+    /* ── Inline code ── */
+    .inline-code, code:not(pre code) { background: #eef2f7; color: #c7254e; padding: 1px 6px; border-radius: 4px; font-family: monospace; font-size: 0.88em; }
+
+    /* ── Callouts ── */
+    .note  { background: #fff8e6; border-left: 4px solid #f59e0b; border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; color: #555; }
+    .note strong { color: #b45309; }
+    .tip   { background: #e8f5e9; border-left: 4px solid #4caf50; border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; color: #555; }
+    .tip strong { color: #2e7d32; }
+    .warning { background: #fdecea; border-left: 4px solid #e53935; border-radius: 0 8px 8px 0; padding: 12px 16px; margin: 12px 0; font-size: 0.88rem; color: #555; }
+    .warning strong { color: #b71c1c; }
+
+    /* ── Table ── */
+    .summary-table { width: 100%; border-collapse: collapse; margin: 12px 0; font-size: 0.92rem; }
+    .summary-table th { background: #1a1a2e; color: white; padding: 10px 14px; text-align: left; }
+    .summary-table td { padding: 10px 14px; border-bottom: 1px solid #e8edf5; }
+    .summary-table tr:nth-child(even) td { background: #f8fafc; }
+
+    /* ── Divider ── */
+    .divider { border: none; border-top: 2px dashed #e8edf5; margin: 36px 0; }
+  </style>
+</head>
+<body>
+
+<div class="cover">
+  <h1>🖥️ Self-Hosting Your Website</h1>
+  <p>A step-by-step guide for hosting a Node.js + MySQL + React app on Proxmox, accessible from anywhere using Cloudflare Tunnel — no router access required.</p>
+  <div class="badges">
+    <span class="badge">Proxmox</span>
+    <span class="badge">Node.js + MySQL</span>
+    <span class="badge">React / Vite</span>
+    <span class="badge">Cloudflare Tunnel</span>
+  </div>
+</div>
+
+<div class="toc">
+  <h2>Table of Contents</h2>
+  <ol>
+    <li><a href="#phase1">Create a VM or LXC Container on Proxmox</a></li>
+    <li><a href="#phase2">Install Node.js and MySQL</a></li>
+    <li><a href="#phase3">Deploy Your App</a></li>
+    <li><a href="#phase4">Keep It Running with PM2</a></li>
+    <li><a href="#phase5">Set Up Cloudflare Tunnel</a></li>
+    <li><a href="#phase6">Final Checks</a></li>
+  </ol>
+</div>
+
+<div class="content">
+
+  <!-- PHASE 1 -->
+  <div class="phase" id="phase1">
+    <div class="phase-header">
+      <div class="phase-num">1</div>
+      <h2>Create a VM or LXC Container on Proxmox</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1.1</div>
+        <span class="step-label">Choose VM or LXC</span>
+      </div>
+      <div class="step-body">
+        <p>For a simple web app, an <strong>LXC container</strong> is recommended — it's lighter and faster to set up than a full VM. Use a VM only if you need a full isolated OS.</p>
+        <p>In the Proxmox web UI: <strong>Create CT</strong> → choose Ubuntu 22.04 or Debian 12 as the template → allocate at least <strong>1 CPU core, 1GB RAM, 10GB disk</strong>.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1.2</div>
+        <span class="step-label">Set a static local IP</span>
+      </div>
+      <div class="step-body">
+        <p>During container creation, set a static IP in the Network tab (e.g. <code>192.168.1.50/24</code>, gateway <code>192.168.1.1</code>). This keeps things predictable.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">1.3</div>
+        <span class="step-label">Start and connect</span>
+      </div>
+      <div class="step-body">
+        <p>Click the container → <strong>Start</strong> → <strong>Console</strong>. Or SSH in from your main machine:</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>ssh root@192.168.1.50</pre>
+        </div>
+        <p>Run a quick update first:</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>apt update && apt upgrade -y</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PHASE 2 -->
+  <div class="phase" id="phase2">
+    <div class="phase-header">
+      <div class="phase-num">2</div>
+      <h2>Install Node.js and MySQL</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2.1</div>
+        <span class="step-label">Install Node.js (v20 LTS)</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>curl -fsSL https://deb.nodesource.com/setup_20.x | bash -
+apt install -y nodejs</pre>
+        </div>
+        <p>Verify: <code>node -v</code> and <code>npm -v</code></p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2.2</div>
+        <span class="step-label">Install MySQL</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>apt install -y mysql-server
+systemctl enable --now mysql
+mysql_secure_installation</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2.3</div>
+        <span class="step-label">Create your database and user</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>mysql -u root -p</pre>
+        </div>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>CREATE DATABASE myapp;
+CREATE USER 'myapp_user'@'localhost' IDENTIFIED BY 'strongpassword';
+GRANT ALL PRIVILEGES ON myapp.* TO 'myapp_user'@'localhost';
+FLUSH PRIVILEGES;
+EXIT;</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">2.4</div>
+        <span class="step-label">Import your existing data</span>
+      </div>
+      <div class="step-body">
+        <p>On your local machine, export your database first:</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>mysqldump -u root -p your_local_db > backup.sql</pre>
+        </div>
+        <p>Then copy it to the server and import it:</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>scp backup.sql root@192.168.1.50:/root/
+ssh root@192.168.1.50
+mysql -u myapp_user -p myapp < /root/backup.sql</pre>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PHASE 3 -->
+  <div class="phase" id="phase3">
+    <div class="phase-header">
+      <div class="phase-num">3</div>
+      <h2>Deploy Your App</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3.1</div>
+        <span class="step-label">Build your React frontend</span>
+      </div>
+      <div class="step-body">
+        <p>On your <strong>local machine</strong>, run:</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>npm run build</pre>
+        </div>
+        <p>This generates a <code>dist/</code> folder of static files.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3.2</div>
+        <span class="step-label">Serve the frontend from Express</span>
+      </div>
+      <div class="step-body">
+        <p>Add these lines to your Node/Express server so it serves the built React app:</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>import path from 'path';
+import { fileURLToPath } from 'url';
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+
+app.use(express.static(path.join(__dirname, 'dist')));
+app.get('/{*path}', (req, res) => {
+  res.sendFile(path.join(__dirname, 'dist', 'index.html'));
+});</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3.3</div>
+        <span class="step-label">Use environment variables for DB config</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>const db = mysql.createConnection({
+  host:     process.env.DB_HOST     || 'localhost',
+  user:     process.env.DB_USER     || 'myapp_user',
+  password: process.env.DB_PASSWORD || '',
+  database: process.env.DB_NAME     || 'myapp',
+});</pre>
+        </div>
+        <p>Create a <code>.env</code> file in your project root on the server (and add it to <code>.gitignore</code>):</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>DB_HOST=localhost
+DB_USER=myapp_user
+DB_PASSWORD=strongpassword
+DB_NAME=myapp
+PORT=3000</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3.4</div>
+        <span class="step-label">Copy your project to the server</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>rsync -av --exclude='node_modules' --exclude='.git' \
+  ./my-project/ root@192.168.1.50:/var/www/myapp/</pre>
+        </div>
+        <p>Then on the server, install dependencies:</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>cd /var/www/myapp
+npm install --production</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">3.5</div>
+        <span class="step-label">Test it manually</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>node server.js</pre>
+        </div>
+        <p>Visit <code>http://192.168.1.50:3000</code> from your local machine. If it works, press <code>Ctrl+C</code> and move on.</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PHASE 4 -->
+  <div class="phase" id="phase4">
+    <div class="phase-header">
+      <div class="phase-num">4</div>
+      <h2>Keep It Running with PM2</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">4.1</div>
+        <span class="step-label">Install and start PM2</span>
+      </div>
+      <div class="step-body">
+        <p>PM2 keeps your app running in the background and restarts it if it crashes.</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>npm install -g pm2
+cd /var/www/myapp
+pm2 start server.js --name myapp</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">4.2</div>
+        <span class="step-label">Make it survive reboots</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>pm2 startup</pre>
+        </div>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>pm2 save</pre>
+        </div>
+        <div class="tip"><strong>Tip:</strong> Use <code>pm2 logs myapp</code> to see output, <code>pm2 restart myapp</code> after code changes, <code>pm2 status</code> to check it's running.</div>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PHASE 5 -->
+  <div class="phase" id="phase5">
+    <div class="phase-header">
+      <div class="phase-num">5</div>
+      <h2>Set Up Cloudflare Tunnel</h2>
+    </div>
+
+    <div class="note"><strong>Why Cloudflare Tunnel?</strong> Since you don't have router access, this is the cleanest solution. Your server reaches out to Cloudflare — no inbound ports need to be opened. Cloudflare also handles HTTPS automatically.</div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">5.1</div>
+        <span class="step-label">Get a domain name</span>
+      </div>
+      <div class="step-body">
+        <p>Cloudflare Tunnel requires a domain. Buy one from <strong>Porkbun</strong> or <strong>Namecheap</strong> (~$10–15/year). Then go to <a href="https://cloudflare.com" target="_blank">cloudflare.com</a>, add your domain, and update your nameservers to Cloudflare's.</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">5.2</div>
+        <span class="step-label">Install cloudflared</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>curl -L https://pkg.cloudflare.com/cloudflare-main.gpg \
+  | tee /usr/share/keyrings/cloudflare-main.gpg > /dev/null
+
+echo "deb [signed-by=/usr/share/keyrings/cloudflare-main.gpg] \
+  https://pkg.cloudflare.com/cloudflared any main" \
+  | tee /etc/apt/sources.list.d/cloudflared.list
+
+apt update && apt install -y cloudflared</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">5.3</div>
+        <span class="step-label">Authenticate and create a tunnel</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>cloudflared tunnel login</pre>
+        </div>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>cloudflared tunnel create myapp</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">5.4</div>
+        <span class="step-label">Configure the tunnel</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>mkdir -p ~/.cloudflared
+nano ~/.cloudflared/config.yml</pre>
+        </div>
+        <p>Paste this (replace with your tunnel ID and domain):</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>tunnel: YOUR_TUNNEL_ID_HERE
+credentials-file: /root/.cloudflared/YOUR_TUNNEL_ID_HERE.json
+
+ingress:
+  - hostname: yourdomain.com
+    service: http://localhost:3000
+  - service: http_status:404</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">5.5</div>
+        <span class="step-label">Point DNS to the tunnel</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>cloudflared tunnel route dns myapp yourdomain.com</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">5.6</div>
+        <span class="step-label">Run tunnel as a system service</span>
+      </div>
+      <div class="step-body">
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>cloudflared service install
+systemctl start cloudflared
+systemctl enable cloudflared</pre>
+        </div>
+        <p>Your site should now be live at <code>https://yourdomain.com</code> — with HTTPS handled automatically by Cloudflare!</p>
+      </div>
+    </div>
+  </div>
+
+  <hr class="divider">
+
+  <!-- PHASE 6 -->
+  <div class="phase" id="phase6">
+    <div class="phase-header">
+      <div class="phase-num">6</div>
+      <h2>Final Checks</h2>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">6.1</div>
+        <span class="step-label">Checklist before sharing the link</span>
+      </div>
+      <div class="step-body">
+        <p>✅ No <code>localhost</code> URLs hardcoded in your frontend or backend</p>
+        <p>✅ <code>.env</code> file is on the server and in <code>.gitignore</code></p>
+        <p>✅ <code>pm2 status</code> shows your app as <strong>online</strong></p>
+        <p>✅ <code>systemctl status cloudflared</code> shows <strong>active (running)</strong></p>
+        <p>✅ Visit your domain from a phone on mobile data to confirm it's publicly accessible</p>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">6.2</div>
+        <span class="step-label">Updating your app later</span>
+      </div>
+      <div class="step-body">
+        <p>On your local machine — rebuild and sync:</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>npm run build
+rsync -av --exclude='node_modules' --exclude='.git' \
+  ./my-project/ root@192.168.1.50:/var/www/myapp/</pre>
+        </div>
+        <p>Then on the server:</p>
+        <div class="pre-wrap"><button class="copy-btn" onclick="copyCode(this)">Copy</button>
+          <pre>pm2 restart myapp</pre>
+        </div>
+      </div>
+    </div>
+
+    <div class="step">
+      <div class="step-header">
+        <div class="step-num">6.3</div>
+        <span class="step-label">Cost summary</span>
+      </div>
+      <div class="step-body">
+        <table class="summary-table">
+          <thead>
+            <tr><th>Component</th><th>Tool</th><th>Cost</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>VM / Container</td><td>Proxmox (you own it)</td><td>Free</td></tr>
+            <tr><td>App runtime</td><td>Node.js + PM2</td><td>Free</td></tr>
+            <tr><td>Database</td><td>MySQL (self-hosted)</td><td>Free</td></tr>
+            <tr><td>Public access + HTTPS</td><td>Cloudflare Tunnel</td><td>Free</td></tr>
+            <tr><td>Domain name</td><td>Porkbun / Namecheap</td><td>~$10–15/year</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <div class="warning"><strong>Keep in mind:</strong> your mini PC needs to stay on for the site to be accessible. If it reboots or loses power, PM2 and cloudflared will both restart automatically — but there will be a brief downtime during the reboot.</div>
+  </div>
+
+</div>
+
+<script>
+  function copyCode(btn) {
+    const pre = btn.parentElement.querySelector('pre');
+    navigator.clipboard.writeText(pre.innerText.trim()).then(() => {
+      btn.textContent = '✓ Copied!';
+      btn.classList.add('copied');
+      setTimeout(() => {
+        btn.textContent = 'Copy';
+        btn.classList.remove('copied');
+      }, 2000);
+    });
+  }
+</script>
+</body>
+</html>
