@@ -55,7 +55,7 @@ export default function UpdatePlant() {
     useEffect(() => {
         async function fetchPlant() {
             try {
-                const res = await fetch(`${API_URL}/api/plants/${id}`);
+                const res = await fetch(`${API_URL}/api/plants/${id}`, { credentials: 'include' });
                 if (!res.ok) throw new Error('Plant not found');
                 const plant = await res.json();
 
@@ -123,7 +123,7 @@ export default function UpdatePlant() {
             const res = await fetch(`${API_URL}/api/plants/${id}`, {
                 method: 'PUT',
                 body: formData,
-            });
+                credentials: 'include' });
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
                 setError(body.error || 'Failed to update plant');

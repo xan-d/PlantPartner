@@ -25,9 +25,11 @@ exports.upload = upload;
 
 // ─── GET all plants ───────────────────────────────────────────────────────────
 exports.getAllPlants = async (req, res) => {
+    const userID = req.session.userID;
     try {
         const [rows] = await db.promise().query(
-            'SELECT *, DATEDIFF(CURDATE(), lastWatered) AS lastWatered FROM Plants ORDER BY lastWatered DESC'
+            'SELECT *, DATEDIFF(CURDATE(), lastWatered) AS daysSinceWatered FROM Plants WHERE userID = ? ORDER BY daysSinceWatered DESC',
+            [userID]
         );
         res.json(rows);
     } catch (err) {
@@ -38,10 +40,11 @@ exports.getAllPlants = async (req, res) => {
 // ─── GET a single plant by ID ─────────────────────────────────────────────────
 exports.getPlantById = async (req, res) => {
     const plantId = req.params.id;
+    const userID = req.session.userID;
     try {
         const [rows] = await db.promise().query(
-            'SELECT *, DATEDIFF(CURDATE(), lastWatered) AS lastWatered FROM Plants WHERE plantID = ?',
-            [plantId]
+            'SELECT *, DATEDIFF(CURDATE(), lastWatered) AS daysSinceWatered FROM Plants WHERE plantID = ? AND userID = ?',
+            [plantId, userID]
         );
         if (!rows.length) return res.status(404).json({ error: 'Plant not found' });
         res.json(rows[0]);
@@ -52,18 +55,23 @@ exports.getPlantById = async (req, res) => {
 
 // ─── CREATE a new plant (with image upload) ───────────────────────────────────
 exports.createPlant = async (req, res) => {
+    const userID = req.session.userID;
     const { name, scientific, room, light, lastWatered, waterFreq, lastFed, health, careLink, color } = req.body;
     const image = req.file ? `/plantImages/${req.file.filename}` : null;
 
-    // Convert "days ago" number to an actual date
+    // Convert "days ago" to actual dates
     const lastWateredDate = new Date();
     lastWateredDate.setDate(lastWateredDate.getDate() - parseInt(lastWatered || 0));
-    const lastWateredFormatted = lastWateredDate.toISOString().split('T')[0]; // YYYY-MM-DD
+    const lastWateredFormatted = lastWateredDate.toISOString().split('T')[0];
+
+    const lastFedDate = new Date();
+    lastFedDate.setDate(lastFedDate.getDate() - parseInt(lastFed || 0));
+    const lastFedFormatted = lastFedDate.toISOString().split('T')[0];
 
     try {
         const [result] = await db.promise().query(
-            'INSERT INTO Plants (name, scientific, image, room, light, lastWatered, waterFreq, lastFed, health, careLink, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
-            [name, scientific, image, room, light, lastWateredFormatted, waterFreq, lastFed, health, careLink, color]
+            'INSERT INTO Plants (userID, name, scientific, image, room, light, lastWatered, waterFreq, lastFed, health, careLink, color) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)',
+            [userID, name, scientific, image, room, light, lastWateredFormatted, waterFreq, lastFedFormatted, health, careLink, color]
         );
         res.status(201).json({ plantID: result.insertId });
     } catch (err) {
@@ -74,11 +82,21 @@ exports.createPlant = async (req, res) => {
 // ─── UPDATE an existing plant ─────────────────────────────────────────────────
 exports.updatePlant = async (req, res) => {
     const plantId = req.params.id;
+    const userID = req.session.userID;
     const { name, scientific, room, light, lastWatered, waterFreq, lastFed, health, careLink, color } = req.body;
+
+    const lastWateredDate = new Date();
+    lastWateredDate.setDate(lastWateredDate.getDate() - parseInt(lastWatered || 0));
+    const lastWateredFormatted = lastWateredDate.toISOString().split('T')[0];
+
+    const lastFedDate = new Date();
+    lastFedDate.setDate(lastFedDate.getDate() - parseInt(lastFed || 0));
+    const lastFedFormatted = lastFedDate.toISOString().split('T')[0];
+
     try {
         const [result] = await db.promise().query(
-            'UPDATE Plants SET name=?, scientific=?, room=?, light=?, lastWatered=?, waterFreq=?, lastFed=?, health=?, careLink=?, color=? WHERE plantID=?',
-            [name, scientific, room, light, lastWatered, waterFreq, lastFed, health, careLink, color, plantId]
+            'UPDATE Plants SET name=?, scientific=?, room=?, light=?, lastWatered=?, waterFreq=?, lastFed=?, health=?, careLink=?, color=? WHERE plantID=? AND userID=?',
+            [name, scientific, room, light, lastWateredFormatted, waterFreq, lastFedFormatted, health, careLink, color, plantId, userID]
         );
         if (!result.affectedRows) return res.status(404).json({ error: 'Plant not found' });
         res.json({ message: 'Plant updated' });
@@ -86,14 +104,14 @@ exports.updatePlant = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-
 // ─── DELETE a plant ───────────────────────────────────────────────────────────
 exports.deletePlant = async (req, res) => {
     const plantId = req.params.id;
+    const userID = req.session.userID;
     try {
         const [result] = await db.promise().query(
-            'DELETE FROM Plants WHERE plantID=?',
-            [plantId]
+            'DELETE FROM Plants WHERE plantID=? AND userID=?',
+            [plantId, userID]
         );
         if (!result.affectedRows) return res.status(404).json({ error: 'Plant not found' });
         res.status(204).send();
@@ -102,13 +120,14 @@ exports.deletePlant = async (req, res) => {
     }
 };
 
-// --- Mark plant as watered ------------------------------------------------------
+// ─── Mark plant as watered ────────────────────────────────────────────────────
 exports.waterPlant = async (req, res) => {
     const plantId = req.params.id;
+    const userID = req.session.userID;
     try {
         await db.promise().query(
-            'UPDATE Plants SET lastWatered = CURDATE() WHERE plantID = ?',
-            [plantId]
+            'UPDATE Plants SET lastWatered = CURDATE() WHERE plantID = ? AND userID = ?',
+            [plantId, userID]
         );
         res.json({ message: 'Plant watered' });
     } catch (err) {
@@ -183,10 +202,11 @@ async function fetchRenderedHTML(url) {
 
 exports.getPlantCare = async (req, res) => {
     const plantId = req.params.id;
+    const userID = req.session.userID;
     try {
         const [rows] = await db.promise().query(
-            'SELECT careLink FROM Plants WHERE plantID = ?',
-            [plantId]
+            'SELECT careLink FROM Plants WHERE plantID = ? AND userID = ?',
+            [plantId, userID]
         );
         if (!rows.length) return res.status(404).json({ error: 'Plant not found' });
 
@@ -207,4 +227,3 @@ exports.getPlantCare = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
-// <-- make sure this line exists

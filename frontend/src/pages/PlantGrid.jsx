@@ -14,7 +14,7 @@ export default function PlantGrid() {
 
     async function fetchPlants() {
         try {
-            const res = await fetch(`${API_URL}/api/plants`);
+            const res = await fetch(`${API_URL}/api/plants`, { credentials: 'include' });
             if (!res.ok) {
                 console.error("Failed to fetch plants", res.status);
                 setPlants([]);
@@ -30,7 +30,10 @@ export default function PlantGrid() {
 
     async function handleWaterPlant(id) {
         try {
-            const res = await fetch(`${API_URL}/api/plants/${id}/water`, { method: "PUT" });
+            const res = await fetch(`${API_URL}/api/plants/${id}/water`, {
+                credentials: 'include',
+                method: "PUT"
+            });
             if (!res.ok) return;
 
             setPlants(prev =>
@@ -45,7 +48,10 @@ export default function PlantGrid() {
 
     async function handleDelete(id) {
         try {
-            const res = await fetch(`${API_URL}/api/plants/${id}`, { method: "DELETE" });
+            const res = await fetch(`${API_URL}/api/plants/${id}`, {
+                credentials: 'include',
+                method: "DELETE"
+            });
             if (res.status === 204) {
                 setPlants(prev => prev.filter(p => p.plantID !== id));
             } else {
@@ -81,6 +87,35 @@ export default function PlantGrid() {
 
             {/* Grid */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "center" }}>
+                {plants.length === 0 && (
+                    <div style={{
+                        display: "flex", flexDirection: "column", alignItems: "center",
+                        justifyContent: "center", gap: 16, padding: "40px 24px",
+                        background: "#faf8f3", borderRadius: 18, border: "1.5px dashed #c8d8c0",
+                        width: 220, minHeight: 320, textAlign: "center",
+                        fontFamily: "'Georgia', serif",
+                    }}>
+                        <div style={{ fontSize: 48 }}>🌱</div>
+                        <div style={{ fontSize: 16, fontWeight: 700, color: "#2d3a28" }}>
+                            Welcome to PlantPartner!
+                        </div>
+                        <div style={{ fontSize: 12, color: "#8a9e80", fontStyle: "italic", lineHeight: 1.6 }}>
+                            You don't have any plants yet. Add your first one to get started!
+                        </div>
+                        <button
+                            onClick={() => navigate("/plants/add")}
+                            style={{
+                                background: "#4a7c59", color: "#fff", border: "none",
+                                padding: "8px 20px", borderRadius: 50, fontSize: 12,
+                                fontFamily: "'Helvetica Neue', sans-serif", fontWeight: 700,
+                                letterSpacing: "0.05em", cursor: "pointer",
+                                boxShadow: "0 4px 12px rgba(74,124,89,0.25)",
+                            }}
+                        >
+                            + Add First Plant
+                        </button>
+                    </div>
+                )}
                 {plants.map(plant => (
                     <PlantCard
                         key={plant.plantID}

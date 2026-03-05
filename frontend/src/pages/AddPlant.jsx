@@ -86,7 +86,8 @@ export default function AddPlant() {
             const res = await fetch(`${API_URL}/api/plants`, {
                 method: 'POST',
                 body: formData,
-            });
+                credentials: 'include',
+            },);
             if (!res.ok) {
                 const body = await res.json().catch(() => ({}));
                 setError(body.error || 'Failed to create plant');

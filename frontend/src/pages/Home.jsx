@@ -44,7 +44,7 @@ export default function Home() {
             </p>
 
             {/* CTA Button */}
-            <Link to="/plants" style={{
+            <Link to="/login" style={{
                 display: 'inline-block',
                 background: '#4a7c59',
                 color: '#fff',
@@ -68,7 +68,7 @@ export default function Home() {
                     e.currentTarget.style.boxShadow = '0 4px 18px rgba(74,124,89,0.30)';
                 }}
             >
-                View My Plants
+                Get Started
             </Link>
 
         </div>
