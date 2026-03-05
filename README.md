@@ -1,4 +1,14 @@
-# **Plant Partner**
+# 🌿 Plant Partner
+
+A plant care tracking web app built with React, Node.js, and MySQL.
+
+## 📚 Documentation
+
+- [Self-Hosting Guide](https://xan-d.github.io/PlantPartner/Documentation/SelfHostingGuide.html)
+- [Deploy Cheatsheet](https://xan-d.github.io/PlantPartner/Documentation/UpdateCycle.html)
+
+## 🌐 Live Site
+[plant-partner.com](https://plant-partner.com)
 
 ## Introduction and Overview
 
