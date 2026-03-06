@@ -12,8 +12,11 @@ A plant care tracking web app built with React, Node.js, and MySQL.
 
 ## To do
 - Add user dashboard (landing page)
-- Send push/text notifs for plant watering
+- Send push/text notifs for plant watering 
 - refactor plant card component
+- create fetch option when creating card
+- add filter options on plant grid
+- add plsql to prevent SQL injejctions
 
 ## Introduction and Overview
 
