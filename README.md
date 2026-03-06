@@ -10,6 +10,11 @@ A plant care tracking web app built with React, Node.js, and MySQL.
 ## 🌐 Live Site
 [plant-partner.com](https://plant-partner.com)
 
+## To do
+- Add user dashboard (landing page)
+- Send push/text notifs for plant watering
+- refactor plant card component
+
 ## Introduction and Overview
 
 ### Table of Contents
