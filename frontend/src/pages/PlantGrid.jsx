@@ -8,6 +8,49 @@ export default function PlantGrid() {
     const navigate = useNavigate();
     const [plants, setPlants] = useState([]);
 
+    // add this hook at the top of your component
+    const [notifyStatus, setNotifyStatus] = useState('default'); // 'default' | 'granted' | 'denied'
+
+    useEffect(() => {
+        if ('Notification' in window) {
+            setNotifyStatus(Notification.permission);
+        }
+    }, []);
+
+    async function enableNotifications() {
+        try {
+            const permission = await Notification.requestPermission();
+            setNotifyStatus(permission);
+            if (permission !== 'granted') {
+                alert('Permission denied: ' + permission);
+                return;
+            }
+
+            const reg = await navigator.serviceWorker.ready;
+            alert('SW ready: ' + reg.active?.state);
+
+            const { publicKey } = await fetch(`${API_URL}/api/push/vapid-public-key`).then(r => r.json());
+            alert('Got public key');
+
+            const subscription = await reg.pushManager.subscribe({
+                userVisibleOnly: true,
+                applicationServerKey: publicKey
+            });
+            alert('Subscribed: ' + subscription.endpoint);
+
+            const res = await fetch(`${API_URL}/api/push/subscribe`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify(subscription)
+            });
+            const data = await res.json();
+            alert('Result: ' + JSON.stringify(data));
+        } catch (err) {
+            alert('Error: ' + err.message);
+        }
+    }
+
     useEffect(() => {
         fetchPlants();
     }, []);
@@ -73,16 +116,28 @@ export default function PlantGrid() {
             fontFamily: "'Georgia', serif",
         }}>
             {/* Header */}
-            <div style={{ marginBottom: 40, textAlign: "center" }}>
-                <h1 style={{
-                    fontSize: 36, color: "#2d3a28", fontWeight: 700,
-                    margin: 0, letterSpacing: "-0.02em",
-                }}>🌿 My Plants</h1>
+            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 6 }}>
                 <p style={{
                     color: "#8a9e80", fontSize: 14,
                     fontFamily: "'Helvetica Neue', sans-serif",
-                    marginTop: 6, fontStyle: "italic",
+                    margin: 0, fontStyle: "italic",
                 }}>{plants.length} plants in your collection</p>
+
+                {notifyStatus === 'default' && (
+                    <button onClick={enableNotifications} style={{
+                        background: "#4a7c59", color: "#fff", border: "none",
+                        padding: "6px 16px", borderRadius: 50, fontSize: 11,
+                        fontFamily: "'Helvetica Neue', sans-serif", fontWeight: 700,
+                        letterSpacing: "0.05em", cursor: "pointer",
+                    }}>
+                        🔔 Enable Notifications
+                    </button>
+                )}
+                {notifyStatus === 'granted' && (
+                    <span style={{ fontSize: 12, color: "#4a7c59", fontFamily: "'Helvetica Neue', sans-serif" }}>
+                        ✓ Notifications on
+                    </span>
+                )}
             </div>
 
             {/* Grid */}

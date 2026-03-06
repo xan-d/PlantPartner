@@ -20,12 +20,17 @@
     },
     "homepage": "https://github.com/xan-d/PlantPartner#readme",
     "dependencies": {
+        "bcrypt": "^6.0.0",
         "cors": "^2.8.6",
         "dotenv": "^17.3.1",
         "express": "^5.2.1",
+        "express-mysql-session": "^3.0.3",
+        "express-session": "^1.19.0",
         "multer": "^2.1.0",
         "mysql2": "^3.17.0",
+        "node-cron": "^4.2.1",
         "path-to-regexp": "^0.1.7",
-        "puppeteer": "^24.37.5"
+        "puppeteer": "^24.37.5",
+        "web-push": "^3.6.7"
     }
 }
