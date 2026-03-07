@@ -22,7 +22,7 @@ export default function Register() {
             });
             const data = await res.json();
             if (!res.ok) return setError(data.error || 'Registration failed');
-            navigate('/plants');
+            navigate('/dashboard');
         } catch {
             setError('Could not connect to server');
         } finally {

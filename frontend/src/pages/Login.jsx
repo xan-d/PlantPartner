@@ -22,7 +22,7 @@ export default function Login() {
             });
             const data = await res.json();
             if (!res.ok) return setError(data.error || 'Login failed');
-            navigate('/plants');
+            navigate('/dashboard');
         } catch {
             setError('Could not connect to server');
         } finally {

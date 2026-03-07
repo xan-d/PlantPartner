@@ -7,6 +7,7 @@ import UpdatePlant from './pages/UpdatePlant';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Room from './pages/Room';
 
 export default function App() {
     return (
@@ -20,6 +21,7 @@ export default function App() {
                     <Route path="/plants/add" element={<AddPlant />} />
                     <Route path="/plants/:id/edit" element={<UpdatePlant />} />
                     <Route path="/dashboard" element={<Dashboard />} />
+                    <Route path="/rooms/:roomName" element={<Room />} />
                 </Routes>
             </main>
         </div>

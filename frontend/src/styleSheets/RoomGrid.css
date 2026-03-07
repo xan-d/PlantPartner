@@ -1,0 +1,77 @@
+/* RoomGrid.css */
+
+.room-grid-section {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+/* Outer card wrapping all room cards */
+.room-grid-outer-card {
+    background: var(--card-bg, #FAF8F3);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 16px;
+    padding: 16px;
+    box-shadow: 0 1px 4px rgba(0, 0, 0, 0.06);
+}
+
+/* Responsive auto-fill grid of room cards */
+.room-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(130px, 1fr));
+    gap: 12px;
+}
+
+/* Individual room card */
+.room-card {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    padding: 16px 12px;
+    background: var(--room-card-bg, #eae7e0);
+    border: 1px solid var(--border-color, #e5e7eb);
+    border-radius: 12px;
+    cursor: pointer;
+    transition: transform 0.15s ease, box-shadow 0.15s ease, background 0.15s ease;
+    text-align: center;
+    font-family: inherit;
+}
+
+.room-card:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    background: var(--room-card-hover-bg, #e7ece7);
+    border-color: var(--accent-color, #88b26d);
+}
+
+.room-card:active {
+    transform: translateY(0);
+}
+
+.room-card-emoji {
+    font-size: 2rem;
+    line-height: 1;
+}
+
+.room-card-name {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-primary, #111827);
+    line-height: 1.2;
+}
+
+.room-card-count {
+    font-size: 0.75rem;
+    color: var(--text-muted, #6b7280);
+}
+
+.room-card-badge {
+    font-size: 0.7rem;
+    font-weight: 600;
+    color: #b45309;
+    background: #fef3c7;
+    border-radius: 999px;
+    padding: 2px 8px;
+    margin-top: 2px;
+}

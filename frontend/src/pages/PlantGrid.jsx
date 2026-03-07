@@ -10,11 +10,17 @@ import Header from "../components/Header";
 //utils
 import { daysSince } from '../utils/plantHelpers';
 
-export default function PlantGrid() {
+// Props:
+//   plants     - optional external plant list (e.g. from RoomPage). If omitted, fetches its own.
+//   hideHeader - if true, suppresses the Header component (used when embedded in another page)
+export default function PlantGrid({ plants: externalPlants, hideHeader = false }) {
     const navigate = useNavigate();
-    const [plants, setPlants] = useState([]);
-
+    const [internalPlants, setInternalPlants] = useState([]);
     const [notifyStatus, setNotifyStatus] = useState('default');
+
+    // Use external plants if provided, otherwise use internal state
+    const isControlled = Array.isArray(externalPlants);
+    const plants = isControlled ? externalPlants : internalPlants;
 
     useEffect(() => {
         if ('Notification' in window) {
@@ -22,57 +28,26 @@ export default function PlantGrid() {
         }
     }, []);
 
-    async function enableNotifications() {
-        try {
-            const permission = await Notification.requestPermission();
-            setNotifyStatus(permission);
-            if (permission !== 'granted') {
-                alert('Permission denied: ' + permission);
-                return;
-            }
-
-            const reg = await navigator.serviceWorker.ready;
-            //alert('SW ready: ' + reg.active?.state);
-
-            const { publicKey } = await fetch(`${API_URL}/api/push/vapid-public-key`).then(r => r.json());
-            //alert('Got public key');
-
-            const subscription = await reg.pushManager.subscribe({
-                userVisibleOnly: true,
-                applicationServerKey: publicKey
-            });
-            //alert('Subscribed: ' + subscription.endpoint);
-
-            const res = await fetch(`${API_URL}/api/push/subscribe`, {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                credentials: 'include',
-                body: JSON.stringify(subscription)
-            });
-            const data = await res.json();
-            //alert('Result: ' + JSON.stringify(data));
-        } catch (err) {
-            alert('Error: ' + err.message);
-        }
-    }
-
     useEffect(() => {
-        fetchPlants();
-    }, []);
+        // Only fetch internally if no external plants were passed
+        if (!isControlled) {
+            fetchPlants();
+        }
+    }, [isControlled]);
 
     async function fetchPlants() {
         try {
             const res = await fetch(`${API_URL}/api/plants`, { credentials: 'include' });
-            if (!res.ok) { setPlants([]); return; }
+            if (!res.ok) { setInternalPlants([]); return; }
             const data = await res.json();
-            setPlants(data.sort((a, b) => {
+            setInternalPlants(data.sort((a, b) => {
                 const urgencyA = daysSince(a.lastWatered) / a.waterFreq;
                 const urgencyB = daysSince(b.lastWatered) / b.waterFreq;
                 return urgencyB - urgencyA;
             }));
         } catch (err) {
             console.error(err);
-            setPlants([]);
+            setInternalPlants([]);
         }
     }
 
@@ -84,7 +59,6 @@ export default function PlantGrid() {
             });
             if (!res.ok) return;
 
-            // increment global(user scope) watered count
             await fetch(`${API_URL}/api/user/stats`, {
                 method: 'PATCH',
                 headers: { 'Content-Type': 'application/json' },
@@ -92,11 +66,14 @@ export default function PlantGrid() {
                 body: JSON.stringify({ incrementWatered: true }),
             });
 
-            setPlants(prev =>
-                prev
-                    .map(p => p.plantID === id ? { ...p, lastWatered: 0 } : p)
-                    .sort((a, b) => b.lastWatered - a.lastWatered)
-            );
+            // If controlled, parent manages state — nothing to update locally
+            if (!isControlled) {
+                setInternalPlants(prev =>
+                    prev
+                        .map(p => p.plantID === id ? { ...p, lastWatered: 0 } : p)
+                        .sort((a, b) => b.lastWatered - a.lastWatered)
+                );
+            }
         } catch (err) {
             console.error(err);
         }
@@ -109,7 +86,9 @@ export default function PlantGrid() {
                 method: "DELETE"
             });
             if (res.status === 204) {
-                setPlants(prev => prev.filter(p => p.plantID !== id));
+                if (!isControlled) {
+                    setInternalPlants(prev => prev.filter(p => p.plantID !== id));
+                }
             } else {
                 alert("Failed to delete plant");
             }
@@ -120,38 +99,13 @@ export default function PlantGrid() {
     }
 
     return (
-        <div style={{
-            fontFamily: "'Georgia', serif",
-        }}>
-            {/* Header */}
-            {/* <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 6 }}>
-                <p style={{
-                    color: "#8a9e80", fontSize: 14,
-                    fontFamily: "'Helvetica Neue', sans-serif",
-                    margin: 0, fontStyle: "italic",
-                }}>{plants.length} plants in your collection</p>
+        <div style={{ fontFamily: "'Georgia', serif" }}>
 
-                {notifyStatus === 'default' && (
-                    <button onClick={enableNotifications} style={{
-                        background: "#4a7c59", color: "#fff", border: "none",
-                        padding: "6px 16px", borderRadius: 50, fontSize: 11,
-                        fontFamily: "'Helvetica Neue', sans-serif", fontWeight: 700,
-                        letterSpacing: "0.05em", cursor: "pointer",
-                    }}>
-                        🔔 Enable Notifications
-                    </button>
-                )}
-                {notifyStatus === 'granted' && (
-                    <span style={{ fontSize: 12, color: "#4a7c59", fontFamily: "'Helvetica Neue', sans-serif" }}>
-                        🔔 Notifications Enabled
-                    </span>
-                )}
-            </div> */}
-
-            <div>
-                <Header />
-            </div>
-
+            {!hideHeader && (
+                <div>
+                    <Header />
+                </div>
+            )}
 
             {/* Grid */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "center" }}>
@@ -192,8 +146,34 @@ export default function PlantGrid() {
                         onDelete={handleDelete}
                     />
                 ))}
-                <AddPlantCard onClick={() => navigate("/plants/add")} />
+                {/* Only show AddPlantCard in the standalone full grid, not in room view */}
+                {!isControlled && <AddPlantCard onClick={() => navigate("/plants/add")} />}
             </div>
         </div>
     );
 }
+
+{/* Header */}
+            {/* <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 6 }}>
+                <p style={{
+                    color: "#8a9e80", fontSize: 14,
+                    fontFamily: "'Helvetica Neue', sans-serif",
+                    margin: 0, fontStyle: "italic",
+                }}>{plants.length} plants in your collection</p>
+
+                {notifyStatus === 'default' && (
+                    <button onClick={enableNotifications} style={{
+                        background: "#4a7c59", color: "#fff", border: "none",
+                        padding: "6px 16px", borderRadius: 50, fontSize: 11,
+                        fontFamily: "'Helvetica Neue', sans-serif", fontWeight: 700,
+                        letterSpacing: "0.05em", cursor: "pointer",
+                    }}>
+                        🔔 Enable Notifications
+                    </button>
+                )}
+                {notifyStatus === 'granted' && (
+                    <span style={{ fontSize: 12, color: "#4a7c59", fontFamily: "'Helvetica Neue', sans-serif" }}>
+                        🔔 Notifications Enabled
+                    </span>
+                )}
+            </div> */}

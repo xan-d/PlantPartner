@@ -4,6 +4,7 @@ import { API_URL } from '../config';
 import Header from '../components/Header';
 import { getTopThirstyPlants, daysSince, daysUntil } from '../utils/plantHelpers';
 import '../styleSheets/Dashboard.css';
+import RoomGrid from '../components/RoomGrid';
 
 export default function Dashboard() {
     const [plants, setPlants] = useState([]);
@@ -24,7 +25,6 @@ export default function Dashboard() {
 
                 const plantsData = plantsRes.ok ? await plantsRes.json() : [];
                 const statsData = statsRes.ok ? await statsRes.json() : { timesWatered: 0, inspectionDueDate: null };
-
 
                 console.log('plants:', plantsData);
                 console.log('stats:', statsData);
@@ -76,7 +76,10 @@ export default function Dashboard() {
                     ))}
                 </div>
 
-                {/* Bottom Grid */}
+                {/* Rooms — full width, prime real estate */}
+                <RoomGrid plants={plants} />
+
+                {/* Bottom row — two cards side by side */}
                 <div className="dashboard-grid">
 
                     {/* Top 5 Thirsty Plants */}
