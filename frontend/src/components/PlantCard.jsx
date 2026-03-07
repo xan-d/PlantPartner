@@ -84,7 +84,7 @@ export default function PlantCard({ plant, onWater, onDelete }) {
                             <div className="card-name-row">
                                 <div className="card-color-bar" style={{ backgroundColor: plant.color }} />
                                 <div className="card-name-content">
-                                    <div className="card-name">{truncateText(plant.name, 12)}</div>
+                                    <div className="card-name">{truncateText(plant.name, 18)}</div>
                                     <div className="card-scientific">{plant.scientific}</div>
                                 </div>
                             </div>
@@ -167,7 +167,7 @@ export default function PlantCard({ plant, onWater, onDelete }) {
                 <div className="card-face card-back">
                     <div className="card-back-header" style={{ background: plant.color || "#4a7c59" }}>
                         <div>
-                            <div className="card-back-title">{truncateText(plant.name, 12)}</div>
+                            <div className="card-back-title">{truncateText(plant.name, 18)}</div>
                             <div className="card-back-subtitle">Care Guide</div>
                         </div>
                         <button
