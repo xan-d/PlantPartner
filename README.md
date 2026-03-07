@@ -26,6 +26,11 @@ A plant care tracking web app built with React, Node.js, and MySQL.
 - add filter options on plant grid
 - add PL/SQL to prevent SQL injections
 - ~~add header bar for nav, filter, and logo~~
+- make plants grouped by room on dashboard
+  - if user clicks room, opens only those plants
+  - tint card based on overall rooms health
+    - write calc for overall room health in plantHelper.js
+    - tint card based on (adjustable) values
 
 ## Introduction and Overview
 
