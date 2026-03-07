@@ -20,28 +20,10 @@ export default function Home() {
             <div style={{ fontSize: 72, marginBottom: 16, lineHeight: 1 }}>🌿</div>
 
             {/* Title */}
-            <h1 style={{
-                fontSize: 48,
-                color: '#2d3a28',
-                margin: '0 0 12px',
-                fontWeight: 700,
-                letterSpacing: '-0.02em',
-            }}>
-                PlantPartner
-            </h1>
+            <h1 className="app-title">PlantPartner</h1>
 
             {/* Subtitle */}
-            <p style={{
-                fontSize: 18,
-                color: '#6b7c60',
-                fontStyle: 'italic',
-                margin: '0 0 40px',
-                maxWidth: 340,
-                lineHeight: 1.6,
-                fontFamily: "'Georgia', serif",
-            }}>
-                Keep your plants happy, one drop at a time.
-            </p>
+            <p className="app-subtitle">Keep your plants happy, one drop at a time.</p>
 
             {/* CTA Button */}
             <Link to="/login" style={{
@@ -72,6 +54,6 @@ export default function Home() {
             </Link>
 
         </div>
-        
+
     );
 }

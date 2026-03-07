@@ -1,15 +1,20 @@
 import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
+
+// components
 import PlantCard from "../components/PlantCard";
 import AddPlantCard from "../components/AddPlantCard";
+import Header from "../components/Header";
+
+//utils
+import { daysSince } from '../utils/plantHelpers';
 
 export default function PlantGrid() {
     const navigate = useNavigate();
     const [plants, setPlants] = useState([]);
 
-    // add this hook at the top of your component
-    const [notifyStatus, setNotifyStatus] = useState('default'); // 'default' | 'granted' | 'denied'
+    const [notifyStatus, setNotifyStatus] = useState('default');
 
     useEffect(() => {
         if ('Notification' in window) {
@@ -27,16 +32,16 @@ export default function PlantGrid() {
             }
 
             const reg = await navigator.serviceWorker.ready;
-            alert('SW ready: ' + reg.active?.state);
+            //alert('SW ready: ' + reg.active?.state);
 
             const { publicKey } = await fetch(`${API_URL}/api/push/vapid-public-key`).then(r => r.json());
-            alert('Got public key');
+            //alert('Got public key');
 
             const subscription = await reg.pushManager.subscribe({
                 userVisibleOnly: true,
                 applicationServerKey: publicKey
             });
-            alert('Subscribed: ' + subscription.endpoint);
+            //alert('Subscribed: ' + subscription.endpoint);
 
             const res = await fetch(`${API_URL}/api/push/subscribe`, {
                 method: 'POST',
@@ -45,7 +50,7 @@ export default function PlantGrid() {
                 body: JSON.stringify(subscription)
             });
             const data = await res.json();
-            alert('Result: ' + JSON.stringify(data));
+            //alert('Result: ' + JSON.stringify(data));
         } catch (err) {
             alert('Error: ' + err.message);
         }
@@ -58,13 +63,13 @@ export default function PlantGrid() {
     async function fetchPlants() {
         try {
             const res = await fetch(`${API_URL}/api/plants`, { credentials: 'include' });
-            if (!res.ok) {
-                console.error("Failed to fetch plants", res.status);
-                setPlants([]);
-                return;
-            }
+            if (!res.ok) { setPlants([]); return; }
             const data = await res.json();
-            setPlants(data);
+            setPlants(data.sort((a, b) => {
+                const urgencyA = daysSince(a.lastWatered) / a.waterFreq;
+                const urgencyB = daysSince(b.lastWatered) / b.waterFreq;
+                return urgencyB - urgencyA;
+            }));
         } catch (err) {
             console.error(err);
             setPlants([]);
@@ -78,6 +83,14 @@ export default function PlantGrid() {
                 method: "PUT"
             });
             if (!res.ok) return;
+
+            // increment global(user scope) watered count
+            await fetch(`${API_URL}/api/user/stats`, {
+                method: 'PATCH',
+                headers: { 'Content-Type': 'application/json' },
+                credentials: 'include',
+                body: JSON.stringify({ incrementWatered: true }),
+            });
 
             setPlants(prev =>
                 prev
@@ -108,15 +121,10 @@ export default function PlantGrid() {
 
     return (
         <div style={{
-            minHeight: "97vh",
-            borderRadius: 15,
-            background: "#f2efe8",
-            backgroundImage: "radial-gradient(circle at 20% 20%, #e8f0e0 0%, transparent 60%), radial-gradient(circle at 80% 80%, #e0eae8 0%, transparent 60%)",
-            padding: "24px 0px",
             fontFamily: "'Georgia', serif",
         }}>
             {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 6 }}>
+            {/* <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 6 }}>
                 <p style={{
                     color: "#8a9e80", fontSize: 14,
                     fontFamily: "'Helvetica Neue', sans-serif",
@@ -135,10 +143,15 @@ export default function PlantGrid() {
                 )}
                 {notifyStatus === 'granted' && (
                     <span style={{ fontSize: 12, color: "#4a7c59", fontFamily: "'Helvetica Neue', sans-serif" }}>
-                        ✓ Notifications on
+                        🔔 Notifications Enabled
                     </span>
                 )}
+            </div> */}
+
+            <div>
+                <Header />
             </div>
+
 
             {/* Grid */}
             <div style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "center" }}>

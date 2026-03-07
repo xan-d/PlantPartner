@@ -1,0 +1,207 @@
+.dashboard {
+    font-family: 'Georgia', serif;
+}
+
+.dashboard-loading {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    font-family: 'Helvetica Neue', sans-serif;
+    color: #6b7c60;
+    font-size: 14px;
+}
+
+.dashboard-content {
+    padding: 24px;
+    max-width: 1000px;
+    margin: 0 auto;
+}
+
+/* Stat Cards */
+.stat-grid {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 16px;
+    margin-bottom: 24px;
+}
+
+.stat-card {
+    background: #faf8f3;
+    border: 1.5px solid #e8e2d4;
+    border-radius: 16px;
+    padding: 20px;
+    text-align: center;
+    box-shadow: 0 2px 12px rgba(60,80,40,0.07);
+    transition: transform 0.18s, box-shadow 0.18s;
+}
+
+.stat-card:hover {
+    transform: translateY(-3px);
+    box-shadow: 0 6px 20px rgba(60,80,40,0.12);
+}
+
+.stat-icon {
+    font-size: 28px;
+    margin-bottom: 8px;
+}
+
+.stat-value {
+    font-size: 32px;
+    font-weight: 700;
+    color: #2d3a28;
+    letter-spacing: -0.02em;
+}
+
+.stat-label {
+    font-size: 11px;
+    color: #8a9e80;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    margin-top: 4px;
+}
+
+/* Bottom grid */
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.dashboard-section {
+    background: #faf8f3;
+    border: 1.5px solid #e8e2d4;
+    border-radius: 16px;
+    padding: 20px;
+    box-shadow: 0 2px 12px rgba(60,80,40,0.07);
+}
+
+.section-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #2d3a28;
+    margin: 0 0 16px;
+    letter-spacing: -0.01em;
+}
+
+.section-empty {
+    font-size: 13px;
+    color: #8a9e80;
+    font-style: italic;
+    font-family: 'Helvetica Neue', sans-serif;
+}
+
+/* Thirsty list */
+.thirsty-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.thirsty-item {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 8px 10px;
+    border-radius: 10px;
+    border: 1px solid #e8e2d4;
+    background: #fff;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.thirsty-item:hover {
+    background: #f0ede5;
+}
+
+.thirsty-img {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    object-fit: cover;
+    flex-shrink: 0;
+}
+
+.thirsty-info {
+    flex: 1;
+}
+
+.thirsty-name {
+    font-size: 13px;
+    font-weight: 700;
+    color: #2d3a28;
+}
+
+.thirsty-meta {
+    font-size: 11px;
+    color: #8a9e80;
+    font-family: 'Helvetica Neue', sans-serif;
+    margin-top: 2px;
+}
+
+.thirsty-badge {
+    font-size: 10px;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 700;
+    padding: 3px 8px;
+    border-radius: 20px;
+    flex-shrink: 0;
+}
+
+.thirsty-badge.overdue {
+    background: #fdecea;
+    color: #e0654a;
+}
+
+.thirsty-badge.upcoming {
+    background: #eaf5ee;
+    color: #4a7c59;
+}
+
+/* Inspection */
+.inspection-info {
+    margin-bottom: 20px;
+}
+
+.inspection-countdown {
+    font-size: 28px;
+    font-weight: 700;
+    color: #2d3a28;
+    letter-spacing: -0.02em;
+    margin-bottom: 4px;
+}
+
+.inspection-date {
+    font-size: 12px;
+    color: #8a9e80;
+    font-family: 'Helvetica Neue', sans-serif;
+}
+
+.inspection-set {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.inspection-label {
+    font-size: 11px;
+    font-family: 'Helvetica Neue', sans-serif;
+    color: #6b7c60;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+}
+
+.inspection-input {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1.5px solid #e8e2d4;
+    background: #f5f3ee;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 13px;
+    color: #2d3a28;
+    outline: none;
+    cursor: pointer;
+}

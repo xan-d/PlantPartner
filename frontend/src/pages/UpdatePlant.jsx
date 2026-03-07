@@ -3,6 +3,9 @@ import { useNavigate, useParams } from 'react-router-dom';
 import { API_URL } from '../config';
 import '../App.css';
 
+// UTILS
+import { daysSince } from '../utils/plantHelpers';
+
 const FIELD_STYLE = {
     width: '100%',
     padding: '8px 12px',
@@ -64,9 +67,9 @@ export default function UpdatePlant() {
                     scientific: plant.scientific || '',
                     room: plant.room || '',
                     light: plant.light || 'Indirect',
-                    lastWatered: plant.lastWatered ?? '',
+                    lastWatered: daysSince(plant.lastWatered),
                     waterFreq: plant.waterFreq ?? '',
-                    lastFed: plant.lastFed ?? '',
+                    lastFed: daysSince(plant.lastFed),
                     health: plant.health || 'happy',
                     careLink: plant.careLink || '',
                     color: plant.color || '#4a7c59',

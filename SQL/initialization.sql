@@ -33,7 +33,9 @@ CREATE TABLE
         email VARCHAR(255) NOT NULL UNIQUE,
         passwordHash VARCHAR(255) NOT NULL,
         displayName VARCHAR(255),
-        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP
+        createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
+        timesWatered INT DEFAULT 0,
+        inspectionDueDate DATE NULL
     ) ENGINE = InnoDB;
 
 --

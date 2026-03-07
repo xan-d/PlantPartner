@@ -6,6 +6,7 @@ import Home from "./pages/Home";
 import UpdatePlant from './pages/UpdatePlant';
 import Login from './pages/Login';
 import Register from './pages/Register';
+import Dashboard from './pages/Dashboard';
 
 export default function App() {
     return (
@@ -18,6 +19,7 @@ export default function App() {
                     <Route path="/plants" element={<PlantGrid />} />
                     <Route path="/plants/add" element={<AddPlant />} />
                     <Route path="/plants/:id/edit" element={<UpdatePlant />} />
+                    <Route path="/dashboard" element={<Dashboard />} />
                 </Routes>
             </main>
         </div>
