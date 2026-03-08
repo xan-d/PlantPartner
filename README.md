@@ -28,7 +28,7 @@ A plant care tracking web app built with React, Node.js, and MySQL.
 - ~~add header bar for nav, filter, and logo~~
 - ~~make plants grouped by room on dashboard~~
   - ~~if user clicks room, opens only those plants~~
-- Limit row count to prevent scrolling, add arrow on sides to navigate "pages" of plants
+- ~~Limit row count to prevent scrolling, add arrow on sides to navigate "pages" of plants~~
 
 ## Introduction and Overview
 
