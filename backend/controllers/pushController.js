@@ -11,33 +11,72 @@ exports.getVapidPublicKey = (req, res) => {
     res.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
 };
 
+// exports.subscribe = async (req, res) => {
+//     console.log('subscribe hit!');
+//     const { endpoint, keys } = req.body;
+//     const userID = req.session.userID;
+
+//     if (!userID) return res.status(401).json({ error: 'Not logged in' });
+
+//     try {
+//         const result = await db.promise().query(
+//             'INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (?,?,?,?)',
+//             [userID, endpoint, keys.p256dh, keys.auth]
+//         );
+//         console.log('insert result:', result[0].insertId);
+
+//         const [check] = await db.promise().query(
+//             'SELECT * FROM push_subscriptions WHERE id = ?', [result[0].insertId]
+//         );
+//         console.log('check:', check);
+
+//         res.json({ success: true });
+//     } catch (err) {
+//         console.error('Insert error:', err.message);
+//         res.status(500).json({ error: err.message });
+//     }
+// };
+
 exports.subscribe = async (req, res) => {
-    console.log('subscribe hit!');
     const { endpoint, keys } = req.body;
     const userID = req.session.userID;
-
     if (!userID) return res.status(401).json({ error: 'Not logged in' });
 
     try {
-        const result = await db.promise().query(
+        // Delete any existing sub for this endpoint regardless of user
+        await db.promise().query(
+            'DELETE FROM push_subscriptions WHERE endpoint = ?', [endpoint]
+        );
+        await db.promise().query(
             'INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (?,?,?,?)',
             [userID, endpoint, keys.p256dh, keys.auth]
         );
-        console.log('insert result:', result[0].insertId);
-
-        const [check] = await db.promise().query(
-            'SELECT * FROM push_subscriptions WHERE id = ?', [result[0].insertId]
-        );
-        console.log('check:', check);
-
         res.json({ success: true });
     } catch (err) {
-        console.error('Insert error:', err.message);
         res.status(500).json({ error: err.message });
     }
 };
+exports.unsubscribe = async (req, res) => {
+    const { endpoint } = req.body;
+    await db.promise().query(
+        'DELETE FROM push_subscriptions WHERE endpoint = ?', [endpoint]
+    );
+    res.json({ success: true });
+};
 
-exports.sendWateringNotifications = async () => {
+exports.sendWateringNotifications = async (userID = null) => {
+    let query = `
+        SELECT p.name, p.userID as user_id
+        FROM Plants p
+        WHERE DATE_ADD(p.lastWatered, INTERVAL p.waterFreq DAY) <= CURDATE()
+    `;
+    const params = [];
+
+    if (userID) {
+        query += ' AND p.userID = ?';
+        params.push(userID);
+    }
+
     const [rows] = await db.promise().query(`
         SELECT p.name, p.userID as user_id
         FROM Plants p

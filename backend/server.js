@@ -6,7 +6,6 @@ const path = require('path');
 const session = require('express-session');
 const MySQLStore = require('express-mysql-session')(session);
 const db = require('./db');
-const cron = require('node-cron');
 
 const plantCardsRoutes = require('./routes/plantCard');
 const authRoutes = require('./routes/auth');
@@ -54,7 +53,23 @@ app.use('/api/auth', authRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/user/stats', userStatsRoutes);
 
-cron.schedule('0 8 * * *', sendWateringNotifications);
+setInterval(async () => {
+    const now = new Date();
+    const currentTime = `${String(now.getHours()).padStart(2, '0')}:${String(now.getMinutes()).padStart(2, '0')}`;
+    console.log('Checking notifications for time:', currentTime);
+
+    try {
+        const [users] = await db.promise().query(
+            'SELECT userID FROM Users WHERE notify_time = ?', [currentTime]
+        );
+        console.log('Users matched:', users.length);
+        for (const user of users) {
+            await sendWateringNotifications(user.userID);
+        }
+    } catch (err) {
+        console.error('Notification check error:', err);
+    }
+}, 60 * 1000);
 
 if (process.env.NODE_ENV === 'production') {
     app.use(express.static(path.join(__dirname, '../frontend/dist')));

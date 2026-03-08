@@ -1,11 +1,11 @@
 .plant-card {
-    width: 220px;
-    height: 320px;
+    width: var(--card-width, 220px);
+    height: var(--card-height, 320px);
     perspective: 1000px;
     font-family: 'Georgia', 'Times New Roman', serif;
     cursor: pointer;
+    padding: var(--card-padding, 4px);
 }
-
 .plant-card.is-flipped {
     cursor: default;
 }
@@ -20,7 +20,7 @@
 
 .flip-container {
     width: 100%;
-    height: 320px;
+    height: var(--card-height, 320px);
     position: relative;
     transform-style: preserve-3d;
     transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
@@ -323,4 +323,121 @@
     font-size: 11px;
     margin-top: 30px;
     padding: 0 8px;
+}
+
+.card-notes-section {
+    margin-bottom: 10px;
+}
+
+.card-notes-toggle {
+    width: 100%;
+    background: none;
+    border: none;
+    border-radius: 8px;
+    padding: 6px 10px;
+    text-align: left;
+    font-size: 10px;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 700;
+    color: #8a9e80;
+    cursor: pointer;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: #eef4ec;
+    transition: background 0.15s;
+}
+
+.card-notes-toggle:hover {
+    background: #e2ede0;
+}
+
+.card-notes-toggle::after {
+    content: '›';
+    font-size: 14px;
+    transition: transform 0.2s;
+    line-height: 1;
+}
+
+.card-notes-body.open ~ * .card-notes-toggle::after,
+.card-notes-toggle.open::after {
+    transform: rotate(90deg);
+}
+
+.card-notes-body.open {
+    display: flex;
+}
+
+.card-notes-toggle:hover {
+    background: #f0ede5;
+}
+
+.card-notes-body {
+    display: none;
+    padding: 6px 6px;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.card-notes-body.open {
+    display: flex;
+}
+
+.card-notes-input {
+    width: 100%;
+    min-height: 24px;
+    border: 1px solid transparent;
+    border-radius: 10px;
+    padding: 4px 10px;
+    font-size: 14px;
+    letter-spacing: -.04rem;
+    font-family: 'Kalam';
+    color: #2c4223;
+    font-weight: 700;
+    background: #d3dfcf;
+    outline: none;
+    box-sizing: border-box;
+    line-height: 1.5;
+    cursor: text;
+    transition: background 0.2s, border-color 0.2s;
+    white-space: pre-wrap;
+    word-break: break-word;
+}
+
+.card-notes-input.editing {
+    background: #fff;
+    border-color: #a8c4a8;
+    min-height: 70px;
+}
+
+.card-notes-input:empty:before {
+    content: attr(data-placeholder);
+    color: #bbb;
+    pointer-events: none;
+}
+
+.card-notes-footer {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.card-notes-count {
+    font-size: 10px;
+    color: #aaa;
+    font-family: 'Helvetica Neue', sans-serif;
+}
+
+.card-notes-save {
+    background: #4a7c59;
+    color: #fff;
+    border: none;
+    padding: 4px 12px;
+    border-radius: 6px;
+    font-size: 11px;
+    font-family: 'Helvetica Neue', sans-serif;
+    font-weight: 700;
+    cursor: pointer;
 }

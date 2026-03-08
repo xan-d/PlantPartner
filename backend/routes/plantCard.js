@@ -8,6 +8,7 @@ router.get('/care-preview', requireAuth, plantCardController.getPlantCarePreview
 router.get('/proxy-image', requireAuth, plantCardController.proxyImage);
 router.get('/:id/care', requireAuth, plantCardController.getPlantCare);
 router.put('/:id/water', requireAuth, plantCardController.waterPlant);
+router.patch('/:id/notes', requireAuth, plantCardController.updateNotes);
 router.get('/:id', requireAuth, plantCardController.getPlantById);
 router.post('/', requireAuth, plantCardController.upload.single('image'), plantCardController.createPlant);
 router.put('/:id', requireAuth, plantCardController.upload.single('image'), plantCardController.updatePlant);

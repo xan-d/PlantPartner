@@ -35,7 +35,8 @@ CREATE TABLE
         displayName VARCHAR(255),
         createdAt TIMESTAMP DEFAULT CURRENT_TIMESTAMP,
         timesWatered INT DEFAULT 0,
-        inspectionDueDate DATE NULL
+        inspectionDueDate DATE NULL,
+        notify_time VARCHAR(5) DEFAULT '08:00'
     ) ENGINE = InnoDB;
 
 --
@@ -56,6 +57,7 @@ CREATE TABLE
         health VARCHAR(50),
         careLink VARCHAR(500),
         color VARCHAR(7),
+        notes TEXT NULL,
         FOREIGN KEY (userID) REFERENCES Users (userID)
     ) ENGINE = InnoDB;
 

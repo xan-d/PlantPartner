@@ -45,7 +45,7 @@ export default function Dashboard() {
     const daysUntilInspection = stats.inspectionDueDate ? daysUntil(stats.inspectionDueDate) : null;
 
     const statCards = [
-        { icon: '🌿', label: 'Total Plants', value: plants.length },
+        { icon: '🌿', label: 'Total Plants', value: plants.length, onClick: () => navigate('/plants') },
         { icon: '💧', label: 'Times Watered', value: stats.timesWatered },
         { icon: '🚨', label: 'Overdue for Water', value: overdueCount },
         { icon: '🔍', label: 'Days Until Inspection', value: daysUntilInspection ?? '—' },
@@ -68,7 +68,11 @@ export default function Dashboard() {
                 {/* Stat Cards Grid */}
                 <div className="stat-grid">
                     {statCards.map(card => (
-                        <div key={card.label} className="stat-card">
+                        <div
+                            key={card.label}
+                            className={`stat-card ${card.onClick ? 'stat-card-clickable' : ''}`}
+                            onClick={card.onClick}
+                        >
                             <div className="stat-icon">{card.icon}</div>
                             <div className="stat-value">{card.value}</div>
                             <div className="stat-label">{card.label}</div>
@@ -140,6 +144,7 @@ export default function Dashboard() {
                         ) : (
                             <p className="section-empty">No inspection date set.</p>
                         )}
+
                         <div className="inspection-set">
                             <label className="inspection-label">Set next inspection date</label>
                             <input
@@ -157,6 +162,32 @@ export default function Dashboard() {
                                     });
                                 }}
                             />
+                        </div>
+
+                        {/* Divider */}
+                        <div className="inspection-divider" />
+
+                        {/* Notification time */}
+                        <div className="inspection-set">
+                            <label className="inspection-label">🔔 Daily notification time</label>
+                            <input
+                                type="time"
+                                className="inspection-input"
+                                value={stats.notifyTime || '08:00'}
+                                onChange={async (e) => {
+                                    const newTime = e.target.value;
+                                    setStats(prev => ({ ...prev, notifyTime: newTime }));
+                                    await fetch(`${API_URL}/api/user/stats`, {
+                                        method: 'PATCH',
+                                        headers: { 'Content-Type': 'application/json' },
+                                        credentials: 'include',
+                                        body: JSON.stringify({ notifyTime: newTime }),
+                                    });
+                                }}
+                            />
+                            <span className="inspection-hint">
+                                You'll get watering reminders at this time each day
+                            </span>
                         </div>
                     </div>
 

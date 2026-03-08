@@ -21,6 +21,10 @@ export default function PlantCard({ plant, onWater, onDelete }) {
     const status = waterStatus(daysSinceWatered, plant.waterFreq);
     const waterPct = Math.min(100, Math.round((daysSinceWatered / plant.waterFreq) * 100));
     const plantColor = greenShades[plant.plantID % greenShades.length];
+    const [notes, setNotes] = useState(plant.notes || '');
+    const [notesSaved, setNotesSaved] = useState(false);
+    const [notesEditing, setNotesEditing] = useState(false);
+    const notesRef = useRef(null);
 
     function handleWater() {
         setWatered(true);
@@ -131,8 +135,8 @@ export default function PlantCard({ plant, onWater, onDelete }) {
                                     style={{
                                         background: pendingWater ? "#b65c5c"
                                             : watered ? "#5aaa72"
-                                            : status.urgent ? "#e0654a"
-                                            : plantColor,
+                                                : status.urgent ? "#e0654a"
+                                                    : plantColor,
                                     }}
                                     onClick={() => {
                                         if (pendingWater) {
@@ -166,6 +170,7 @@ export default function PlantCard({ plant, onWater, onDelete }) {
                 {/* ── BACK ── */}
                 <div className="card-face card-back">
                     <div className="card-back-header" style={{ background: plant.color || "#4a7c59" }}>
+
                         <div>
                             <div className="card-back-title">{truncateText(plant.name, 18)}</div>
                             <div className="card-back-subtitle">Care Guide</div>
@@ -177,6 +182,62 @@ export default function PlantCard({ plant, onWater, onDelete }) {
                     </div>
 
                     <div className="card-back-body">
+                        {/* Notes section */}
+                        <div className="card-notes-section" onClick={e => e.stopPropagation()}>
+                            <button
+                                className="card-notes-toggle"
+                                onClick={(e) => {
+                                    const body = document.getElementById(`notes-${plant.plantID}`);
+                                    body.classList.toggle('open');
+                                    e.currentTarget.classList.toggle('open');
+                                }}
+                            >
+                                📝 Notes
+                            </button>
+                            <div id={`notes-${plant.plantID}`} className="card-notes-body">
+                                <div
+                                    ref={notesRef}
+                                    className="card-notes-input"
+                                    contentEditable
+                                    suppressContentEditableWarning
+                                    data-placeholder="Add a quick note..."
+                                    onFocus={() => { notesRef.current.classList.add('editing'); setNotesEditing(true); }}
+                                    onBlur={() => {
+                                        notesRef.current.classList.remove('editing');
+                                        setNotes(notesRef.current.innerText);
+                                        setNotesSaved(false);
+                                        setNotesEditing(false);
+                                    }}
+                                >
+                                    {notes}
+                                </div>
+                                {notesEditing && (
+                                    <div className="card-notes-footer">
+                                        <span className="card-notes-count">{notes.length}/300</span>
+                                        <button
+                                            className="card-notes-save"
+                                            onMouseDown={async (e) => {
+                                                e.preventDefault();
+                                                const currentNotes = notesRef.current.innerText;
+                                                await fetch(`${API_URL}/api/plants/${plant.plantID}/notes`, {
+                                                    method: 'PATCH',
+                                                    headers: { 'Content-Type': 'application/json' },
+                                                    credentials: 'include',
+                                                    body: JSON.stringify({ notes: currentNotes }),
+                                                });
+                                                setNotes(currentNotes);
+                                                setNotesSaved(false);
+                                                setNotesEditing(false);
+                                                notesRef.current.classList.remove('editing');
+                                                notesRef.current.blur();
+                                            }}
+                                        >
+                                            {notesSaved ? '✓ Saved!' : 'Save'}
+                                        </button>
+                                    </div>
+                                )}
+                            </div>
+                        </div>
                         {careLoading && (
                             <div className="care-loading">🌱 Loading care info...</div>
                         )}

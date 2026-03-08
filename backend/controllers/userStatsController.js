@@ -3,7 +3,7 @@ const db = require('../db');
 async function getStats(req, res) {
     try {
         const [rows] = await db.promise().query(
-            'SELECT timesWatered, inspectionDueDate FROM Users WHERE userID = ?',
+            'SELECT timesWatered, inspectionDueDate, notify_time AS notifyTime FROM Users WHERE userID = ?',
             [req.session.userID]
         );
         if (!rows.length) return res.status(404).json({ error: 'User not found' });
@@ -16,7 +16,7 @@ async function getStats(req, res) {
 
 async function updateStats(req, res) {
     try {
-        const { inspectionDueDate, incrementWatered } = req.body;
+        const { inspectionDueDate, incrementWatered, notifyTime } = req.body;
 
         if (incrementWatered) {
             await db.promise().query(
@@ -32,8 +32,15 @@ async function updateStats(req, res) {
             );
         }
 
+        if (notifyTime !== undefined) {
+            await db.promise().query(
+                'UPDATE Users SET notify_time = ? WHERE userID = ?',
+                [notifyTime, req.session.userID]
+            );
+        }
+
         const [rows] = await db.promise().query(
-            'SELECT timesWatered, inspectionDueDate FROM Users WHERE userID = ?',
+            'SELECT timesWatered, inspectionDueDate, notify_time AS notifyTime FROM Users WHERE userID = ?',
             [req.session.userID]
         );
         res.json(rows[0]);

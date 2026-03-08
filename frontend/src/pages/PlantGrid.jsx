@@ -1,4 +1,4 @@
-import React, { useState, useEffect } from "react";
+import React, { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 
@@ -21,6 +21,18 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
     //limit plants
     const [page, setPage] = useState(0);
     const PLANTS_PER_PAGE = 6;
+
+    // Add this near your other useState hooks
+    const SIZES = [
+        { label: '1', width: 'min(90vw, 320px)', height: '380px', gap: 6 },
+        { label: '2', width: 'min(45vw, 320px)', height: '360px', gap: 4 },
+        { label: '3', width: 'min(30vw, 260px)', height: '340px', gap: 2 },
+    ];
+    const [sizeIdx, setSizeIdx] = useState(1);
+    const size = SIZES[sizeIdx];
+    const [cardPadding, setCardPadding] = useState(4);
+
+    const gridTopRef = useRef(null);
 
     // Use external plants if provided, otherwise use internal state
     const isControlled = Array.isArray(externalPlants);
@@ -107,7 +119,7 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
     }
 
     return (
-        <div style={{ fontFamily: "'Georgia', serif" }}>
+        <div ref={gridTopRef} style={{ fontFamily: "'Georgia', serif" }}>
 
             {!hideHeader && (
                 <div>
@@ -115,10 +127,40 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
                 </div>
             )}
 
-            {/* Grid */}
-            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+            {/* Size toggle */}
+            <div style={{ display: 'flex', alignItems: 'center', gap: 14, marginLeft: 20, marginBottom: 10 }}>
+                <span style={{ fontSize: 11, color: '#8a9e80', letterSpacing: '0.06em', textTransform: 'uppercase', fontWeight: 700 }}>
+                    Size
+                </span>
+                {SIZES.map((s, i) => (
+                    <button
+                        key={s.label}
+                        onClick={() => setSizeIdx(i)}
+                        style={{
+                            width: 28, height: 28, borderRadius: 6,
+                            border: '1.5px solid ' + (sizeIdx === i ? '#4a7c59' : '#e8e2d4'),
+                            background: sizeIdx === i ? '#4a7c59' : '#faf8f3',
+                            color: sizeIdx === i ? '#fff' : '#6b7c60',
+                            fontSize: 11, fontWeight: 700, cursor: 'pointer',
+                        }}
+                    >
+                        {s.label}
+                    </button>
+                ))}
+            </div>
 
-                <div style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "center" }}>
+            {/* Grid */}
+            <div style={{
+                display: "flex",
+                flexWrap: "wrap",
+                gap: 16,
+                justifyContent: "center",
+                '--card-width': size.width,
+                '--card-height': size.height,
+                '--card-padding': `${cardPadding}px`,
+            }}>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: size.gap, justifyContent: "center" }}>
                     {plants.length === 0 && (
                         <div style={{
                             display: "flex", flexDirection: "column", alignItems: "center",
@@ -165,9 +207,12 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
 
                 {/* Pagination arrows */}
                 {plants.length > PLANTS_PER_PAGE && (
-                    <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 24, marginBottom: 24 }}>
                         <button
-                            onClick={() => setPage(p => p - 1)}
+                            onClick={() => {
+                                setPage(p => p - 1);
+                                setTimeout(() => gridTopRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+                            }}
                             disabled={page === 0}
                             style={{
                                 background: 'none', border: 'none', fontSize: 40, cursor: page === 0 ? 'default' : 'pointer',
@@ -178,7 +223,10 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
                             {page + 1} / {Math.ceil(plants.length / PLANTS_PER_PAGE)}
                         </span>
                         <button
-                            onClick={() => setPage(p => p + 1)}
+                            onClick={() => {
+                                setPage(p => p + 1);
+                                setTimeout(() => gridTopRef.current?.scrollIntoView({ behavior: 'smooth' }), 50);
+                            }}
                             disabled={(page + 1) * PLANTS_PER_PAGE >= plants.length}
                             style={{
                                 background: 'none', border: 'none', fontSize: 40,
@@ -190,32 +238,9 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
                     </div>
                 )}
 
+                <div style={{ display: 'flex', alignItems: 'center', gap: 16, fontFamily: "'Helvetica Neue', sans-serif" }}>
+                </div>
             </div>
         </div>
     );
 }
-
-{/* Header */ }
-{/* <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 6 }}>
-                <p style={{
-                    color: "#8a9e80", fontSize: 14,
-                    fontFamily: "'Helvetica Neue', sans-serif",
-                    margin: 0, fontStyle: "italic",
-                }}>{plants.length} plants in your collection</p>
-
-                {notifyStatus === 'default' && (
-                    <button onClick={enableNotifications} style={{
-                        background: "#4a7c59", color: "#fff", border: "none",
-                        padding: "6px 16px", borderRadius: 50, fontSize: 11,
-                        fontFamily: "'Helvetica Neue', sans-serif", fontWeight: 700,
-                        letterSpacing: "0.05em", cursor: "pointer",
-                    }}>
-                        🔔 Enable Notifications
-                    </button>
-                )}
-                {notifyStatus === 'granted' && (
-                    <span style={{ fontSize: 12, color: "#4a7c59", fontFamily: "'Helvetica Neue', sans-serif" }}>
-                        🔔 Notifications Enabled
-                    </span>
-                )}
-            </div> */}

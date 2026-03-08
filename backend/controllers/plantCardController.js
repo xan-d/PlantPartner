@@ -280,3 +280,18 @@ exports.getPlantCare = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
+exports.updateNotes = async (req, res) => {
+    const plantId = req.params.id;
+    const userID = req.session.userID;
+    const { notes } = req.body;
+    try {
+        await db.promise().query(
+            'UPDATE Plants SET notes = ? WHERE plantID = ? AND userID = ?',
+            [notes, plantId, userID]
+        );
+        res.json({ message: 'Notes saved' });
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
