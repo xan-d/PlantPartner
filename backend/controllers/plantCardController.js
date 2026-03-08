@@ -75,7 +75,11 @@ exports.createPlant = async (req, res) => {
         );
         res.status(201).json({ plantID: result.insertId });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('createPlant error:', err.message);
+        if (err.message.includes('Incorrect integer value')) {
+            return res.status(400).json({ error: 'Please enter valid number for Water Every (Days).' });
+        }
+        res.status(500).json({ error: 'Failed to create plant' });
     }
 };
 
@@ -155,6 +159,20 @@ function fetchHTML(url) {
 
 function parseGardenishCare(html) {
     const care = {};
+
+    // Extract h1 for common name
+    const h1Match = html.match(/<h1[^>]*class="[^"]*text-3xl[^"]*"[^>]*>([^<]+)<\/h1>/);
+    if (h1Match) care.commonName = h1Match[1].trim();
+
+    // Extract scientific name from italic paragraph
+    const sciMatch = html.match(/<p[^>]*class="[^"]*italic[^"]*"[^>]*>([^<]+)<\/p>/);
+    if (sciMatch) care.scientificName = sciMatch[1].trim();
+
+    // Extract image - grab the firebase URL from srcset
+    const imgMatch = html.match(/url=(https%3A%2F%2Ffirebasestorage\.googleapis\.com[^&"]+)/);
+    if (imgMatch) care.imageUrl = decodeURIComponent(imgMatch[1]);
+
+
     function extractNear(label) {
         const idx = html.toLowerCase().indexOf(label.toLowerCase());
         if (idx === -1) return null;
@@ -187,6 +205,20 @@ function parseGardenishCare(html) {
     return care;
 }
 
+exports.proxyImage = async (req, res) => {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'No URL provided' });
+    try {
+        const response = await fetch(url);
+        const buffer = await response.arrayBuffer();
+        const contentType = response.headers.get('content-type') || 'image/webp';
+        res.set('Content-Type', contentType);
+        res.send(Buffer.from(buffer));
+    } catch (err) {
+        res.status(500).json({ error: err.message });
+    }
+};
+
 const puppeteer = require('puppeteer');
 
 async function fetchRenderedHTML(url) {
@@ -199,6 +231,27 @@ async function fetchRenderedHTML(url) {
     await browser.close();
     return html;
 }
+
+exports.getPlantCarePreview = async (req, res) => {
+    const { url } = req.query;
+    if (!url) return res.status(400).json({ error: 'No URL provided' });
+    if (!url.startsWith('https://gardenish.co/plants/')) {
+        return res.status(400).json({ error: 'URL must be a gardenish.co/plants/ link' });
+    }
+
+    try {
+        const html = await fetchRenderedHTML(url);
+        const care = parseGardenishCare(html);
+
+        if (Object.keys(care).length === 0) {
+            return res.status(422).json({ error: 'Could not parse care info from that page' });
+        }
+        res.json(care);
+    } catch (err) {
+        console.error('getPlantCarePreview error:', err.message);
+        res.status(500).json({ error: err.message });
+    }
+};
 
 exports.getPlantCare = async (req, res) => {
     const plantId = req.params.id;

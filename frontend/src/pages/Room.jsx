@@ -68,7 +68,7 @@ export default function RoomPage() {
 
                     <div className="room-stat-row">
                         <button className="room-back-btn" onClick={() => navigate('/dashboard')}>
-                            ← Go Back
+                            ↤ Back
                         </button>
                         <div className="room-stat-chip">
                             <span>🌿</span>

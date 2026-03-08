@@ -101,6 +101,45 @@ export default function AddPlant() {
         }
     }
 
+    const [fetching, setFetching] = useState(false);
+
+    async function handleFetchCare() {
+        if (!form.careLink) return;
+        setFetching(true);
+        setError(null);
+        try {
+            // You'll need to pass a plantID, so this is best used on edit — 
+            // for AddPlant, you may want a separate /api/plants/care-preview endpoint
+            const res = await fetch(`${API_URL}/api/plants/care-preview?url=${encodeURIComponent(form.careLink)}`, {
+                credentials: 'include',
+            });
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                setError(body.error || 'Could not fetch care info');
+                return;
+            }
+            const care = await res.json();
+            setForm(prev => ({
+                ...prev,
+                ...(care.commonName && { name: care.commonName }),
+                ...(care.scientificName && { scientific: care.scientificName }),
+                ...(care.sun && { light: care.sun }),
+            }));
+
+            if (care.imageUrl) {
+                setImagePreview(care.imageUrl);
+                const proxyUrl = `${API_URL}/api/plants/proxy-image?url=${encodeURIComponent(care.imageUrl)}`;
+                const blob = await fetch(proxyUrl, { credentials: 'include' }).then(r => r.blob());
+                const file = new File([blob], 'plant-cover.webp', { type: 'image/webp' });
+                setImageFile(file);
+            }
+        } catch (err) {
+            setError('Failed to fetch care info');
+        } finally {
+            setFetching(false);
+        }
+    }
+
     return (
         <div style={{
             minHeight: '100vh',
@@ -217,7 +256,34 @@ export default function AddPlant() {
                     </div>
                     <div style={{ gridColumn: '1 / -1' }}>
                         <label style={LABEL_STYLE}>Care Link</label>
-                        <input name="careLink" value={form.careLink} onChange={handleChange} style={FIELD_STYLE} placeholder="https://..." />
+                        <div style={{ display: 'flex', gap: 8 }}>
+                            <input
+                                name="careLink"
+                                value={form.careLink}
+                                onChange={handleChange}
+                                style={{ ...FIELD_STYLE, flex: 1 }}
+                                placeholder="https://..."
+                            />
+                            <button
+                                onClick={handleFetchCare}
+                                disabled={!form.careLink || fetching}
+                                style={{
+                                    padding: '8px 14px',
+                                    borderRadius: 8,
+                                    border: '1.5px solid #c8d8c0',
+                                    background: fetching ? '#e8f0e0' : '#eef5eb',
+                                    color: '#4a7c59',
+                                    fontFamily: "'Helvetica Neue', sans-serif",
+                                    fontSize: 12,
+                                    fontWeight: 700,
+                                    cursor: form.careLink && !fetching ? 'pointer' : 'not-allowed',
+                                    whiteSpace: 'nowrap',
+                                    opacity: !form.careLink ? 0.5 : 1,
+                                }}
+                            >
+                                {fetching ? '...' : '🔍 Fetch'}
+                            </button>
+                        </div>
                     </div>
                     <div>
                         <label style={LABEL_STYLE}>Card Color</label>

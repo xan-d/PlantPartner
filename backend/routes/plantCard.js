@@ -4,6 +4,8 @@ const plantCardController = require('../controllers/plantCardController');
 const requireAuth = require('../middleware/requireAuth');
 
 router.get('/', requireAuth, plantCardController.getAllPlants);
+router.get('/care-preview', requireAuth, plantCardController.getPlantCarePreview);
+router.get('/proxy-image', requireAuth, plantCardController.proxyImage);
 router.get('/:id/care', requireAuth, plantCardController.getPlantCare);
 router.put('/:id/water', requireAuth, plantCardController.waterPlant);
 router.get('/:id', requireAuth, plantCardController.getPlantById);

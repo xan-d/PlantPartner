@@ -18,6 +18,10 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
     const [internalPlants, setInternalPlants] = useState([]);
     const [notifyStatus, setNotifyStatus] = useState('default');
 
+    //limit plants
+    const [page, setPage] = useState(0);
+    const PLANTS_PER_PAGE = 6;
+
     // Use external plants if provided, otherwise use internal state
     const isControlled = Array.isArray(externalPlants);
     const plants = isControlled ? externalPlants : internalPlants;
@@ -34,6 +38,10 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
             fetchPlants();
         }
     }, [isControlled]);
+
+    useEffect(() => {
+        setPage(0);
+    }, [plants.length]);
 
     async function fetchPlants() {
         try {
@@ -108,53 +116,87 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
             )}
 
             {/* Grid */}
-            <div style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "center" }}>
-                {plants.length === 0 && (
-                    <div style={{
-                        display: "flex", flexDirection: "column", alignItems: "center",
-                        justifyContent: "center", gap: 16, padding: "40px 24px",
-                        background: "#faf8f3", borderRadius: 18, border: "1.5px dashed #c8d8c0",
-                        width: 220, minHeight: 320, textAlign: "center",
-                        fontFamily: "'Georgia', serif",
-                    }}>
-                        <div style={{ fontSize: 48 }}>🌱</div>
-                        <div style={{ fontSize: 16, fontWeight: 700, color: "#2d3a28" }}>
-                            Welcome to PlantPartner!
+            <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center', gap: 16 }}>
+
+                <div style={{ display: "flex", flexWrap: "wrap", gap: 24, justifyContent: "center" }}>
+                    {plants.length === 0 && (
+                        <div style={{
+                            display: "flex", flexDirection: "column", alignItems: "center",
+                            justifyContent: "center", gap: 16, padding: "40px 24px",
+                            background: "#faf8f3", borderRadius: 18, border: "1.5px dashed #c8d8c0",
+                            width: 220, minHeight: 320, textAlign: "center",
+                            fontFamily: "'Georgia', serif",
+                        }}>
+                            <div style={{ fontSize: 48 }}>🌱</div>
+                            <div style={{ fontSize: 16, fontWeight: 700, color: "#2d3a28" }}>
+                                Welcome to PlantPartner!
+                            </div>
+                            <div style={{ fontSize: 12, color: "#8a9e80", fontStyle: "italic", lineHeight: 1.6 }}>
+                                You don't have any plants yet. Add your first one to get started!
+                            </div>
+                            <button
+                                onClick={() => navigate("/plants/add")}
+                                style={{
+                                    background: "#4a7c59", color: "#fff", border: "none",
+                                    padding: "8px 20px", borderRadius: 50, fontSize: 12,
+                                    fontFamily: "'Helvetica Neue', sans-serif", fontWeight: 700,
+                                    letterSpacing: "0.05em", cursor: "pointer",
+                                    boxShadow: "0 4px 12px rgba(74,124,89,0.25)",
+                                }}
+                            >
+                                + Add First Plant
+                            </button>
                         </div>
-                        <div style={{ fontSize: 12, color: "#8a9e80", fontStyle: "italic", lineHeight: 1.6 }}>
-                            You don't have any plants yet. Add your first one to get started!
-                        </div>
+                    )}
+                    {plants
+                        .slice(page * PLANTS_PER_PAGE, (page + 1) * PLANTS_PER_PAGE)
+                        .map(plant => (
+                            <PlantCard
+                                key={plant.plantID}
+                                plant={plant}
+                                onWater={handleWaterPlant}
+                                onDelete={handleDelete}
+                            />
+                        ))}
+                    {!isControlled && page === Math.floor(plants.length / PLANTS_PER_PAGE) && (
+                        <AddPlantCard onClick={() => navigate("/plants/add")} />
+                    )}
+                </div>
+
+                {/* Pagination arrows */}
+                {plants.length > PLANTS_PER_PAGE && (
+                    <div style={{ display: 'flex', alignItems: 'center', gap: 24 }}>
                         <button
-                            onClick={() => navigate("/plants/add")}
+                            onClick={() => setPage(p => p - 1)}
+                            disabled={page === 0}
                             style={{
-                                background: "#4a7c59", color: "#fff", border: "none",
-                                padding: "8px 20px", borderRadius: 50, fontSize: 12,
-                                fontFamily: "'Helvetica Neue', sans-serif", fontWeight: 700,
-                                letterSpacing: "0.05em", cursor: "pointer",
-                                boxShadow: "0 4px 12px rgba(74,124,89,0.25)",
+                                background: 'none', border: 'none', fontSize: 40, cursor: page === 0 ? 'default' : 'pointer',
+                                color: page === 0 ? '#c8d8c0' : '#4a7c59', fontWeight: 700, lineHeight: 1,
                             }}
-                        >
-                            + Add First Plant
-                        </button>
+                        >‹</button>
+                        <span style={{ fontSize: 20, color: '#8a9e80', fontFamily: "'Helvetica Neue', sans-serif" }}>
+                            {page + 1} / {Math.ceil(plants.length / PLANTS_PER_PAGE)}
+                        </span>
+                        <button
+                            onClick={() => setPage(p => p + 1)}
+                            disabled={(page + 1) * PLANTS_PER_PAGE >= plants.length}
+                            style={{
+                                background: 'none', border: 'none', fontSize: 40,
+                                cursor: (page + 1) * PLANTS_PER_PAGE >= plants.length ? 'default' : 'pointer',
+                                color: (page + 1) * PLANTS_PER_PAGE >= plants.length ? '#c8d8c0' : '#4a7c59',
+                                fontWeight: 700, lineHeight: 1,
+                            }}
+                        >›</button>
                     </div>
                 )}
-                {plants.map(plant => (
-                    <PlantCard
-                        key={plant.plantID}
-                        plant={plant}
-                        onWater={handleWaterPlant}
-                        onDelete={handleDelete}
-                    />
-                ))}
-                {/* Only show AddPlantCard in the standalone full grid, not in room view */}
-                {!isControlled && <AddPlantCard onClick={() => navigate("/plants/add")} />}
+
             </div>
         </div>
     );
 }
 
-{/* Header */}
-            {/* <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 6 }}>
+{/* Header */ }
+{/* <div style={{ display: "flex", alignItems: "center", justifyContent: "center", gap: 12, marginTop: 6 }}>
                 <p style={{
                     color: "#8a9e80", fontSize: 14,
                     fontFamily: "'Helvetica Neue', sans-serif",
