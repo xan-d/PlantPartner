@@ -30,6 +30,9 @@ A plant care tracking web app built with React, Node.js, and MySQL.
   - ~~if user clicks room, opens only those plants~~
 - ~~Limit row count to prevent scrolling, add arrow on sides to navigate "pages" of plants~~
 - Google lens api for plant name/info fetching
+- add thirst sorting  on room.jsx
+- make view care infofr easier ot click on mobile
+- include sample url for fetch
 
 ## Introduction and Overview
 
