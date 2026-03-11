@@ -24,16 +24,7 @@ jobs:
           envs: BACKEND_ENV,FRONTEND_ENV
           script: |
             cd /var/www/myapp
-
-            # Write production env files
-            echo "$BACKEND_ENV" > backend/.env
-            echo "$FRONTEND_ENV" > frontend/.env
-
-            # Swap config.js to production mode
-            sed -i 's|const API_URL = import.meta.env.VITE_API_URL.*|const API_URL = "";|' frontend/src/config.js
-
             git pull origin main
-
             npm install --prefix backend
             npm run build --prefix frontend
             pm2 restart plantpartner
