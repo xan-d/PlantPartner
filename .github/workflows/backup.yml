@@ -32,24 +32,47 @@ jobs:
             mysqldump -u root plantpartner 2>/dev/null > /var/backups/plantpartner/backup_$(date +%Y%m%d_%H%M%S).sql
             ls -t /var/backups/plantpartner/*.sql | tail -n +8 | xargs rm -f
 
+            # counts
             PLANTS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM Plants;" 2>/dev/null)
             USERS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM Users;" 2>/dev/null)
             SUBS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM push_subscriptions;" 2>/dev/null)
-            BACKUP_SIZE=$(du -sh /var/backups/plantpartner/$(ls -t /var/backups/plantpartner/ | head -1) | cut -f1)
+            SESSIONS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM sessions;" 2>/dev/null)
+
+            # plant health breakdown
+            HAPPY=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM Plants WHERE health='happy';" 2>/dev/null)
+            OKAY=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM Plants WHERE health='okay';" 2>/dev/null)
+            UNHAPPY=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM Plants WHERE health='unhappy';" 2>/dev/null)
+
+            # most thirsty plant
+            THIRSTIEST=$(mysql -u root -N plantpartner -se "SELECT name FROM Plants ORDER BY (lastWatered - waterFreq) ASC LIMIT 1;" 2>/dev/null)
+
+            # newest user
+            NEWEST_USER=$(mysql -u root -N plantpartner -se "SELECT displayName FROM Users ORDER BY createdAt DESC LIMIT 1;" 2>/dev/null)
+
+            # backup size
+            BACKUP_SIZE=$(du -sh /var/backups/plantpartner/$(ls -t /var/backups/plantpartner/ | head -1) | awk '{print $1}')
+            BACKUP_COUNT=$(ls /var/backups/plantpartner/*.sql | wc -l)
+            TIMESTAMP=$(date '+%Y-%m-%d %H:%M UTC')
 
             curl -H "Content-Type: application/json" \
             -d "{
               \"embeds\": [{
-                \"title\": \"Database Backup Complete\",
-                \"description\": \"plantpartner DB backed up successfully\",
+                \"title\": \"🌿 PlantPartner — Nightly Backup\",
+                \"description\": \"Backup completed successfully at $TIMESTAMP\",
                 \"color\": 3066993,
                 \"fields\": [
-                  {\"name\": \"Plants\", \"value\": \"$PLANTS\", \"inline\": true},
-                  {\"name\": \"Users\", \"value\": \"$USERS\", \"inline\": true},
-                  {\"name\": \"Push Subscriptions\", \"value\": \"$SUBS\", \"inline\": true},
-                  {\"name\": \"Backup Size\", \"value\": \"$BACKUP_SIZE\", \"inline\": true},
-                  {\"name\": \"Retention\", \"value\": \"Last 7 days kept\", \"inline\": true}
-                ]
+                  {\"name\": \"📦 Backup Size\", \"value\": \"$BACKUP_SIZE\", \"inline\": true},
+                  {\"name\": \"🗂️ Backups Stored\", \"value\": \"$BACKUP_COUNT / 7\", \"inline\": true},
+                  {\"name\": \"\u200b\", \"value\": \"\u200b\", \"inline\": true},
+                  {\"name\": \"🌱 Plants\", \"value\": \"$PLANTS total\", \"inline\": true},
+                  {\"name\": \"❤️ Health\", \"value\": \"$HAPPY happy · $OKAY okay · $UNHAPPY unhappy\", \"inline\": true},
+                  {\"name\": \"💧 Thirstiest\", \"value\": \"$THIRSTIEST\", \"inline\": true},
+                  {\"name\": \"👤 Users\", \"value\": \"$USERS\", \"inline\": true},
+                  {\"name\": \"🔔 Push Subs\", \"value\": \"$SUBS\", \"inline\": true},
+                  {\"name\": \"🟢 Sessions\", \"value\": \"$SESSIONS active\", \"inline\": true},
+                  {\"name\": \"🆕 Newest User\", \"value\": \"$NEWEST_USER\", \"inline\": true}
+                ],
+                \"footer\": {\"text\": \"Retention: last 7 days · Next backup in ~24h\"}
               }]
             }" \
             $DISCORD_WEBHOOK_URL
@@ -61,8 +84,9 @@ jobs:
           -d '{
             "embeds": [{
               "title": "🚨 Database Backup Failed",
-              "description": "Check the Actions tab immediately",
-              "color": 15158332
+              "description": "Something went wrong — check the Actions tab immediately",
+              "color": 15158332,
+              "footer": {"text": "PlantPartner · Nightly Backup"}
             }]
           }' \
           ${{ secrets.DISCORD_WEBHOOK_URL }}
