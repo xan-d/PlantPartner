@@ -16,19 +16,18 @@ jobs:
           oauth-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
           tags: tag:ci
 
-      - name: SSH into server and backup
+      - name: SSH into DB server and backup
         id: backup
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.SSH_HOST }}
+          host: ${{ secrets.DB_SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
-            script: |
-            mkdir -p /var/www/myapp/backups
-            mysqldump -u root plantpartner > /var/www/myapp/backups/backup_$(date +%Y%m%d_%H%M%S).sql
-            ls -t /var/www/myapp/backups/*.sql | tail -n +8 | xargs rm -f
-            
+            mkdir -p /var/backups/plantpartner
+            mysqldump -u root plantpartner > /var/backups/plantpartner/backup_$(date +%Y%m%d_%H%M%S).sql
+            ls -t /var/backups/plantpartner/*.sql | tail -n +8 | xargs rm -f
+
       - name: Notify Discord — Backup Success
         if: success()
         run: |
