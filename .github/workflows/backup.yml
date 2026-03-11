@@ -39,15 +39,15 @@ jobs:
             curl -H "Content-Type: application/json" \
             -d "{
               \"embeds\": [{
-                \"title\": \"🗄️ Database Backup Complete\",
+                \"title\": \"Database Backup Complete\",
                 \"description\": \"plantpartner DB backed up successfully\",
                 \"color\": 3066993,
                 \"fields\": [
-                  {\"name\": \"🌿 Plants\", \"value\": \"$PLANTS\", \"inline\": true},
-                  {\"name\": \"👤 Users\", \"value\": \"$USERS\", \"inline\": true},
-                  {\"name\": \"🔔 Push Subscriptions\", \"value\": \"$SUBS\", \"inline\": true},
-                  {\"name\": \"💾 Backup Size\", \"value\": \"$BACKUP_SIZE\", \"inline\": true},
-                  {\"name\": \"🕒 Retention\", \"value\": \"Last 7 days kept\", \"inline\": true}
+                  {\"name\": \"Plants\", \"value\": \"$PLANTS\", \"inline\": true},
+                  {\"name\": \"Users\", \"value\": \"$USERS\", \"inline\": true},
+                  {\"name\": \"Push Subscriptions\", \"value\": \"$SUBS\", \"inline\": true},
+                  {\"name\": \"Backup Size\", \"value\": \"$BACKUP_SIZE\", \"inline\": true},
+                  {\"name\": \"Retention\", \"value\": \"Last 7 days kept\", \"inline\": true}
                 ]
               }]
             }" \
