@@ -52,3 +52,11 @@ export function getTopThirstyPlants(plants, n = 5) {
         })
         .slice(0, n);
 }
+
+export function sortPlants(plants) {
+    return plants.sort((a, b) => {
+        const urgencyA = daysSince(a.lastWatered) / a.waterFreq;
+        const urgencyB = daysSince(b.lastWatered) / b.waterFreq;
+        return urgencyB - urgencyA;
+    });
+}
