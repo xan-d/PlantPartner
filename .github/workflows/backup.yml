@@ -27,13 +27,14 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           envs: DISCORD_WEBHOOK_URL
           script: |
+            set +e
             mkdir -p /var/backups/plantpartner
-            mysqldump -u root plantpartner > /var/backups/plantpartner/backup_$(date +%Y%m%d_%H%M%S).sql
+            mysqldump -u root plantpartner 2>/dev/null > /var/backups/plantpartner/backup_$(date +%Y%m%d_%H%M%S).sql
             ls -t /var/backups/plantpartner/*.sql | tail -n +8 | xargs rm -f
 
-            PLANTS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM Plants;")
-            USERS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM Users;")
-            SUBS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM push_subscriptions;")
+            PLANTS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM Plants;" 2>/dev/null)
+            USERS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM Users;" 2>/dev/null)
+            SUBS=$(mysql -u root -N plantpartner -se "SELECT COUNT(*) FROM push_subscriptions;" 2>/dev/null)
             BACKUP_SIZE=$(du -sh /var/backups/plantpartner/$(ls -t /var/backups/plantpartner/ | head -1) | cut -f1)
 
             curl -H "Content-Type: application/json" \
