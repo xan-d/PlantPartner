@@ -33,6 +33,7 @@ A plant care tracking web app built with React, Node.js, and MySQL.
 - add thirst sorting  on room.jsx
 - make view care infofr easier ot click on mobile
 - include sample url for fetch
+- change cloudflared nameserver from 100.100.100.100 (tailscale dns) to persistent 1.1.1.1
 
 ## Introduction and Overview
 
