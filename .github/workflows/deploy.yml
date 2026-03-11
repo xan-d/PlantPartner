@@ -23,6 +23,7 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            export PATH=$PATH:/usr/bin
             cd /var/www/myapp
             git pull origin main
             npm install --prefix backend
@@ -35,12 +36,11 @@ jobs:
           curl -H "Content-Type: application/json" \
           -d '{
             "embeds": [{
-              "title": "✅ PlantPartner Deployed",
+              "title": "PlantPartner Deployed",
               "description": "New version is live on plant-partner.com",
               "color": 3066993,
               "fields": [
                 {"name": "Branch", "value": "${{ github.ref_name }}", "inline": true},
-                {"name": "Commit", "value": "${{ github.event.head_commit.message }}", "inline": true},
                 {"name": "Pushed by", "value": "${{ github.actor }}", "inline": true}
               ]
             }]
@@ -53,12 +53,11 @@ jobs:
           curl -H "Content-Type: application/json" \
           -d '{
             "embeds": [{
-              "title": "❌ PlantPartner Deploy Failed",
+              "title": "PlantPartner Deploy Failed",
               "description": "Something went wrong — check the Actions tab",
               "color": 15158332,
               "fields": [
                 {"name": "Branch", "value": "${{ github.ref_name }}", "inline": true},
-                {"name": "Commit", "value": "${{ github.event.head_commit.message }}", "inline": true},
                 {"name": "Pushed by", "value": "${{ github.actor }}", "inline": true}
               ]
             }]
