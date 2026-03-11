@@ -16,15 +16,51 @@ jobs:
           tags: tag:ci
 
       - name: SSH into server and deploy
+        id: deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
           host: ${{ secrets.SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: BACKEND_ENV,FRONTEND_ENV
           script: |
             cd /var/www/myapp
             git pull origin main
             npm install --prefix backend
             npm run build --prefix frontend
             pm2 restart plantpartner
+
+      - name: Notify Discord — Success
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "✅ PlantPartner Deployed",
+              "description": "New version is live on plant-partner.com",
+              "color": 3066993,
+              "fields": [
+                {"name": "Branch", "value": "${{ github.ref_name }}", "inline": true},
+                {"name": "Commit", "value": "${{ github.event.head_commit.message }}", "inline": true},
+                {"name": "Pushed by", "value": "${{ github.actor }}", "inline": true}
+              ]
+            }]
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Notify Discord — Failure
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "❌ PlantPartner Deploy Failed",
+              "description": "Something went wrong — check the Actions tab",
+              "color": 15158332,
+              "fields": [
+                {"name": "Branch", "value": "${{ github.ref_name }}", "inline": true},
+                {"name": "Commit", "value": "${{ github.event.head_commit.message }}", "inline": true},
+                {"name": "Pushed by", "value": "${{ github.actor }}", "inline": true}
+              ]
+            }]
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}

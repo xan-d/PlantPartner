@@ -1,0 +1,59 @@
+name: Database Backup
+
+on:
+  schedule:
+    - cron: '0 3 * * *'  # runs every day at 3am UTC
+  workflow_dispatch:       # allows manual trigger from Actions tab
+
+jobs:
+  backup:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Connect to Tailscale
+        uses: tailscale/github-action@v2
+        with:
+          oauth-client-id: ${{ secrets.TS_OAUTH_CLIENT_ID }}
+          oauth-secret: ${{ secrets.TS_OAUTH_CLIENT_SECRET }}
+          tags: tag:ci
+
+      - name: SSH into server and backup
+        id: backup
+        uses: appleboy/ssh-action@v1.0.0
+        with:
+          host: ${{ secrets.SSH_HOST }}
+          username: ${{ secrets.SSH_USER }}
+          key: ${{ secrets.SSH_PRIVATE_KEY }}
+          script: |
+            mkdir -p /var/www/myapp/backups
+            mysqldump -u plant_user -pplantpassword plantpartner > /var/www/myapp/backups/backup_$(date +%Y%m%d_%H%M%S).sql
+            # keep only the last 7 backups
+            ls -t /var/www/myapp/backups/*.sql | tail -n +8 | xargs rm -f
+
+      - name: Notify Discord — Backup Success
+        if: success()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "🗄️ Database Backup Complete",
+              "description": "plantpartner DB backed up successfully",
+              "color": 3066993,
+              "fields": [
+                {"name": "Retention", "value": "Last 7 days kept", "inline": true}
+              ]
+            }]
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
+
+      - name: Notify Discord — Backup Failure
+        if: failure()
+        run: |
+          curl -H "Content-Type: application/json" \
+          -d '{
+            "embeds": [{
+              "title": "🚨 Database Backup Failed",
+              "description": "Check the Actions tab immediately",
+              "color": 15158332
+            }]
+          }' \
+          ${{ secrets.DISCORD_WEBHOOK_URL }}
