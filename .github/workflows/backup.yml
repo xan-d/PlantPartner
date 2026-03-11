@@ -24,11 +24,11 @@ jobs:
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
+            script: |
             mkdir -p /var/www/myapp/backups
-            mysqldump -u plant_user -pplantpassword plantpartner > /var/www/myapp/backups/backup_$(date +%Y%m%d_%H%M%S).sql
-            # keep only the last 7 backups
+            mysqldump -u root plantpartner > /var/www/myapp/backups/backup_$(date +%Y%m%d_%H%M%S).sql
             ls -t /var/www/myapp/backups/*.sql | tail -n +8 | xargs rm -f
-
+            
       - name: Notify Discord — Backup Success
         if: success()
         run: |
