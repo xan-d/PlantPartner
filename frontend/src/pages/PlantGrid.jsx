@@ -15,7 +15,7 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
     const [internalPlants, setInternalPlants] = useState([]);
 
     const [page, setPage] = useState(0);
-    const PLANTS_PER_PAGE = 5; // limit 5 per page
+    const PLANTS_PER_PAGE = 8;
 
     const SIZES = [
         { label: '1', width: 'min(90vw, 320px)', height: '380px', gap: 6 },
