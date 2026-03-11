@@ -25,7 +25,6 @@ jobs:
           host: ${{ secrets.DB_SSH_HOST }}
           username: ${{ secrets.SSH_USER }}
           key: ${{ secrets.SSH_PRIVATE_KEY }}
-          envs: DISCORD_WEBHOOK_URL
           script: |
             set +e
             mkdir -p /var/backups/plantpartner
@@ -57,7 +56,7 @@ jobs:
             curl -H "Content-Type: application/json" \
             -d "{
               \"embeds\": [{
-                \"title\": \"🌿 PlantPartner — Nightly Backup\",
+                \"title\": \"🌿 Nightly Backup\",
                 \"description\": \"Backup completed successfully at $TIMESTAMP\",
                 \"color\": 3066993,
                 \"fields\": [
@@ -75,7 +74,7 @@ jobs:
                 \"footer\": {\"text\": \"Retention: last 7 days · Next backup in ~24h\"}
               }]
             }" \
-            $DISCORD_WEBHOOK_URL
+            https://discord.com/api/webhooks/1481185788602355736/pD2-AAXMZvGNulyNzDDeAZqnEYvpGg2o55z5Uf1rNHJ1tX6nNXf2r22n15iprrRKB8Aq
 
       - name: Notify Discord — Backup Failure
         if: failure()
