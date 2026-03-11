@@ -2,7 +2,7 @@ name: Database Backup
 
 on:
   schedule:
-    - cron: '07 17 * * *'  # runs at 17:07 UTC, i.e., 5 minutes from now
+    - cron: '2 11 * * *'  # runs at 11:02 UTC → 4:02 AM PDT
   workflow_dispatch:
 
 jobs:
