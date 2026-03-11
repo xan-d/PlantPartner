@@ -27,29 +27,33 @@ jobs:
           key: ${{ secrets.SSH_PRIVATE_KEY }}
           script: |
             set -e  # exit on any error
+
+            DB_USER="${{ secrets.DB_USER }}"
+            DB_PASS="${{ secrets.DB_PASS }}"
+
             mkdir -p /var/backups/plantpartner
             TIMESTAMP=$(date +%Y%m%d_%H%M%S)
             BACKUP_FILE="/var/backups/plantpartner/backup_$TIMESTAMP.sql"
 
-            # MySQL dump with credentials
-            mysqldump -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' plantpartner > "$BACKUP_FILE"
+            # MySQL dump
+            mysqldump -u "$DB_USER" -p"$DB_PASS" plantpartner > "$BACKUP_FILE"
 
             # Keep only last 7 backups
             ls -t /var/backups/plantpartner/*.sql | tail -n +8 | xargs rm -f
 
             # --- Fetch counts ---
-            PLANTS=$(mysql -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' -N plantpartner -se "SELECT COUNT(*) FROM Plants;")
-            USERS=$(mysql -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' -N plantpartner -se "SELECT COUNT(*) FROM Users;")
-            SUBS=$(mysql -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' -N plantpartner -se "SELECT COUNT(*) FROM push_subscriptions;")
-            SESSIONS=$(mysql -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' -N plantpartner -se "SELECT COUNT(*) FROM sessions;")
+            PLANTS=$(mysql -u "$DB_USER" -p"$DB_PASS" -N plantpartner -se "SELECT COUNT(*) FROM Plants;")
+            USERS=$(mysql -u "$DB_USER" -p"$DB_PASS" -N plantpartner -se "SELECT COUNT(*) FROM Users;")
+            SUBS=$(mysql -u "$DB_USER" -p"$DB_PASS" -N plantpartner -se "SELECT COUNT(*) FROM push_subscriptions;")
+            SESSIONS=$(mysql -u "$DB_USER" -p"$DB_PASS" -N plantpartner -se "SELECT COUNT(*) FROM sessions;")
 
             # Health breakdown
-            HAPPY=$(mysql -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' -N plantpartner -se "SELECT COUNT(*) FROM Plants WHERE health='happy';")
-            OKAY=$(mysql -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' -N plantpartner -se "SELECT COUNT(*) FROM Plants WHERE health='okay';")
-            UNHAPPY=$(mysql -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' -N plantpartner -se "SELECT COUNT(*) FROM Plants WHERE health='unhappy';")
+            HAPPY=$(mysql -u "$DB_USER" -p"$DB_PASS" -N plantpartner -se "SELECT COUNT(*) FROM Plants WHERE health='happy';")
+            OKAY=$(mysql -u "$DB_USER" -p"$DB_PASS" -N plantpartner -se "SELECT COUNT(*) FROM Plants WHERE health='okay';")
+            UNHAPPY=$(mysql -u "$DB_USER" -p"$DB_PASS" -N plantpartner -se "SELECT COUNT(*) FROM Plants WHERE health='unhappy';")
 
-            # Most thirsty plant (fixed arithmetic)
-            THIRSTIEST=$(mysql -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' -N plantpartner -se "
+            # Most thirsty plant
+            THIRSTIEST=$(mysql -u "$DB_USER" -p"$DB_PASS" -N plantpartner -se "
               SELECT name
               FROM Plants
               ORDER BY (DATEDIFF(CURDATE(), lastWatered) - waterFreq) DESC
@@ -57,14 +61,14 @@ jobs:
             ")
 
             # Newest user
-            NEWEST_USER=$(mysql -u ${{ secrets.DB_USER }} -p'${{ secrets.DB_PASS }}' -N plantpartner -se "
+            NEWEST_USER=$(mysql -u "$DB_USER" -p"$DB_PASS" -N plantpartner -se "
               SELECT displayName
               FROM Users
               ORDER BY createdAt DESC
               LIMIT 1;
             ")
 
-            # Backup file info
+            # Backup info
             BACKUP_SIZE=$(du -sh "$BACKUP_FILE" | awk '{print $1}')
             BACKUP_COUNT=$(ls /var/backups/plantpartner/*.sql | wc -l)
             BACKUP_TIMESTAMP=$(date '+%Y-%m-%d %H:%M UTC')
