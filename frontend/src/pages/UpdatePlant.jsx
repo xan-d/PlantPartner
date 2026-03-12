@@ -118,9 +118,15 @@ export default function UpdatePlant() {
         setError(null);
 
         const formData = new FormData();
-        // Only append image if a new one was selected
+        // only append image if a new one was selected
         if (imageFile) formData.append('image', imageFile);
-        Object.entries(form).forEach(([key, val]) => formData.append(key, val));
+        Object.entries(form).forEach(([key, val]) => {
+        // if we have a new imageFile, don't append the old image URL/path
+        if (key === 'image' && imageFile) {
+            return; 
+        }
+        formData.append(key, val);
+    });
 
         try {
             const res = await fetch(`${API_URL}/api/plants/${id}`, {

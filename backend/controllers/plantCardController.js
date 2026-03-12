@@ -89,6 +89,7 @@ exports.updatePlant = async (req, res) => {
     const userID = req.session.userID;
     const { name, scientific, room, light, lastWatered, waterFreq, lastFed, health, careLink, color } = req.body;
 
+    // Convert "days ago" to actual dates (Matches your createPlant logic)
     const lastWateredDate = new Date();
     lastWateredDate.setDate(lastWateredDate.getDate() - parseInt(lastWatered || 0));
     const lastWateredFormatted = lastWateredDate.toISOString().split('T')[0];
@@ -98,14 +99,36 @@ exports.updatePlant = async (req, res) => {
     const lastFedFormatted = lastFedDate.toISOString().split('T')[0];
 
     try {
-        const [result] = await db.promise().query(
-            'UPDATE Plants SET name=?, scientific=?, room=?, light=?, lastWatered=?, waterFreq=?, lastFed=?, health=?, careLink=?, color=? WHERE plantID=? AND userID=?',
-            [name, scientific, room, light, lastWateredFormatted, waterFreq, lastFedFormatted, health, careLink, color, plantId, userID]
-        );
-        if (!result.affectedRows) return res.status(404).json({ error: 'Plant not found' });
+        // 1. Start building the query and parameters
+        let sql = `UPDATE Plants SET 
+            name=?, scientific=?, room=?, light=?, lastWatered=?, 
+            waterFreq=?, lastFed=?, health=?, careLink=?, color=?`;
+        
+        let params = [
+            name, scientific, room, light, lastWateredFormatted, 
+            waterFreq, lastFedFormatted, health, careLink, color
+        ];
+
+        // 2. ONLY add the image to the SQL if a new file was actually uploaded
+        if (req.file) {
+            sql += `, image=?`;
+            params.push(`/plantImages/${req.file.filename}`);
+        }
+
+        // 3. Complete the query with the WHERE clause
+        sql += ` WHERE plantID=? AND userID=?`;
+        params.push(plantId, userID);
+
+        const [result] = await db.promise().query(sql, params);
+
+        if (!result.affectedRows) {
+            return res.status(404).json({ error: 'Plant not found' });
+        }
+
         res.json({ message: 'Plant updated' });
     } catch (err) {
-        res.status(500).json({ error: err.message });
+        console.error('updatePlant error:', err.message);
+        res.status(500).json({ error: 'Failed to update plant' });
     }
 };
 // ─── DELETE a plant ───────────────────────────────────────────────────────────
