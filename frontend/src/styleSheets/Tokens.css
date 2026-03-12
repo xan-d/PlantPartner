@@ -1,0 +1,72 @@
+/* ================================================================
+   PLANTPARTNER — Design Tokens v3
+   Colors: Lively Root-matched palette
+   Fonts:  Cormorant Garamond (headings) + DM Sans (UI/body)
+           — closest free match to Lively Root's editorial serif + clean sans
+   ================================================================ */
+
+/* Google Fonts import — add this OR put it in your index.html <head> */
+@import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,400;0,500;0,600;0,700;1,400;1,500&family=DM+Sans:ital,opsz,wght@0,9..40,300;0,9..40,400;0,9..40,500;0,9..40,600;0,9..40,700;1,9..40,300;1,9..40,400&display=swap');
+
+:root {
+    /* ── Lively Root signature greens ───────────────────────── */
+    --g-deep:    #343F32;      /* LR dark green — headers, key surfaces */
+    --g-mid:     #4a6741;      /* Richer mid — hover, active            */
+    --g-sage:    #7a9e72;      /* Sage — secondary accents              */
+    --g-mist:    #c8dbc2;      /* Mist — borders, dividers              */
+    --g-ghost:   #edf3eb;      /* Ghost — hover backgrounds             */
+
+    /* ── Lively Root creams ─────────────────────────────────── */
+    --cream:     #F6F5EE;      /* LR exact cream — main bg & cards      */
+    --cream-warm:#F0EDE4;      /* Slightly warmer — nested surfaces     */
+    --cream-tan: #E8E2D6;      /* Parchment — borders                   */
+    --cream-dark:#D4CCBC;      /* Tan — strong borders, dividers        */
+
+    /* ── Lively Root terracotta button ─────────────────────── */
+    --terra:     #C99383;      /* LR button color                       */
+    --terra-dark:#b07b6c;      /* Hover state                           */
+    --terra-text:#F6F3D9;      /* LR button text color                  */
+    --terra-pale:#F9EDE8;      /* Very light tint — badge bg            */
+
+    /* ── Ink ────────────────────────────────────────────────── */
+    --ink-900:   #1C2418;      /* Near-black, green-toned               */
+    --ink-700:   #343F32;      /* Same as --g-deep — body copy          */
+    --ink-500:   #5C6B58;      /* Mid — labels, metadata                */
+    --ink-300:   #96A690;      /* Light — placeholders, hints           */
+    --ink-100:   #C8D4C4;      /* Barely visible — decorative           */
+
+    /* ── Glass — warm cream-tinted ─────────────────────────── */
+    --glass:        rgba(246, 245, 238, 0.58);   /* --cream at 58%      */
+    --glass-strong: rgba(246, 245, 238, 0.82);   /* --cream at 82%      */
+    --glass-deep:   rgba(52,  63,  50,  0.82);   /* --g-deep glass      */
+    --glass-border: rgba(255, 253, 246, 0.68);
+    --glass-border-dim: rgba(200, 192, 174, 0.35);
+    --glass-terra:  rgba(201, 147, 131, 0.14);   /* terra tint          */
+
+    --blur-sm:  blur(8px);
+    --blur-md:  blur(18px);
+    --blur-lg:  blur(30px);
+
+    /* ── Shadows ────────────────────────────────────────────── */
+    --shadow-xs: 0 1px 3px  rgba(28, 36, 24, 0.05);
+    --shadow-sm: 0 4px 16px rgba(28, 36, 24, 0.07), 0 1px 4px rgba(28, 36, 24, 0.04);
+    --shadow-md: 0 8px 32px rgba(28, 36, 24, 0.09), 0 2px 8px rgba(28, 36, 24, 0.04);
+    --shadow-lg: 0 20px 60px rgba(28, 36, 24, 0.12), 0 4px 16px rgba(28, 36, 24, 0.05);
+
+    /* ── Radii ──────────────────────────────────────────────── */
+    --r-xs:  6px;
+    --r-sm:  10px;
+    --r-md:  16px;
+    --r-lg:  14px;
+    --r-xl:  32px;
+
+    /* ── Typography ─────────────────────────────────────────── */
+    /* Cormorant Garamond: editorial serif — headings, titles, plant names */
+    --font-display: 'Cormorant Garamond', 'Georgia', serif;
+    /* DM Sans: geometric humanist sans — UI, labels, buttons, body copy */
+    --font-ui:      'DM Sans', 'Helvetica Neue', sans-serif;
+
+    /* Legacy aliases so existing CSS doesn't break */
+    --font-serif: var(--font-display);
+    --font-sans:  var(--font-ui);
+}

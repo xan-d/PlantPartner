@@ -1,0 +1,54 @@
+/* Container for the search bar */
+.plant-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    width: 220px;
+    margin: 0px;
+}
+
+/* The actual input */
+.plant-search-input {
+    font-family: 'DM Sans', sans-serif;
+    font-size: 0.95rem;
+    color: #1C2418; /* <-- this sets the color of the text you type */
+    background: #fff;
+    border: none;
+    font-weight: 500;
+    border-radius: 9999px;
+    /* fully rounded */
+    padding: 10px 40px 10px 16px;
+    /* extra right padding for the icon */
+    width: 250px;
+    /* or 100% for responsive */
+    outline: none;
+}
+
+.plant-search-input::placeholder {
+    color: #a0a0a0a6;
+    /* light grey for the placeholder text */
+}
+
+/* Change border color on focus */
+.plant-search-input:focus {
+    border-color: var(--terra-dark);
+}
+
+/* Search button inside the input box */
+.plant-search-btn {
+    position: absolute;
+    right: 8px;
+    background: transparent;
+    border: none;
+    font-size: 1rem;
+    cursor: pointer;
+    padding: 0;
+    color: #777;
+}
+
+.plant-search-btn img {
+    opacity: 40%;
+    display: block;
+    margin: 0;
+    pointer-events: none;
+}

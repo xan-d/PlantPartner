@@ -1,0 +1,106 @@
+/* ================================================================
+   Header.css — v3.1
+   ================================================================ */
+@import './Tokens.css';
+
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 10px 24px;
+
+    background: var(--g-deep);          /* solid dark green header */
+    border-bottom: 1px solid rgba(0,0,0,0.12);
+    box-shadow: var(--shadow-md);
+
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    margin-bottom: 12px;
+}
+
+/* Brand name — cream on deep green */
+.app-title {
+    font-family: var(--font-display);
+    font-size: clamp(22px, 3vw, 30px);
+    font-weight: 600;
+    color: var(--cream);
+    margin: 0;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    line-height: 1;
+    user-select: none;
+}
+
+/* ── Hamburger ──────────────────────────────────────────────── */
+
+.menu-container { position: relative; }
+
+.hamburger {
+    display: flex; flex-direction: column; justify-content: center;
+    gap: 5px; background: none; border: none; cursor: pointer;
+    padding: 7px; border-radius: var(--r-sm); transition: background 0.15s;
+}
+
+.hamburger:hover { background: rgba(246, 245, 238, 0.12); }
+
+/* Lines are cream on the dark header */
+.hamburger-line {
+    display: block;
+    width: 22px; height: 2px;
+    background-color: var(--cream);
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    transform-origin: center;
+}
+
+.hamburger-line.open:nth-child(1) { transform: translateY(7px) rotate(45deg); }
+.hamburger-line.open:nth-child(2) { opacity: 0; transform: scaleX(0); }
+.hamburger-line.open:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
+
+/* ── Dropdown — cream glass, drops below dark header ────────── */
+
+.dropdown {
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
+
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--r-md);
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.85);
+
+    min-width: 180px;
+    z-index: 200;
+    padding: 6px;
+    display: flex;
+    flex-direction: column;
+
+    animation: dropdown-in 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: top right;
+}
+
+@keyframes dropdown-in {
+    from { opacity: 0; transform: scale(0.92) translateY(-6px); }
+    to   { opacity: 1; transform: scale(1)    translateY(0);    }
+}
+
+.dropdown-item {
+    display: block; padding: 9px 14px;
+    color: var(--ink-700); text-decoration: none;
+    font-size: 14px; font-family: var(--font-ui); font-weight: 400;
+    border-radius: var(--r-sm); background: none; border: none;
+    cursor: pointer; text-align: left; width: 100%;
+    transition: background 0.13s, color 0.13s;
+}
+
+.dropdown-item:hover { background: rgba(52, 63, 50, 0.07); color: var(--ink-900); }
+
+.dropdown-item.logout { color: var(--terra); }
+.dropdown-item.logout:hover { background: var(--terra-pale); color: var(--terra-dark); }
+
+.dropdown-divider { height: 1px; background: var(--cream-tan); margin: 4px 0; }
+
+.filter-item { color: var(--ink-500); font-style: italic; }

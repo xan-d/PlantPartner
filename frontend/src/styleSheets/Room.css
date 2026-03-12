@@ -1,51 +1,65 @@
-/* Room.css */
+/* ================================================================
+   Room.css — v3
+   ================================================================ */
+@import './Tokens.css';
 
-.room-page {
-    min-height: 100vh;
-    /* background: var(--bg, #f9fafb); */
-}
+.room-page { min-height: 100vh; }
 
 .room-page-loading {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    min-height: 100vh;
-    font-size: 1.2rem;
-    color: var(--text-muted, #6b7280);
+    display: flex; align-items: center; justify-content: center;
+    min-height: 100vh; font-size: 13px;
+    font-family: var(--font-ui); color: var(--ink-500); letter-spacing: 0.04em;
 }
 
 .room-page-content {
     position: relative;
-    /* anchor for the absolute button */
     max-width: 1100px;
     margin: 0 auto;
-    padding: 0px 0px 0px;
+    padding: 0 0 40px;
     display: flex;
     flex-direction: column;
     gap: 12px;
 }
 
-/* Back button */
+/* ── Back button — deep green ───────────────────────────────── */
+
 .room-back-btn {
-    position: relative;
-    left: 0px;
-    background: #ffffff;
-    border: 1px solid var(--border-color, #d3d5da);
-    border-radius: 8px;
-    padding: 2px 20px 6px 20px;
-    font-size: 1.5rem;
+    align-self: flex-start;
+    background: var(--g-deep);
+    border: none;
+    border-radius: var(--r-md);
+    padding: 6px 20px 8px;
+    font-size: 1.4rem;
     font-weight: 500;
-    color: var(--text-muted, #4e6049);
+    color: var(--cream);
     cursor: pointer;
-    transition: background 0.15s ease, color 0.15s ease;
+    transition: background 0.18s, transform 0.18s;
     font-family: inherit;
     line-height: 1;
-    box-shadow: 0 4px 2px rgba(60,80,40,0.15), 0 1px 4px rgba(60,80,40,0.08);
+    box-shadow: var(--shadow-sm);
 }
 
 .room-back-btn:hover {
-    background: var(--card-bg, #ededed);
-    color: var(--text-primary, #717171);
+    background: var(--g-mid);
+    transform: translateX(-2px);
+}
+
+/* ── Header section ─────────────────────────────────────────── */
+
+.room-page-header-section {
+    position: relative;
+    z-index: 1;
+    background: var(--g-deep);
+    border: 1px solid rgba(255,255,255,0.08);
+    box-shadow: var(--shadow-md);
+    padding: 0 16px 24px;
+    border-radius: var(--r-xl);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    max-width: 900px;
+    margin: 0 auto;
+    width: 100%;
 }
 
 .room-page-header {
@@ -53,117 +67,96 @@
     flex-direction: column;
     align-items: center;
     text-align: center;
-    gap: 0px;
     margin-bottom: 14px;
-    /* pushes some space down toward the chips instead */
 }
 
-.room-page-header-section {
-    position: relative;
-    z-index: 1;
-    background: #a8bfce;
-    box-shadow: 0 4px 5px rgba(0, 0, 0, 0.4);
-    padding: 0px 10px 20px;
-    display: flex;
-    border-radius: 20px;
-    flex-direction: column;
-    align-items: center;
-    gap: 0px;
-    max-width: 900px;   /* adjust to taste */
-    margin: 0 auto;
-    width: 100%;
+.room-page .header { margin-bottom: 20px; box-shadow: var(--shadow-md); }
+
+.room-title-row {
+    display: flex; align-items: center; justify-content: center; width: 100%;
 }
+
+/* Title is cream-on-deep-green — high contrast, very Lively Root */
+.room-page-title {
+    font-family: var(--font-display);
+    font-size: 3.2rem;
+    color: var(--cream);
+    margin: 16px 0 0;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    line-height: 1.05;
+}
+
+.room-page-subtitle {
+    font-family: var(--font-display);
+    font-size: 1.1rem;
+    color: rgba(246, 245, 238, 0.65);
+    font-family: var(--font-ui);
+    margin: 6px 0 0;
+    font-style: italic;
+}
+
+/* ── Stat chips — cream on deep green ──────────────────────── */
+
+.room-stat-row {
+    display: flex; flex-wrap: wrap; justify-content: center; gap: 10px;
+}
+
+.room-stat-chip {
+    display: flex; align-items: center; gap: 6px;
+    background: rgba(246, 245, 238, 0.12);
+    border: 1px solid rgba(246, 245, 238, 0.22);
+    border-radius: 99px;
+    padding: 5px 14px;
+    font-size: 12px; font-weight: 600;
+    font-family: var(--font-ui);
+    color: rgba(246, 245, 238, 0.85);
+    box-shadow: inset 0 1px 0 rgba(255,255,255,0.08);
+}
+
+.room-stat-chip.healthy {
+    background: rgba(122, 158, 114, 0.30);
+    border-color: rgba(122, 158, 114, 0.50);
+    color: #c8dbc2;
+}
+
+.room-stat-chip.overdue {
+    background: rgba(201, 147, 131, 0.25);
+    border-color: rgba(201, 147, 131, 0.45);
+    color: #f2c4b5;
+}
+
+/* ── Divider — faint on dark bg ─────────────────────────────── */
+
+.room-divider {
+    border: none; height: 1px;
+    background: linear-gradient(to right, transparent, rgba(246,245,238,0.15) 20%, rgba(246,245,238,0.15) 80%, transparent);
+    margin: 0;
+}
+
+/* ── Plants section — cream glass card ─────────────────────── */
 
 .room-plants-section {
     position: relative;
     z-index: 1;
-    background: rgba(187, 211, 227, 0.272);
-    box-shadow: 0 4px 5px rgba(0, 0, 0, 0.4);
-    padding: 20px 10px 20px;
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255,255,255,0.70);
+    padding: 20px 10px;
+    border-radius: var(--r-xl);
     display: flex;
-    border-radius: 20px;
     flex-direction: column;
     align-items: center;
-    gap: 0px;
-    max-width: 900px;   /* adjust to taste */
+    max-width: 900px;
     margin: 0 auto;
     width: 100%;
 }
 
-.room-page .header {
-    margin-bottom: 20px;
-    box-shadow: 0 4px 5px rgba(0, 0, 0, 0.4);
-}
+/* ── Empty state ────────────────────────────────────────────── */
 
-
-.room-page-title {
-    font-size: 3.5rem;
-    color: #4a5f67;
-    margin: 10px 0px 0px;
-    font-weight: 700;
-    letter-spacing: -0.02em;
-}
-
-.room-title-row {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    gap: 0px;
-    width: 100%;
-}
-
-.room-page-subtitle {
-    font-size: 1.25rem;
-    color: var(--text-muted, #4f6275);
-    margin: 0;
-}
-
-/* Stat chips — centered */
-.room-stat-row {
-    display: flex;
-    flex-wrap: wrap;
-    justify-content: center;
-    gap: 20px;
-}
-
-.room-stat-chip {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    background: var(--card-bg, #fff);
-    border: 1px solid var(--border-color, #e5e7eb);
-    border-radius: 10px;
-    padding: 6px 14px;
-    font-size: 1rem;
-    font-weight: 500;
-    color: var(--text-primary, #374151);
-    box-shadow: 0 4px 2px rgba(60,80,40,0.15), 0 1px 4px rgba(60,80,40,0.08);
-}
-
-.room-stat-chip.healthy {
-    background: #f0fdf4;
-    border-color: #86efac;
-    color: #166534;
-}
-
-.room-stat-chip.overdue {
-    background: #fef3c7;
-    border-color: #fcd34d;
-    color: #92400e;
-}
-
-/* Divider between stats and plant grid */
-.room-divider {
-    border: none;
-    height: 2px;
-    background: linear-gradient(to right, transparent, #d7dad7 20%, #d7dad7 80%, transparent);
-    margin: 0;
-}
-
-/* Empty state */
 .room-page-empty {
-    font-size: 0.95rem;
-    color: var(--text-muted, #6b7280);
-    text-align: center;
-    padding: 48px 0;
+    font-size: 13px; color: var(--ink-500); font-style: italic;
+    font-family: var(--font-ui); text-align: center; padding: 48px 0;
 }

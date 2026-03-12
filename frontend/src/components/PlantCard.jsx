@@ -4,7 +4,7 @@ import { API_URL } from "../config";
 import { daysSince, waterStatus, CARE_LABELS, truncateText, greenShades } from '../utils/plantHelpers';
 import '../styleSheets/PlantCard.css';
 
-export default function PlantCard({ plant, onWater, onDelete }) {
+export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
     const [watered, setWatered] = useState(false);
     const [pendingWater, setPendingWater] = useState(false);
     const [progress, setProgress] = useState(100);
@@ -58,6 +58,7 @@ export default function PlantCard({ plant, onWater, onDelete }) {
 
     return (
         <div
+            style={{ width: "100%", height: cardHeight || "100%" }}
             onClick={() => !flipped && navigate(`/plants/${plant.plantID}/edit`)}
             className={`plant-card ${flipped ? 'is-flipped' : ''}`}
         >
@@ -119,7 +120,12 @@ export default function PlantCard({ plant, onWater, onDelete }) {
                             {/* Care flip button */}
                             <div className="card-care-link">
                                 {plant.careLink ? (
-                                    <span className="active" onClick={handleFlip}>🌿 View Care Info</span>
+                                    <button
+                                        className="card-care-btn"
+                                        onClick={handleFlip}
+                                    >
+                                        🌿 View Care Info
+                                    </button>
                                 ) : (
                                     <span className="inactive">No Care Link</span>
                                 )}
@@ -133,10 +139,9 @@ export default function PlantCard({ plant, onWater, onDelete }) {
                                 <button
                                     className="card-water-btn"
                                     style={{
-                                        background: pendingWater ? "#b65c5c"
-                                            : watered ? "#5aaa72"
-                                                : status.urgent ? "#e0654a"
-                                                    : plantColor,
+                                        background: pendingWater ? "var(--status-thirsty)"
+                                            : watered ? "var(--accent-sage)"
+                                                : "var(--action-blue)",
                                     }}
                                     onClick={() => {
                                         if (pendingWater) {

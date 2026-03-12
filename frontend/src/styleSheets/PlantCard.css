@@ -1,65 +1,99 @@
+/* ================================================================
+   PlantCard.css — fluid.glass aesthetic v3
+   ================================================================ */
+@import './Tokens.css';
+
 .plant-card {
     width: var(--card-width, 220px);
     height: var(--card-height, 320px);
-    perspective: 1000px;
-    font-family: 'Georgia', 'Times New Roman', serif;
+    perspective: 1200px;
+    font-family: var(--font-ui);
     cursor: pointer;
-    padding: var(--card-padding, 4px);
+    padding: var(--card-padding, 5px);
 }
+
+.card-care-btn {
+  width: 50%;              /* smaller width */
+  padding: 4px 8px;        /* smaller padding for compact look */
+  border-radius: 6px;
+  border: none;
+  margin-bottom: 10px;
+  background: var(--g-mid);
+  color: white;
+  font-weight: 600;
+  font-size: 0.6rem;      /* smaller text */
+  cursor: pointer;
+  transition: background 0.15s;
+  
+  display: block;           /* make it a block to use margin auto */
+  margin: 8px auto 6px;       /* center horizontally, small top margin */
+  text-align: center;       /* center text inside button */
+}
+
+.card-care-btn:hover {
+  background: var(--g-deep);
+}
+
 .plant-card.is-flipped {
     cursor: default;
 }
 
-.plant-card:hover .flip-container {
-    transform: rotate(1.5deg) translateY(-4px);
-}
-
-.plant-card.is-flipped:hover .flip-container {
-    transform: rotateY(180deg); /* don't rotate when flipped */
+.plant-card:hover .flip-container:not(.flipped) {
+    transform: translateY(-8px) rotate(0.8deg);
+    filter: drop-shadow(0 20px 40px rgba(28, 36, 24, 0.14));
 }
 
 .flip-container {
     width: 100%;
-    height: var(--card-height, 320px);
+    height: 100%;
     position: relative;
     transform-style: preserve-3d;
-    transition: transform 0.55s cubic-bezier(0.4, 0.2, 0.2, 1);
+    transition: transform 0.6s cubic-bezier(0.4, 0.2, 0.2, 1), filter 0.4s ease;
 }
 
 .flip-container.flipped {
     transform: rotateY(180deg);
 }
 
-/* Shared front/back face styles */
+/* ── Shared face ────────────────────────────────────────────── */
+
 .card-face {
-    position: absolute;
     width: 100%;
     height: 100%;
+    position: absolute;
+    inset: 0;
     backface-visibility: hidden;
     -webkit-backface-visibility: hidden;
-    border-radius: 18px;
+    border-radius: var(--r-lg);
+    overflow: hidden;
 }
 
+/* ── Front ──────────────────────────────────────────────────── */
+
 .card-front {
-    box-shadow: 0 4px 24px rgba(60,80,40,0.10), 0 1px 4px rgba(60,80,40,0.08);
-    border: 1.5px solid #e8e2d4;
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-md),
+        inset 0 1px 0 rgba(255, 255, 255, 0.80);
 }
 
 .card-front-inner {
-    border-radius: 18px;
-    overflow: hidden;
-    background: #faf8f3;
     height: 100%;
     display: flex;
     flex-direction: column;
+    border-radius: var(--r-lg);
+    overflow: hidden;
 }
 
+/* ── Image ──────────────────────────────────────────────────── */
+
 .card-image {
-    width: 100%;
-    aspect-ratio: 16 / 9;
-    flex-shrink: 0;
-    position: relative;
-    overflow: hidden;
+  width: 100%;
+  height: 40%;
+  position: relative;
+  overflow: hidden;
 }
 
 .card-image img {
@@ -67,44 +101,80 @@
     height: 100%;
     object-fit: cover;
     display: block;
+    transition: transform 0.6s ease;
 }
 
+.plant-card:hover .card-image img {
+    transform: scale(1.04);
+}
+
+.card-image img:not([src]),
+.card-image img[src=""] {
+    display: none;
+}
+
+.card-image::after {
+    content: '🌿';
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    opacity: 0.18;
+    pointer-events: none;
+}
+
+/* Room badge — cream glass pill */
 .card-room-badge {
     position: absolute;
     top: 10px;
     right: 10px;
-    background: rgba(255,255,255,0.2);
-    color: #fff;
-    font-size: 10px;
-    font-family: 'Helvetica Neue', sans-serif;
-    letter-spacing: 0.08em;
-    padding: 2px 8px;
-    border-radius: 20px;
-    backdrop-filter: blur(6px);
+    background: var(--glass);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
+    color: var(--ink-700);
+    font-size: 9px;
+    font-family: var(--font-ui);
     font-weight: 600;
+    letter-spacing: 0.08em;
     text-transform: uppercase;
+    padding: 3px 9px;
+    border-radius: 99px;
+    border: 1px solid var(--glass-border);
 }
 
+/* Delete button */
 .card-delete-btn {
     position: absolute;
     top: 8px;
     left: 8px;
-    background: rgba(0,0,0,0.35);
-    border: none;
+    background: rgba(246, 245, 238, 0.40);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
+    border: 1px solid rgba(255, 255, 255, 0.55);
     border-radius: 50%;
     width: 22px;
     height: 22px;
-    color: #fff;
-    font-size: 12px;
+    color: var(--ink-700);
+    font-size: 11px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
-    backdrop-filter: blur(4px);
+    transition: background 0.2s, color 0.2s;
 }
 
+.card-delete-btn:hover {
+    background: rgba(201, 147, 131, 0.80);
+    color: var(--terra-text);
+    border-color: transparent;
+}
+
+/* ── Body ───────────────────────────────────────────────────── */
+
 .card-body {
-    padding: 8px 4px 16px;
+    padding: 10px 12px 14px;
     flex: 1;
     display: flex;
     flex-direction: column;
@@ -112,42 +182,54 @@
 
 .card-name-row {
     display: flex;
-    border-radius: 6px;
+    align-items: stretch;
+    border-radius: var(--r-xs);
     overflow: hidden;
-    margin-bottom: 8px;
+    margin-bottom: 6px;
 }
 
 .card-color-bar {
-    width: 6px;
+    width: 3px;
+    border-radius: 2px;
+    flex-shrink: 0;
+    background: var(--g-deep);
 }
 
 .card-name-content {
-    padding: 4px 12px;
+    padding: 2px 10px;
     flex: 1;
 }
 
+/* Plant name uses Cormorant for that editorial serif look */
 .card-name {
-    font-size: 18px;
-    font-weight: 700;
-    color: #2d3a28;
+    font-family: var(--font-display);
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--ink-900);
+    letter-spacing: 0em;
+    line-height: 1.15;
 }
 
 .card-scientific {
-    font-size: 11px;
-    color: #8a9783;
+    font-family: var(--font-display);
+    font-size: 10px;
     font-style: italic;
-    margin-top: 2px;
+    color: var(--ink-500);
+    margin-top: 1px;
 }
 
 .card-light {
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 11px;
-    color: #6b7c60;
-    font-family: 'Helvetica Neue', sans-serif;
-    margin-bottom: 12px;
+    font-size: 10px;
+    color: var(--ink-500);
+    font-family: var(--font-ui);
+    margin-bottom: 10px;
+    letter-spacing: 0.01em;
 }
+
+/* ── Water section ──────────────────────────────────────────── */
 
 .card-water-section {
     margin-bottom: 8px;
@@ -157,226 +239,286 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 11px;
-    font-family: 'Helvetica Neue', sans-serif;
-    color: #6b7c60;
-    margin-bottom: 4px;
+    font-size: 10px;
+    font-family: var(--font-ui);
+    color: var(--ink-500);
+    margin-bottom: 5px;
 }
 
 .card-water-bar-track {
-    height: 5px;
+    height: 3px;
     border-radius: 99px;
-    background: #e8e2d4;
+    background: var(--cream-tan);
     overflow: hidden;
 }
 
 .card-water-bar-fill {
     height: 100%;
     border-radius: 99px;
-    transition: width 0.4s;
+    background: var(--g-deep);
+    transition: width 0.5s ease;
 }
 
 .card-water-label {
-    font-size: 10px;
-    color: #aaa;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 9px;
+    color: var(--ink-300);
+    font-family: var(--font-ui);
     margin-top: 3px;
 }
 
 .card-care-link {
     text-align: center;
     margin-bottom: auto;
-    font-size: 11px;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 10px;
+    font-family: var(--font-ui);
     line-height: 1;
 }
 
-.card-care-link a, .card-care-link span.active {
-    color: #4a7c59;
-    text-decoration: underline;
-    cursor: pointer;
+.card-care-link a,
+.card-care-link span.active {
+    color: var(--g-sage);
+    text-decoration: none;
     font-weight: 600;
+    border-bottom: 1px solid var(--g-mist);
+    padding-bottom: 1px;
+    transition: color 0.2s, border-color 0.2s;
+}
+
+.card-care-link a:hover {
+    color: var(--g-mid);
+    border-color: var(--g-sage);
 }
 
 .card-care-link span.inactive {
-    color: #ccc;
+    color: var(--ink-300);
     font-style: italic;
 }
 
+/* ── Water button — terracotta glass (LR palette) ───────────── */
+
 .card-water-btn-wrap {
     position: relative;
-    padding: 2px;
     margin-top: auto;
 }
 
 .card-water-btn {
     width: 100%;
-    padding: 7px 0;
-    border-radius: 10px;
-    border: none;
-    color: #fff;
-    font-family: 'Helvetica Neue', sans-serif;
-    font-size: 12px;
-    font-weight: 700;
-    letter-spacing: 0.05em;
+    padding: 8px 0;
+    border-radius: var(--r-sm);
+    border: 1px solid rgba(201, 147, 131, 0.30);
+    background: var(--glass-terra);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
+    color: var(--terra-dark);
+    font-family: var(--font-ui);
+    font-size: 11px;
+    font-weight: 600;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     cursor: pointer;
-    transition: background 0.25s;
+    box-shadow: var(--shadow-xs),
+        inset 0 1px 0 rgba(255, 255, 255, 0.60);
+    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
+}
+
+.card-water-btn:hover {
+    background: rgba(201, 147, 131, 0.26);
+    box-shadow: var(--shadow-sm),
+        inset 0 1px 0 rgba(255, 255, 255, 0.70);
+    transform: translateY(-1px);
+}
+
+.card-water-btn:active {
+    transform: translateY(0);
+    box-shadow: var(--shadow-xs);
+}
+
+/* Thirsty — solid terracotta, LR button style */
+.card-water-btn.thirsty {
+    background: var(--terra);
+    border-color: var(--terra-dark);
+    color: var(--terra-text);
+    box-shadow: var(--shadow-sm);
+}
+
+.card-water-btn.thirsty:hover {
+    background: var(--terra-dark);
+    box-shadow: var(--shadow-md);
 }
 
 .card-undo-progress {
     position: absolute;
     bottom: 0;
     left: 0;
-    height: 4px;
-    background: #ffffffaa;
-    border-radius: 4px;
+    height: 2px;
+    background: rgba(246, 243, 217, 0.60);
+    border-radius: 2px;
     transition: width 0.1s linear;
 }
 
-/* Back face */
+/* ── Back face ──────────────────────────────────────────────── */
+
 .card-back {
     transform: rotateY(180deg);
-    border: 1.5px solid #c8d8c0;
-    box-shadow: 0 4px 24px rgba(60,80,40,0.10);
-    overflow: hidden;
-    background: #f5f9f3;
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border);
+    box-shadow: var(--shadow-md),
+        inset 0 1px 0 rgba(255, 255, 255, 0.80);
     display: flex;
     flex-direction: column;
 }
 
 .card-back-header {
-    padding: 12px 14px 10px;
+    padding: 14px 14px 10px;
     display: flex;
     align-items: center;
     justify-content: space-between;
     flex-shrink: 0;
+    border-bottom: 1px solid var(--cream-tan);
 }
 
 .card-back-title {
-    font-size: 18px;
-    font-weight: 700;
-    color: #2d3a28;
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink-900);
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
 }
 
 .card-back-subtitle {
-    color: rgba(255,255,255,0.75);
-    font-size: 10px;
+    font-family: var(--font-display);
     font-style: italic;
-    font-family: 'Helvetica Neue', sans-serif;
+    color: var(--ink-500);
+    font-size: 10px;
+    margin-top: 1px;
 }
 
 .card-back-close {
-    background: rgba(255,255,255,0.2);
-    border: none;
+    background: var(--glass);
+    border: 1px solid var(--glass-border-dim);
     border-radius: 50%;
-    width: 24px;
-    height: 24px;
-    color: #fff;
-    font-size: 13px;
+    width: 26px;
+    height: 26px;
+    color: var(--ink-500);
+    font-size: 14px;
     cursor: pointer;
     display: flex;
     align-items: center;
     justify-content: center;
+    flex-shrink: 0;
+    transition: background 0.2s, color 0.2s;
+}
+
+.card-back-close:hover {
+    background: var(--glass-strong);
+    color: var(--ink-900);
 }
 
 .card-back-body {
     flex: 1;
     overflow-y: auto;
     padding: 10px 12px;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-family: var(--font-ui);
+    scrollbar-width: none;
 }
 
+.card-back-body::-webkit-scrollbar {
+    display: none;
+}
+
+/* ── Care items ─────────────────────────────────────────────── */
+
 .care-item {
-    background: #fff;
-    border-radius: 8px;
-    padding: 5px 10px;
-    border: 1px solid #e8e2d4;
+    background: var(--glass);
+    border-radius: var(--r-sm);
+    padding: 6px 10px;
+    border: 1px solid var(--cream-tan);
 }
 
 .care-item-label {
-    font-size: 9px;
-    color: #8a9e80;
+    font-size: 8px;
+    font-family: var(--font-ui);
+    color: var(--g-sage);
     font-weight: 700;
-    letter-spacing: 0.06em;
+    letter-spacing: 0.10em;
     text-transform: uppercase;
 }
 
 .care-item-value {
     font-size: 11px;
-    color: #2d3a28;
+    font-family: var(--font-ui);
+    color: var(--ink-700);
     margin-top: 2px;
+    line-height: 1.4;
 }
 
 .care-loading {
     text-align: center;
-    color: #8a9e80;
+    color: var(--ink-500);
     font-size: 12px;
     margin-top: 30px;
+    font-style: italic;
 }
 
 .care-error {
     text-align: center;
-    color: #e07b4a;
+    color: var(--terra);
     font-size: 11px;
     margin-top: 30px;
     padding: 0 8px;
 }
 
+/* ── Notes ──────────────────────────────────────────────────── */
+
 .card-notes-section {
-    margin-bottom: 10px;
+    margin-bottom: 8px;
 }
 
 .card-notes-toggle {
     width: 100%;
-    background: none;
-    border: none;
-    border-radius: 8px;
+    border: 1px solid transparent;
+    border-radius: var(--r-sm);
     padding: 6px 10px;
     text-align: left;
-    font-size: 10px;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 9px;
+    font-family: var(--font-ui);
     font-weight: 700;
-    color: #8a9e80;
+    color: var(--ink-500);
     cursor: pointer;
-    letter-spacing: 0.08em;
+    letter-spacing: 0.10em;
     text-transform: uppercase;
     display: flex;
     align-items: center;
     justify-content: space-between;
-    background: #eef4ec;
-    transition: background 0.15s;
+    background: rgba(52, 63, 50, 0.06);
+    transition: background 0.15s, border-color 0.15s;
 }
 
 .card-notes-toggle:hover {
-    background: #e2ede0;
+    background: rgba(52, 63, 50, 0.11);
+    border-color: var(--g-mist);
 }
 
 .card-notes-toggle::after {
     content: '›';
-    font-size: 14px;
+    font-size: 16px;
     transition: transform 0.2s;
     line-height: 1;
+    opacity: 0.5;
 }
 
-.card-notes-body.open ~ * .card-notes-toggle::after,
 .card-notes-toggle.open::after {
     transform: rotate(90deg);
-}
-
-.card-notes-body.open {
-    display: flex;
-}
-
-.card-notes-toggle:hover {
-    background: #f0ede5;
+    opacity: 1;
 }
 
 .card-notes-body {
     display: none;
-    padding: 6px 6px;
+    padding: 6px 4px;
     flex-direction: column;
     gap: 6px;
 }
@@ -387,34 +529,34 @@
 
 .card-notes-input {
     width: 100%;
-    min-height: 24px;
+    min-height: 26px;
     border: 1px solid transparent;
-    border-radius: 10px;
-    padding: 4px 10px;
-    font-size: 14px;
-    letter-spacing: -.04rem;
-    font-family: 'Kalam';
-    color: #2c4223;
+    border-radius: var(--r-sm);
+    padding: 6px 10px;
+    font-size: 13px;
+    letter-spacing: -0.02rem;
+    font-family: 'Kalam', cursive;
+    color: var(--g-deep);
     font-weight: 700;
-    background: #d3dfcf;
+    background: rgba(52, 63, 50, 0.06);
     outline: none;
     box-sizing: border-box;
     line-height: 1.5;
     cursor: text;
-    transition: background 0.2s, border-color 0.2s;
+    transition: background 0.2s, border-color 0.2s, min-height 0.2s;
     white-space: pre-wrap;
     word-break: break-word;
 }
 
 .card-notes-input.editing {
-    background: #fff;
-    border-color: #a8c4a8;
+    background: var(--glass-strong);
+    border-color: var(--g-mist);
     min-height: 70px;
 }
 
 .card-notes-input:empty:before {
     content: attr(data-placeholder);
-    color: #bbb;
+    color: var(--ink-300);
     pointer-events: none;
 }
 
@@ -425,19 +567,26 @@
 }
 
 .card-notes-count {
-    font-size: 10px;
-    color: #aaa;
-    font-family: 'Helvetica Neue', sans-serif;
+    font-size: 9px;
+    color: var(--ink-300);
+    font-family: var(--font-ui);
 }
 
 .card-notes-save {
-    background: #4a7c59;
-    color: #fff;
+    background: var(--g-deep);
+    color: var(--cream);
     border: none;
-    padding: 4px 12px;
-    border-radius: 6px;
-    font-size: 11px;
-    font-family: 'Helvetica Neue', sans-serif;
+    padding: 4px 14px;
+    border-radius: var(--r-sm);
+    font-size: 10px;
+    font-family: var(--font-ui);
     font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     cursor: pointer;
+    transition: background 0.2s;
+}
+
+.card-notes-save:hover {
+    background: var(--g-mid);
 }

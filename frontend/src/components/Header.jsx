@@ -1,14 +1,13 @@
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
-import "../App.css";
+import "../styleSheets/Header.css";
 
 export default function Header() {
     const [menuOpen, setMenuOpen] = useState(false);
     const navigate = useNavigate();
 
     async function handleLogout() {
-        // Unsubscribe from push notifications
         try {
             const reg = await navigator.serviceWorker.ready;
             const sub = await reg.pushManager.getSubscription();
@@ -25,18 +24,17 @@ export default function Header() {
             console.error('Push unsubscribe failed:', err);
         }
 
-        // Log out
         await fetch(`${API_URL}/api/auth/logout`, {
             method: 'POST',
             credentials: 'include',
         });
 
-        window.location.href = '/login'
+        window.location.href = '/login';
     }
 
     return (
         <header className="header">
-            <h1 className="app-title">🌿Plant Partner</h1>
+            <h1 className="app-title">🌿 Plant Partner</h1>
 
             <div className="menu-container">
                 <button
@@ -51,15 +49,18 @@ export default function Header() {
 
                 {menuOpen && (
                     <div className="dropdown">
-                        <a href="/dashboard" className="dropdown-item" onClick={() => setMenuOpen(false)}>Dashboard</a>
-                        <a href="/plants" className="dropdown-item" onClick={() => setMenuOpen(false)}>My Plants</a>
+                        <a href="/dashboard" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                            Dashboard
+                        </a>
+                        <a href="/plants" className="dropdown-item" onClick={() => setMenuOpen(false)}>
+                            My Plants
+                        </a>
                         <div className="dropdown-divider" />
                         <button className="dropdown-item filter-item" onClick={() => setMenuOpen(false)}>
                             🔍 Filter
                         </button>
                         <div className="dropdown-divider" />
-                        <button className="dropdown-item" onClick={handleLogout}
-                            style={{ color: '#c0392b' }}>
+                        <button className="dropdown-item logout" onClick={handleLogout}>
                             🚪 Logout
                         </button>
                     </div>
