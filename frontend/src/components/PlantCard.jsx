@@ -124,7 +124,7 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                                         className="card-care-btn"
                                         onClick={handleFlip}
                                     >
-                                        🌿 View Care Info
+                                        Care Info
                                     </button>
                                 ) : (
                                     <span className="inactive">No Care Link</span>
