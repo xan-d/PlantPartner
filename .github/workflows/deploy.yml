@@ -17,19 +17,25 @@ jobs:
           tags: tag:ci
 
       - name: SSH into server and deploy
-        id: deploy
         uses: appleboy/ssh-action@v1.0.0
         with:
-          host: ${{ secrets.SSH_HOST }}
-          username: ${{ secrets.SSH_USER }}
-          key: ${{ secrets.SSH_PRIVATE_KEY }}
-          script: |
-            export PATH=$PATH:/usr/bin
-            cd /var/www/myapp
-            git pull origin main
-            npm install --prefix backend
-            npm run build --prefix frontend
-            pm2 restart plantpartner
+                host: ${{ secrets.SSH_HOST }}
+                username: ${{ secrets.SSH_USER }}
+                key: ${{ secrets.SSH_PRIVATE_KEY }}
+                script: |
+                  cd /var/www/myapp
+                  git pull origin main
+                  
+                  # 1. Install dependencies
+                  npm install --prefix backend
+                  npm install --prefix frontend
+
+                  # 2. Build the frontend using the server's .env
+                  # This assumes you have a .env file already sitting in /var/www/myapp/frontend/
+                  npm run build --prefix frontend
+
+                  # 3. Restart the backend
+                  pm2 restart plantpartner
 
       - name: Notify Discord — Success
         if: success()
