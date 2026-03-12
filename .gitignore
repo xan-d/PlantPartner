@@ -136,4 +136,5 @@ dump.sql
 
 # Ignore any local configuration files
 config.local.js
+config.js
 
