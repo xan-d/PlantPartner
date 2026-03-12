@@ -3,30 +3,28 @@
     position: relative;
     display: flex;
     align-items: center;
-    width: 220px;
-    margin: 0px;
+    width: 100%;           /* take full width */
+    max-width: 400px;      /* optional max width on desktop */
+    margin: 0 auto;        /* center on page */
 }
 
 /* The actual input */
 .plant-search-input {
     font-family: 'DM Sans', sans-serif;
-    font-size: 0.95rem;
-    color: #1C2418; /* <-- this sets the color of the text you type */
+    font-size: clamp(0.85rem, 2.2vw, 0.95rem); /* responsive font */
+    color: #1C2418; 
     background: #fff;
     border: none;
     font-weight: 500;
-    border-radius: 9999px;
-    /* fully rounded */
-    padding: 10px 40px 10px 16px;
-    /* extra right padding for the icon */
-    width: 250px;
-    /* or 100% for responsive */
+    border-radius: 9999px; 
+    padding: 10px 40px 10px 16px; /* space for icon */
+    width: 100%;         /* fill the container */
     outline: none;
+    box-sizing: border-box; /* prevent padding overflow */
 }
 
 .plant-search-input::placeholder {
     color: #a0a0a0a6;
-    /* light grey for the placeholder text */
 }
 
 /* Change border color on focus */
@@ -51,4 +49,17 @@
     display: block;
     margin: 0;
     pointer-events: none;
+}
+
+@media (max-width: 480px) {
+    .plant-search-wrapper {
+        max-width: 40%;
+    }
+}
+
+@media (max-width: 480px) {
+    .layout-btn[data-label="3"],
+    .layout-btn[data-label="4"] {
+        display: none;
+    }
 }

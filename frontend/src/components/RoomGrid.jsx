@@ -35,7 +35,7 @@ export default function RoomGrid({ plants = [] }) {
     return (
         <div className="room-grid-section" style={{ marginBottom: '20px' }}>
             <div className="room-grid-outer-card">
-                <h2 className="section-title">🏠 Plants by Room</h2>
+                <h2 className="room-grid-label">🏠 Plants by Room</h2>
                 <div className="room-grid">
                     {roomSummaries.map((room) => (
                         <button

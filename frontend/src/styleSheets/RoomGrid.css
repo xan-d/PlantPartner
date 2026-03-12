@@ -7,6 +7,7 @@
 
 /* Outer wrapper — deep green header strip + cream body */
 .room-grid-outer-card {
+    padding: 10px;
     background: var(--glass-strong);
     backdrop-filter: var(--blur-md);
     -webkit-backdrop-filter: var(--blur-md);
@@ -18,14 +19,19 @@
 
 /* Optional section label above the grid */
 .room-grid-label {
-    background: var(--g-deep);
-    padding: 10px 16px;
-    font-family: var(--font-ui);
-    font-size: 10px;
-    font-weight: 700;
-    letter-spacing: 0.12em;
-    text-transform: uppercase;
-    color: rgba(246, 245, 238, 0.75);
+  display: block;          /* span full width */
+  width:max-content;             /* ensure full container width */
+  background: var(--g-deep);
+  padding: 10px 16px;
+  font-family: var(--font-ui);
+  font-size: 12px;
+  font-weight: 700;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: rgba(246, 245, 238, 0.75);
+  border-radius: 6px;
+  margin-bottom: 24px;
+  margin-left: 15px;
 }
 
 .room-grid-inner {

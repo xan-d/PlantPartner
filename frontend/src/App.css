@@ -3,16 +3,23 @@
    ================================================================ */
 @import './styleSheets/Tokens.css';
 
-*, *::before, *::after { box-sizing: border-box; }
+
+*,
+*::before,
+*::after {
+    box-sizing: border-box;
+}
 
 body {
-    margin: 0; padding: 0; min-height: 100vh;
+    margin: 0;
+    padding: 0;
+    min-height: 100vh;
     background-color: #E8E5DC;
     background-image:
-        radial-gradient(ellipse at 12%  8%,  rgba(52,  63,  50, 0.08) 0%, transparent 50%),
-        radial-gradient(ellipse at 88% 14%,  rgba(201,147,131, 0.07) 0%, transparent 45%),
-        radial-gradient(ellipse at 55% 90%,  rgba(52,  63,  50, 0.05) 0%, transparent 55%),
-        radial-gradient(ellipse at  5% 88%,  rgba(246,245,238, 0.50) 0%, transparent 40%);
+        radial-gradient(ellipse at 12% 8%, rgba(52, 63, 50, 0.08) 0%, transparent 50%),
+        radial-gradient(ellipse at 88% 14%, rgba(201, 147, 131, 0.07) 0%, transparent 45%),
+        radial-gradient(ellipse at 55% 90%, rgba(52, 63, 50, 0.05) 0%, transparent 55%),
+        radial-gradient(ellipse at 5% 88%, rgba(246, 245, 238, 0.50) 0%, transparent 40%);
     background-attachment: fixed;
     font-family: var(--font-ui);
     color: var(--ink-700);
@@ -32,47 +39,80 @@ body {
 
 .app-subtitle {
     font-family: var(--font-display);
-    font-size: 17px; font-style: italic;
-    color: var(--ink-500); margin: 0 0 40px;
-    max-width: 340px; line-height: 1.65;
+    font-size: 17px;
+    font-style: italic;
+    color: var(--ink-500);
+    margin: 0 0 40px;
+    max-width: 340px;
+    line-height: 1.65;
 }
 
 /* ── Section headers — deep green left border accent ────────── */
 
 .section-header {
-    display: flex; align-items: center; justify-content: space-between;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
     margin-bottom: 16px;
     padding-left: 12px;
     border-left: 3px solid var(--g-deep);
 }
 
-.section-header .section-title { margin-bottom: 0; }
+.section-header .section-title {
+    margin-bottom: 0;
+}
 
 /* ── Tooltip ────────────────────────────────────────────────── */
 
-.info-tooltip { position: relative; display: flex; align-items: center; }
+.info-tooltip {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    display: flex;
+    align-items: center;
+}
 
 .info-icon {
-    width: 18px; height: 18px; border-radius: 50%;
-    background: var(--g-deep);
+    width: 18px;
+    height: 18px;
+    border-radius: 50%;
+    background: lightgray;
     color: var(--cream);
-    font-size: 10px; font-family: var(--font-ui);
-    font-weight: 700; font-style: italic;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer; transition: background 0.15s;
+    font-size: 14px;
+    font-family: var(--font-ui);
+    font-weight: 500;
+    font-style: italic;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    transition: background 0.15s;
 }
 
-.info-tooltip:hover .info-icon { background: var(--g-mid); }
+.info-tooltip:hover .info-icon {
+    background: var(--g-mid);
+}
 
 .tooltip-text {
-    display: none; position: absolute; top: calc(100% + 8px); right: 0;
+    display: none;
+    position: absolute;
+    top: calc(100% + 8px);
+    right: 0;
     background: var(--glass-deep);
-    backdrop-filter: var(--blur-sm); -webkit-backdrop-filter: var(--blur-sm);
-    border: 1px solid rgba(255,255,255,0.10);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
+    border: 1px solid rgba(255, 255, 255, 0.10);
     color: rgba(246, 245, 238, 0.92);
-    font-size: 11px; font-family: var(--font-ui); line-height: 1.55;
-    padding: 9px 12px; border-radius: var(--r-sm); width: 210px;
-    z-index: 300; box-shadow: var(--shadow-md);
+    font-size: 11px;
+    font-family: var(--font-ui);
+    line-height: 1.55;
+    padding: 9px 12px;
+    border-radius: var(--r-sm);
+    width: 210px;
+    z-index: 300;
+    box-shadow: var(--shadow-md);
 }
 
-.info-tooltip:hover .tooltip-text { display: block; }
+.info-tooltip:hover .tooltip-text {
+    display: block;
+}

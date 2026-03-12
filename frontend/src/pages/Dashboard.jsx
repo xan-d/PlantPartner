@@ -88,7 +88,7 @@ export default function Dashboard() {
 
                     {/* Top 5 Thirsty Plants */}
                     <div className="dashboard-section">
-                        <h2 className="section-title">💧 Needs Water Soon</h2>
+                        <div className="dashboard-section-label">💧 Needs Water Soon</div>
                         {topThirsty.length === 0 ? (
                             <p className="section-empty">All plants are happy and hydrated!</p>
                         ) : (
@@ -121,8 +121,8 @@ export default function Dashboard() {
 
                     {/* Inspection */}
                     <div className="dashboard-section">
-                        <div className="section-header">
-                            <h2 className="section-title">🔍 Plant Inspection</h2>
+                        <div className="dashboard-section-header">
+                            <div className="dashboard-section-label">🔍 Plant Inspection</div>
                             <div className="info-tooltip">
                                 <span className="info-icon">i</span>
                                 <div className="tooltip-text">

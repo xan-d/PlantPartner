@@ -161,13 +161,15 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
                             className="plant-search-input"
                         />
                         <button
+                            type="button"
                             className="plant-search-btn"
-                            onClick={() => { }}
+                            onClick={() => { /* optional search handler */ }}
                         >
                             <img
                                 src="/search-icon.svg"
                                 alt="Search"
-                                style={{ width: '18px', height: '18px' }}
+                                width="18"
+                                height="18"
                             />
                         </button>
                     </div>
@@ -192,16 +194,16 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
                 </div>
 
                 <div
-  style={{
-    position: 'relative',   // ensures it's not affected by parent padding
-    left: 0,
-    right: 0,
-    width: '100%',
-    height: '1px',
-    backgroundColor: '#d1d1d1',
-    margin: '0',            // removes default spacing
-  }}
-/>
+                    style={{
+                        position: 'relative',   // ensures it's not affected by parent padding
+                        left: 0,
+                        right: 0,
+                        width: '100%',
+                        height: '1px',
+                        backgroundColor: '#d1d1d1',
+                        margin: '0',            // removes default spacing
+                    }}
+                />
 
                 {/* Plant grid */}
                 <div

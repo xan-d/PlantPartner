@@ -41,7 +41,7 @@
     --glass-deep:   rgba(52,  63,  50,  0.82);   /* --g-deep glass      */
     --glass-border: rgba(255, 253, 246, 0.68);
     --glass-border-dim: rgba(200, 192, 174, 0.35);
-    --glass-terra:  rgba(201, 147, 131, 0.14);   /* terra tint          */
+    --glass-terra:  rgba(201, 147, 131, 0.44);   /* terra tint          */
 
     --blur-sm:  blur(8px);
     --blur-md:  blur(18px);

@@ -8,15 +8,27 @@
     align-items: center;
     justify-content: space-between;
     padding: 10px 24px;
-
-    background: var(--g-deep);          /* solid dark green header */
+    
+    /* Gradient instead of flat dark green */
+    background: linear-gradient(90deg, var(--g-deep) 30%, var(--g-mid) 80%, var(--g-sage));
+    
     border-bottom: 1px solid rgba(0,0,0,0.12);
     box-shadow: var(--shadow-md);
-
     position: sticky;
     top: 0;
     z-index: 100;
     margin-bottom: 12px;
+}
+
+.header::after {
+    content: '';
+    display: block;
+    height: 2px;
+    width: 100%;
+    background: rgba(246, 245, 238, 0.2);
+    position: absolute;
+    bottom: 0;
+    left: 0;
 }
 
 /* Brand name — cream on deep green */
@@ -72,7 +84,7 @@
     border-radius: var(--r-md);
     box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.85);
 
-    min-width: 180px;
+    min-width: 200px;
     z-index: 200;
     padding: 6px;
     display: flex;
