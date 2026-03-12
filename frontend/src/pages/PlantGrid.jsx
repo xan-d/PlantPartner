@@ -29,6 +29,11 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
     const layout = LAYOUTS[layoutIdx];
     const gridTopRef = useRef(null);
 
+    const [windowWidth, setWindowWidth] = useState(window.innerWidth);
+    const mobileLayouts = windowWidth < 480
+        ? LAYOUTS.filter(l => l.label === "1" || l.label === "2")
+        : LAYOUTS;
+
     const [searchTerm, setSearchTerm] = useState('');
 
     const isControlled = Array.isArray(externalPlants);
@@ -47,6 +52,12 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
     }, [isControlled]);
 
     useEffect(() => setPage(0), [plants.length]);
+
+    useEffect(() => {
+        const handleResize = () => setWindowWidth(window.innerWidth);
+        window.addEventListener('resize', handleResize);
+        return () => window.removeEventListener('resize', handleResize);
+    }, []);
 
     async function fetchPlants() {
         try {
@@ -125,71 +136,74 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
             <div ref={gridTopRef} style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
                 {/* Controls bar: pages left, search middle, size right */}
-                <div style={{
-                    display: 'flex',
-                    justifyContent: 'space-between',
-                    alignItems: 'center',
-                    padding: '0 20px',
-                    marginBottom: 10,
-                }}>
+                <div className="toolbar-controls">
+                    {/* Controls bar: pages left, search middle, size right */}
+                    <div style={{
+                        display: 'flex',
+                        justifyContent: 'space-between',
+                        alignItems: 'center',
+                        padding: '0 20px',
+                        marginBottom: 10,
+                    }}>
 
-                    {/* Page number buttons — left */}
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                        {totalPages > 1 && Array.from({ length: totalPages }, (_, i) => (
-                            <button
-                                key={i}
-                                onClick={() => setPage(i)}
-                                style={{
-                                    ...btnBase,
-                                    borderColor: page === i ? 'var(--terra-dark)' : '#e8e2d4',
-                                    background: page === i ? 'var(--terra-dark)' : '#faf8f3',
-                                    color: page === i ? '#fff' : '#6b7c60',
-                                }}
-                            >
-                                {i + 1}
-                            </button>
-                        ))}
-                    </div>
+                        {/* Page number buttons — left */}
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                            {totalPages > 1 && Array.from({ length: totalPages }, (_, i) => (
+                                <button
+                                    key={i}
+                                    onClick={() => setPage(i)}
+                                    style={{
+                                        ...btnBase,
+                                        borderColor: page === i ? 'var(--terra-dark)' : '#e8e2d4',
+                                        background: page === i ? 'var(--terra-dark)' : '#faf8f3',
+                                        color: page === i ? '#fff' : '#6b7c60',
+                                    }}
+                                >
+                                    {i + 1}
+                                </button>
+                            ))}
+                        </div>
 
-                    {/* Search bar — middle */}
-                    <div className="plant-search-wrapper">
-                        <input
-                            type="text"
-                            value={searchTerm}
-                            onChange={e => { setSearchTerm(e.target.value); setPage(0); }}
-                            placeholder="Search"
-                            className="plant-search-input"
-                        />
-                        <button
-                            type="button"
-                            className="plant-search-btn"
-                            onClick={() => { /* optional search handler */ }}
-                        >
-                            <img
-                                src="/search-icon.svg"
-                                alt="Search"
-                                width="18"
-                                height="18"
+                        {/* Search bar — middle */}
+                        <div className="plant-search-wrapper">
+                            <input
+                                type="text"
+                                value={searchTerm}
+                                onChange={e => { setSearchTerm(e.target.value); setPage(0); }}
+                                placeholder="Search"
+                                className="plant-search-input"
                             />
-                        </button>
-                    </div>
-
-                    {/* Size toggle — right */}
-                    <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
-                        {LAYOUTS.map((l, i) => (
                             <button
-                                key={l.label}
-                                onClick={() => setLayoutIdx(i)}
-                                style={{
-                                    ...btnBase,
-                                    borderColor: layoutIdx === i ? 'var(--terra-dark)' : '#e8e2d4',
-                                    background: layoutIdx === i ? 'var(--terra-dark)' : '#faf8f3',
-                                    color: layoutIdx === i ? '#fff' : '#6b7c60',
-                                }}
+                                type="button"
+                                className="plant-search-btn"
+                                onClick={() => { }}
                             >
-                                {l.label}
+                                <img
+                                    src="/search-icon.svg"
+                                    alt="Search"
+                                    width="18"
+                                    height="18"
+                                />
                             </button>
-                        ))}
+                        </div>
+
+                        {/* Size toggle — right */}
+                        <div style={{ display: 'flex', gap: 6, alignItems: 'center' }}>
+                            {mobileLayouts.map((l, i) => (
+                                <button
+                                    key={l.label}
+                                    onClick={() => setLayoutIdx(i)}
+                                    style={{
+                                        ...btnBase,
+                                        borderColor: layoutIdx === i ? 'var(--terra-dark)' : '#e8e2d4',
+                                        background: layoutIdx === i ? 'var(--terra-dark)' : '#faf8f3',
+                                        color: layoutIdx === i ? '#fff' : '#6b7c60',
+                                    }}
+                                >
+                                    {l.label}
+                                </button>
+                            ))}
+                        </div>
                     </div>
                 </div>
 

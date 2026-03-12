@@ -17,7 +17,7 @@
     border: none;
     font-weight: 500;
     border-radius: 9999px; 
-    padding: 10px 40px 10px 16px; /* space for icon */
+    padding: 6px 40px 6px 16px; /* space for icon */
     width: 100%;         /* fill the container */
     outline: none;
     box-sizing: border-box; /* prevent padding overflow */
@@ -49,6 +49,19 @@
     display: block;
     margin: 0;
     pointer-events: none;
+}
+
+.toolbar-controls {
+    position: sticky;   /* makes it stick to top */
+    top: 100px;          /* offset below your sticky header height */
+    border-radius: 10px;
+    padding-top: 10px;
+    padding-bottom: 3px;
+    z-index: 150;       /* above plant grid */
+    background-color: var(--glass-gray);    /* optional extra padding */
+    box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* subtle shadow for elevation */
+    margin-left: 5px;
+    margin-right: 5px;
 }
 
 @media (max-width: 480px) {

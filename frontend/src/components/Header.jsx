@@ -34,7 +34,10 @@ export default function Header() {
 
     return (
         <header className="header">
-            <h1 className="app-title">Plant Partner</h1>
+            <div className="app-brand">
+                <img src="/plantPartnerLogo.svg" alt="Plant Partner Logo" className="app-logo" />
+                <h1 className="app-title">Plant Partner</h1>
+            </div>
 
             <div className="menu-container">
                 <button
