@@ -10,6 +10,8 @@
     font-family: var(--font-ui);
     cursor: pointer;
     padding: var(--card-padding, 5px);
+    position: relative;
+    z-index: 1;
 }
 
 .card-care-btn {

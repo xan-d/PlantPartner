@@ -53,11 +53,11 @@
 
 .toolbar-controls {
     position: sticky;   /* makes it stick to top */
-    top: 100px;          /* offset below your sticky header height */
+    top: 72px;          /* offset below your sticky header height */
     border-radius: 10px;
     padding-top: 10px;
     padding-bottom: 3px;
-    z-index: 150;       /* above plant grid */
+    z-index: 10;       /* above plant grid */
     background-color: var(--glass-gray);    /* optional extra padding */
     box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* subtle shadow for elevation */
     margin-left: 5px;
