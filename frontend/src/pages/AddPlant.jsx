@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
+import '../styleSheets/AddPlant.css';
 
 const FIELD_STYLE = {
     width: '100%',
@@ -261,8 +262,15 @@ export default function AddPlant() {
                                 name="careLink"
                                 value={form.careLink}
                                 onChange={handleChange}
-                                style={{ ...FIELD_STYLE, flex: 1 }}
-                                placeholder="https://..."
+                                style={{
+                                    ...FIELD_STYLE,
+                                    flex: 1,
+                                    fontSize: 12,
+                                    color: "#3d3d3d",
+                                    fontWeight: 500 // text color
+                                }}
+                                className="custom-input"
+                                placeholder="https://gardenish.co/plants/your-plant"
                             />
                             <button
                                 onClick={handleFetchCare}

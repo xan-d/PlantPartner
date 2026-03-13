@@ -1,0 +1,4 @@
+.custom-input::placeholder {
+    color: #cdcdcd; /* placeholder color */
+    opacity: 1;      /* ensure it's fully visible */
+}
