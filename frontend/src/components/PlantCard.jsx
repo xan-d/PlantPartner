@@ -140,8 +140,8 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                                     className="card-water-btn"
                                     style={{
                                         background: pendingWater ? "var(--status-thirsty)"
-                                            : watered ? "var(--accent-sage)"
-                                                : "var(--action-blue)",
+                                            : watered ? "var(--g-sage)"
+                                                : "var(--g-ghost)",
                                     }}
                                     onClick={() => {
                                         if (pendingWater) {

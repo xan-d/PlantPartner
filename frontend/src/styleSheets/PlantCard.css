@@ -318,14 +318,10 @@
     -webkit-backdrop-filter: var(--blur-sm);
     color: var(--terra-dark);
     font-family: 'DM Sans';
-    font-size: 1px;
+    font-size: 11px;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    cursor: pointer;
-    box-shadow: var(--shadow-xs),
-        inset 0 1px 0 rgba(255, 255, 255, 0.60);
-    transition: background 0.2s, box-shadow 0.2s, transform 0.15s;
 }
 
 .card-water-btn:hover {
