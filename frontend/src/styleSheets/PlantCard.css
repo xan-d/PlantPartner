@@ -656,25 +656,25 @@
 @media (max-width: 480px) {
 
     .card-delete-btn {
-    position: absolute;
-    top: 0px;
-    left: 0px;
-    background: rgba(246, 245, 238, 0.60);
-    backdrop-filter: var(--blur-xs);
-    -webkit-backdrop-filter: var(--blur-xs);
-    border: 1px solid rgba(255, 255, 255, 0.45);
-    border-radius: 0%;
-    border-bottom-right-radius: 8px;
-    width: 20px;
-    height: 20px;
-    color: var(--ink-700);
-    font-size: 12px;
-    cursor: pointer;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    transition: background 0.2s, color 0.2s;
-}
+        position: absolute;
+        top: 0px;
+        left: 0px;
+        background: rgba(246, 245, 238, 0.60);
+        backdrop-filter: var(--blur-xs);
+        -webkit-backdrop-filter: var(--blur-xs);
+        border: 1px solid rgba(255, 255, 255, 0.45);
+        border-radius: 0%;
+        border-bottom-right-radius: 8px;
+        width: 20px;
+        height: 20px;
+        color: var(--ink-700);
+        font-size: 12px;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: background 0.2s, color 0.2s;
+    }
 
     /* Hide scientific name on mobile */
     .card-scientific {
@@ -738,7 +738,7 @@
     .plant-card {
         height: auto !important;
         /* let content determine height */
-        min-height: 240px;
+        min-height: 270px;
         /* optional minimum */
     }
 
@@ -757,6 +757,7 @@
     /* Reduce image height */
     .card-image {
         height: auto;
+        min-height: 100px;
         /* smaller on mobile */
     }
 
