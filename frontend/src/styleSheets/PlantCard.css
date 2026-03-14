@@ -19,7 +19,7 @@
     /* smaller width */
     padding: 2px;
     /* smaller padding for compact look */
-    border-radius: 6px;
+    border-radius: var(--r-sm);
     border: none;
     margin-bottom: 0px;
     background: var(--g-deep);
@@ -32,6 +32,16 @@
     /* center horizontally, small top margin */
     text-align: center;
     /* center text inside button */
+}
+
+
+@media (max-width: 480px) {
+    .card-water-btn {
+        font-size: 10px;
+        padding: 6px 4px;
+        white-space: nowrap;
+        /* prevent awkward wrapping */
+    }
 }
 
 .card-care-icon {
@@ -216,8 +226,8 @@
 /* Plant name uses Cormorant for that editorial serif look */
 .card-name {
     font-family: var(--font-display);
-    font-size: 19px;
-    font-weight: 600;
+    font-size: 24px;
+    font-weight: 700;
     color: var(--ink-900);
     letter-spacing: 0em;
     line-height: 1.15;
@@ -225,7 +235,8 @@
 
 .card-scientific {
     font-family: var(--font-display);
-    font-size: 10px;
+    font-size: 14px;
+    font-weight: 500;
     font-style: italic;
     color: var(--ink-500);
     margin-top: 1px;
@@ -235,7 +246,7 @@
     display: flex;
     align-items: center;
     gap: 5px;
-    font-size: 10px;
+    font-size: 14px;
     color: var(--ink-500);
     font-family: var(--font-ui);
     margin-bottom: 10px;
@@ -252,7 +263,7 @@
     display: flex;
     justify-content: space-between;
     align-items: center;
-    font-size: 10px;
+    font-size: 14px;
     font-family: var(--font-ui);
     color: var(--ink-500);
     margin-bottom: 5px;
@@ -273,7 +284,7 @@
 }
 
 .card-water-label {
-    font-size: 9px;
+    font-size: 11px;
     color: var(--ink-300);
     font-family: var(--font-ui);
     margin-top: 3px;
@@ -322,12 +333,21 @@
     background: var(--glass-terra);
     backdrop-filter: var(--blur-sm);
     -webkit-backdrop-filter: var(--blur-sm);
-    color: var(--terra-dark);
+    color: #fff;
     font-family: 'DM Sans';
-    font-size: 11px;
+    font-size: 13px;
     font-weight: 600;
     letter-spacing: 0.06em;
     text-transform: uppercase;
+
+    position: relative;
+    overflow: hidden;
+
+    display: flex;
+    justify-content: center;
+    /* horizontal centering */
+    align-items: center;
+    /* vertical centering */
 }
 
 .card-water-btn:hover {
@@ -357,9 +377,14 @@
 
 .card-undo-progress {
     position: absolute;
-    bottom: 0;
-    left: 0;
-    height: 2px;
+    bottom: -6px;
+    /* push it below the button */
+    left: 50%;
+    transform: translateX(-50%);
+    width: 80%;
+    /* 80% of the button width */
+    height: 4px;
+    /* thicker */
     background: var(--terra-dark);
     border-radius: 2px;
     transition: width 0.1s linear;
@@ -367,7 +392,8 @@
 
 .card-actions-row {
     display: flex;
-    align-items: center;   /* ← this fixes vertical misalignment */
+    align-items: center;
+    /* ← this fixes vertical misalignment */
     gap: 6px;
     width: 100%;
     margin-top: auto;

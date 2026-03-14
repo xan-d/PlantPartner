@@ -1,67 +1,3 @@
-/* Container for the search bar */
-.plant-search-wrapper {
-    position: relative;
-    display: flex;
-    align-items: center;
-    width: 100%;           /* take full width */
-    max-width: 400px;      /* optional max width on desktop */
-    margin: 0 auto;        /* center on page */
-}
-
-/* The actual input */
-.plant-search-input {
-    font-family: 'DM Sans', sans-serif;
-    font-size: clamp(0.85rem, 2.2vw, 0.95rem); /* responsive font */
-    color: #1C2418; 
-    background: #fff;
-    border: none;
-    font-weight: 500;
-    border-radius: 9999px; 
-    padding: 6px 40px 6px 16px; /* space for icon */
-    width: 100%;         /* fill the container */
-    outline: none;
-    box-sizing: border-box; /* prevent padding overflow */
-}
-
-.plant-search-input::placeholder {
-    color: #a0a0a0a6;
-}
-
-/* Change border color on focus */
-.plant-search-input:focus {
-    border-color: var(--terra-dark);
-}
-
-/* Search button inside the input box */
-.plant-search-btn {
-    position: absolute;
-    right: 8px;
-    background: transparent;
-    border: none;
-    font-size: 1rem;
-    cursor: pointer;
-    padding: 0;
-    color: #777;
-}
-
-.plant-search-btn img {
-    opacity: 40%;
-    display: block;
-    margin: 0;
-    pointer-events: none;
-}
-
-.toolbar-controls {
-    position: sticky;   /* makes it stick to top */
-    top: 72px;          /* offset below your sticky header height */
-    border-radius: 10px;
-    padding-top: 10px;
-    padding-bottom: 3px;
-    z-index: 10;       /* above plant grid */
-    margin-left: 5px;
-    margin-right: 5px;
-}
-
 @media (max-width: 480px) {
     .plant-search-wrapper {
         max-width: 40%;
@@ -78,12 +14,17 @@
 /* ── Toolbar ─────────────────────────────────────────────────── */
 
 .toolbar-controls {
-    position: sticky;
-    top: 84px;                          /* your header height */
+    padding: 4px 0px;  /* uniform padding top/bottom */
+    margin: 0 5px;       /* left/right only */
+    border-radius: 10px;
     z-index: 10;
-    background: none;
+    position: sticky;
+    top: 92px;
+    /* background: var(--glass-gray);
+    backdrop-filter: var(--blur-xs);
+    -webkit-backdrop-filter: var(--blur-xs); */
     border-bottom: 1px solid #e4ddd0;
-    margin-bottom: 8px;
+    transition: background 0.4s ease, backdrop-filter 0.4s ease;
 }
 
 .toolbar-inner {
@@ -96,6 +37,12 @@
     min-height: 44px;
 }
 
+.toolbar-controls.scrolled {
+    background: var(--glass-gray);  /* or any blue shade you like */
+    backdrop-filter: var(--blur-xs);
+    -webkit-backdrop-filter: var(--blur-xs);
+}
+
 /* ── Segmented control shell ─────────────────────────────────── */
 
 .seg-control {
@@ -103,6 +50,11 @@
     align-items: center;
     background: #ede8df;
     border-radius: 8px;
+
+    background: var(--glass-terra);
+    backdrop-filter: var(--blur-sm);
+    -webkit-backdrop-filter: var(--blur-sm);
+    
     padding: 3px;
     gap: 2px;
     box-shadow: 0px 4px 2px rgba(0,0,0,0.08); /* subtle shadow for elevation */

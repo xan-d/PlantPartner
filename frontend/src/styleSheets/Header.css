@@ -1,5 +1,5 @@
 /* ================================================================
-   Header.css — v3.1
+   Header.css — v3.3
    ================================================================ */
 @import './Tokens.css';
 
@@ -7,12 +7,13 @@
     display: flex;
     align-items: center;
     justify-content: space-between;
-    padding: 10px 24px;
-    
+    /* brand left, menu right */
+    padding: 14px 24px;
+
     /* Gradient instead of flat dark green */
     background: linear-gradient(90deg, var(--g-deep) 30%, var(--g-mid) 80%, var(--g-sage));
-    
-    border-bottom: 1px solid rgba(0,0,0,0.12);
+
+    border-bottom: 1px solid rgba(0, 0, 0, 0.12);
     box-shadow: var(--shadow-md);
     position: sticky;
     top: 0;
@@ -20,6 +21,16 @@
     margin-bottom: 12px;
 }
 
+.header-right {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    justify-content: flex-end;
+    /* right-align items */
+}
+
+/* Decorative bottom line */
 .header::after {
     content: '';
     display: block;
@@ -31,7 +42,27 @@
     left: 0;
 }
 
-/* Brand name — cream on deep green */
+/* ── Brand (logo + title) ────────────────────────────────────── */
+.app-brand {
+    display: flex;
+    align-items: center;
+    /* vertically center text with logo */
+    gap: 8px;
+    height: 64px;
+    /* match the logo's height */
+}
+
+/* CSS variable to toggle logo vertical placement */
+.app-logo {
+    width: 64px;
+    height: 64px;
+    filter: invert(1);
+    vertical-align: middle;
+    transform: translateY(var(--logo-offset, -5px));
+    /* adjustable via --logo-offset */
+}
+
+/* Title vertically centered naturally */
 .app-title {
     font-family: var(--font-display);
     font-size: clamp(22px, 3vw, 30px);
@@ -41,116 +72,62 @@
     letter-spacing: 0.01em;
     white-space: nowrap;
     line-height: 1;
-    user-select: none;
+    /* remove extra space */
+    display: flex;
+    align-items: center;
+    /* vertical center with logo */
+    transform: translate3d(-15px, 5px, 0px);
 }
 
-/* ── Hamburger ──────────────────────────────────────────────── */
-
-.menu-container { position: relative; }
-
-.hamburger {
-    display: flex; flex-direction: column; justify-content: center;
-    gap: 5px; background: none; border: none; cursor: pointer;
-    padding: 7px; border-radius: var(--r-sm); transition: background 0.15s;
-}
-
-.hamburger:hover { background: rgba(246, 245, 238, 0.12); }
-
-/* Lines are cream on the dark header */
-.hamburger-line {
-    display: block;
-    width: 22px; height: 2px;
-    background-color: var(--cream);
-    border-radius: 2px;
-    transition: transform 0.25s ease, opacity 0.25s ease;
-    transform-origin: center;
-}
-
-.hamburger-line.open:nth-child(1) { transform: translateY(7px) rotate(45deg); }
-.hamburger-line.open:nth-child(2) { opacity: 0; transform: scaleX(0); }
-.hamburger-line.open:nth-child(3) { transform: translateY(-7px) rotate(-45deg); }
-
-/* ── Dropdown — cream glass, drops below dark header ────────── */
-
-.dropdown {
-    position: absolute;
-    top: calc(100% + 8px);
-    right: 0;
-
-    background: var(--glass-strong);
-    backdrop-filter: var(--blur-md);
-    -webkit-backdrop-filter: var(--blur-md);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--r-md);
-    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255,255,255,0.85);
-
-    min-width: 200px;
-    z-index: 200;
-    padding: 6px;
+/* Wrapper around title for underline only */
+.app-title-wrapper {
     display: flex;
     flex-direction: column;
-
-    animation: dropdown-in 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
-    transform-origin: top right;
+    justify-content: center;
+    /* vertical center */
+    width: max-content;
+    /* line matches text width */
+    padding-bottom: 8px;
+    border-bottom: none;
 }
 
-.app-brand {
+.app-title-wrapper::after {
+    content: '';
+    display: block;
+    height: 3px;
+    width: 100%;
+    background: linear-gradient(90deg, var(--g-deep), var(--g-mid), var(--g-sage));
+    border-radius: 2px;
+    margin-top: 0px;
+}
+
+/* ── Right side: search + hamburger ─────────────────────────── */
+.menu-container {
     display: flex;
     align-items: center;
-    gap: 4px; /* space between logo and text */
-    fill: #fff;
+    gap: 8px;
+    flex: 0 1 auto;
+    z-index: 3000;
 }
-
-.app-logo {
-    width: 64px;    /* adjust to your preference */
-    height: 64px;
-    filter: invert(1);
-}
-
-@keyframes dropdown-in {
-    from { opacity: 0; transform: scale(0.92) translateY(-6px); }
-    to   { opacity: 1; transform: scale(1)    translateY(0);    }
-}
-
-.dropdown-item {
-    display: block; padding: 9px 14px;
-    color: var(--ink-700); text-decoration: none;
-    font-size: 14px; font-family: var(--font-ui); font-weight: 400;
-    border-radius: var(--r-sm); background: none; border: none;
-    cursor: pointer; text-align: left; width: 100%;
-    transition: background 0.13s, color 0.13s;
-}
-
-.dropdown-item:hover { background: rgba(52, 63, 50, 0.07); color: var(--ink-900); }
-
-.dropdown-item.logout { color: var(--terra); }
-.dropdown-item.logout:hover { background: var(--terra-pale); color: var(--terra-dark); }
-
-.dropdown-divider { height: 1px; background: var(--cream-tan); margin: 4px 0; }
-
-.filter-item { color: var(--ink-500); font-style: italic; }
-
-/* ── Inline header search ───────────────────────────────────── */
 
 .header-search-wrapper {
-    position: relative;
+    flex: 1;
+    max-width: 500px;
     display: flex;
     align-items: center;
-    flex: 1;
-    max-width: 340px;
-    margin: 0 24px;
+    position: relative;
 }
 
 .header-search-input {
     width: 100%;
     font-family: var(--font-ui);
-    font-size: 0.875rem;
+    font-size: 0.95rem;
     font-weight: 400;
     color: var(--cream);
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(246, 245, 238, 0.2);
     border-radius: 9999px;
-    padding: 7px 36px 7px 16px;
+    padding: 10px 36px 10px 16px;
     outline: none;
     box-sizing: border-box;
     transition: background 0.2s ease, border-color 0.2s ease;
@@ -175,11 +152,134 @@
     display: block;
 }
 
-/* Hide search/name on narrow screens — hamburger takes priority */
+/* ── Hamburger ──────────────────────────────────────────────── */
+.hamburger {
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    gap: 5px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    padding: 7px;
+    margin-right: 25px;
+    border-radius: var(--r-sm);
+    transition: background 0.15s;
+}
+
+.hamburger:hover {
+    background: rgba(246, 245, 238, 0.12);
+}
+
+.hamburger-line {
+    display: block;
+    width: 22px;
+    height: 2px;
+    background-color: var(--cream);
+    border-radius: 2px;
+    transition: transform 0.25s ease, opacity 0.25s ease;
+    transform-origin: center;
+}
+
+.hamburger-line.open:nth-child(1) {
+    transform: translateY(7px) rotate(45deg);
+}
+
+.hamburger-line.open:nth-child(2) {
+    opacity: 0;
+    transform: scaleX(0);
+}
+
+.hamburger-line.open:nth-child(3) {
+    transform: translateY(-7px) rotate(-45deg);
+}
+
+/* ── Dropdown — cream glass, drops below dark header ────────── */
+/* Dropdown stays the same */
+.dropdown {
+    position: absolute;
+    top: calc(100% + 2px);
+    right: 50px;
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--r-sm);
+    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.85);
+    min-width: 200px;
+    z-index: 200; /* should still be fine */
+    padding: 6px;
+    display: none; /* initially hidden */
+    flex-direction: column;
+    animation: dropdown-in 0.18s cubic-bezier(0.34, 1.56, 0.64, 1);
+    transform-origin: top right;
+}
+
+/* When hamburger is open, show dropdown */
+.menu-container.open .dropdown {
+    display: flex;
+}
+
+@keyframes dropdown-in {
+    from {
+        opacity: 0;
+        transform: scale(0.92) translateY(-6px);
+    }
+
+    to {
+        opacity: 1;
+        transform: scale(1) translateY(0);
+    }
+}
+
+.dropdown-item {
+    display: block;
+    padding: 9px 14px;
+    color: var(--ink-700);
+    text-decoration: none;
+    font-size: 14px;
+    font-family: var(--font-ui);
+    font-weight: 400;
+    border-radius: var(--r-sm);
+    background: none;
+    border: none;
+    cursor: pointer;
+    text-align: left;
+    width: 100%;
+    transition: background 0.13s, color 0.13s;
+}
+
+.dropdown-item:hover {
+    background: rgba(52, 63, 50, 0.07);
+    color: var(--ink-900);
+}
+
+.dropdown-item.logout {
+    color: var(--terra);
+}
+
+.dropdown-item.logout:hover {
+    background: var(--terra-pale);
+    color: var(--terra-dark);
+}
+
+.dropdown-divider {
+    height: 1px;
+    background: var(--cream-tan);
+    margin: 4px 0;
+}
+
+.filter-item {
+    color: var(--ink-500);
+    font-style: italic;
+}
+
+/* ── Responsive adjustments ─────────────────────────────────── */
 @media (max-width: 480px) {
     .app-title {
         display: none;
     }
+
     .header-search-wrapper {
         display: flex;
         max-width: 100%;

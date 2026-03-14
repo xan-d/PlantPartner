@@ -41,10 +41,11 @@
     --glass-deep:   rgba(52,  63,  50,  0.82);   /* --g-deep glass      */
     --glass-border: rgba(255, 253, 246, 0.68);
     --glass-border-dim: rgba(200, 192, 174, 0.35);
-    --glass-terra:  rgba(201, 147, 131, 0.44);   /* terra tint          */
+    --glass-terra:  rgba(205, 127, 103, 0.562);   /* terra tint          */
     --glass-terra-dark:  rgba(158, 98, 80, 0.44);   /* terra tint          */
-    --glass-gray: rgba(88, 87, 86, 0.763);
+    --glass-gray: rgba(255, 255, 255, 0.374);
 
+    --blur-xs:  blur(4px);
     --blur-sm:  blur(8px);
     --blur-md:  blur(18px);
     --blur-lg:  blur(30px);

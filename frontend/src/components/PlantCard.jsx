@@ -15,6 +15,15 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
     const timerRef = useRef(null);
     const navigate = useNavigate();
 
+    const isMobile = window.innerWidth <= 480; // breakpoint for mobile
+    const waterLabel = pendingWater
+        ? "Undo"
+        : watered
+            ? "✓"
+            : isMobile
+                ? "Water"
+                : "Mark as Watered";
+
     if (!plant) return null;
 
     const daysSinceWatered = daysSince(plant.lastWatered);
@@ -122,19 +131,16 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                                 {/* Water button */}
                                 <div className="card-water-btn-wrap" onClick={e => e.stopPropagation()}>
                                     {pendingWater && (
-                                        <div
-                                            className="card-undo-progress"
-                                            style={{ width: `${progress}%` }}
-                                        />
+                                        <div className="card-undo-progress" style={{ width: `${progress}%` }} />
                                     )}
                                     <button
                                         className="card-water-btn"
                                         style={{
                                             background: pendingWater
-                                                ? "var(--status-thirsty)"
+                                                ? "var(--glass-terra-dark)"
                                                 : watered
                                                     ? "var(--g-sage)"
-                                                    : "var(--cream-tan)",
+                                                    : "var(--g-deep)",
                                         }}
                                         onClick={() => {
                                             if (pendingWater) {
@@ -158,7 +164,7 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                                             }, interval);
                                         }}
                                     >
-                                        {pendingWater ? "Undo" : watered ? "✓ Watered!" : "Mark as Watered"}
+                                        {waterLabel}
                                     </button>
                                 </div>
 

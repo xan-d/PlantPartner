@@ -16,6 +16,10 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
     const navigate = useNavigate();
     const [internalPlants, setInternalPlants] = useState([]);
 
+    
+
+    const toolbar = document.querySelector('.toolbar-controls');
+
     const [page, setPage] = useState(0);
     const PLANTS_PER_PAGE = 8;
 
@@ -58,6 +62,14 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
         window.addEventListener('resize', handleResize);
         return () => window.removeEventListener('resize', handleResize);
     }, []);
+
+    window.addEventListener('scroll', () => {
+        if (window.scrollY > 20) {   // change threshold as needed
+            toolbar.classList.add('scrolled');
+        } else {
+            toolbar.classList.remove('scrolled');
+        }
+    });
 
     async function fetchPlants() {
         try {
@@ -120,143 +132,143 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
     }
 
 
-async function handleWaterPlant(id) {
-    try {
-        const res = await fetch(`${API_URL}/api/plants/${id}/water`, {
-            credentials: 'include', method: "PUT"
-        });
-        if (!res.ok) return;
-        if (!isControlled) {
-            setInternalPlants(prev =>
-                prev.map(p => p.plantID === id
-                    ? { ...p, lastWatered: new Date().toISOString().split('T')[0] }
-                    : p
-                ).sort((a, b) => {
-                    const urgencyA = a.lastWatered ? daysSince(a.lastWatered) / a.waterFreq : Infinity;
-                    const urgencyB = b.lastWatered ? daysSince(b.lastWatered) / b.waterFreq : Infinity;
-                    return urgencyB - urgencyA;
-                })
-            );
+    async function handleWaterPlant(id) {
+        try {
+            const res = await fetch(`${API_URL}/api/plants/${id}/water`, {
+                credentials: 'include', method: "PUT"
+            });
+            if (!res.ok) return;
+            if (!isControlled) {
+                setInternalPlants(prev =>
+                    prev.map(p => p.plantID === id
+                        ? { ...p, lastWatered: new Date().toISOString().split('T')[0] }
+                        : p
+                    ).sort((a, b) => {
+                        const urgencyA = a.lastWatered ? daysSince(a.lastWatered) / a.waterFreq : Infinity;
+                        const urgencyB = b.lastWatered ? daysSince(b.lastWatered) / b.waterFreq : Infinity;
+                        return urgencyB - urgencyA;
+                    })
+                );
+            }
+        } catch (err) {
+            console.error(err);
         }
-    } catch (err) {
-        console.error(err);
     }
-}
 
-async function handleDelete(id) {
-    try {
-        const res = await fetch(`${API_URL}/api/plants/${id}`, {
-            credentials: 'include', method: "DELETE"
-        });
-        if (res.status === 204 && !isControlled) {
-            setInternalPlants(prev => prev.filter(p => p.plantID !== id));
+    async function handleDelete(id) {
+        try {
+            const res = await fetch(`${API_URL}/api/plants/${id}`, {
+                credentials: 'include', method: "DELETE"
+            });
+            if (res.status === 204 && !isControlled) {
+                setInternalPlants(prev => prev.filter(p => p.plantID !== id));
+            }
+        } catch (err) {
+            console.error(err);
         }
-    } catch (err) {
-        console.error(err);
     }
-}
 
-const totalPages = Math.ceil((sortedPlants.length + 1) / PLANTS_PER_PAGE);
-const filteredPlants = sortedPlants.filter(plant =>
-    plant.name.toLowerCase().includes(searchTerm.toLowerCase())
-);
+    const totalPages = Math.ceil((sortedPlants.length + 1) / PLANTS_PER_PAGE);
+    const filteredPlants = sortedPlants.filter(plant =>
+        plant.name.toLowerCase().includes(searchTerm.toLowerCase())
+    );
 
-const itemsThisPage = filteredPlants.slice(
-    page * PLANTS_PER_PAGE,
-    (page + 1) * PLANTS_PER_PAGE
-);
-const showAddCard = itemsThisPage.length < PLANTS_PER_PAGE || (page === Math.floor(sortedPlants.length / PLANTS_PER_PAGE));
+    const itemsThisPage = filteredPlants.slice(
+        page * PLANTS_PER_PAGE,
+        (page + 1) * PLANTS_PER_PAGE
+    );
+    const showAddCard = itemsThisPage.length < PLANTS_PER_PAGE || (page === Math.floor(sortedPlants.length / PLANTS_PER_PAGE));
 
-const btnBase = {
-    width: 28, height: 28, borderRadius: 6,
-    fontSize: 11, fontWeight: 700, cursor: 'pointer',
-    border: '1.5px solid',
-};
+    const btnBase = {
+        width: 28, height: 28, borderRadius: 6,
+        fontSize: 11, fontWeight: 700, cursor: 'pointer',
+        border: '1.5px solid',
+    };
 
-return (
-    <>
-        {/* Header outside the max-width wrapper so it spans the full viewport */}
-        {!hideHeader && (
-            <Header
-                searchTerm={searchTerm}
-                onSearchChange={val => { setSearchTerm(val); setPage(0); }}
-            />
-        )}
+    return (
+        <>
+            {/* Header outside the max-width wrapper so it spans the full viewport */}
+            {!hideHeader && (
+                <Header
+                    searchTerm={searchTerm}
+                    onSearchChange={val => { setSearchTerm(val); setPage(0); }}
+                />
+            )}
 
-        <div ref={gridTopRef} style={{ maxWidth: '1200px', margin: '0 auto' }}>
+            <div ref={gridTopRef} style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
-            {/* Toolbar: pagination left, layout right */}
-            <div className="toolbar-controls">
-                <div className="toolbar-inner">
+                {/* Toolbar: pagination left, layout right */}
+                <div className="toolbar-controls">
+                    <div className="toolbar-inner">
 
-                    {/* Pagination — segmented control */}
-                    {totalPages > 1 && (
-                        <div className="seg-control">
-                            {Array.from({ length: totalPages }, (_, i) => (
+                        {/* Pagination — segmented control */}
+                        {totalPages > 1 && (
+                            <div className="seg-control">
+                                {Array.from({ length: totalPages }, (_, i) => (
+                                    <button
+                                        key={i}
+                                        onClick={() => setPage(i)}
+                                        className={`seg-btn ${page === i ? 'seg-btn--active' : ''}`}
+                                    >
+                                        {i + 1}
+                                    </button>
+                                ))}
+                            </div>
+                        )}
+
+                        {/* Layout toggle — icon-based segmented control */}
+                        <div className="seg-control seg-control--right">
+                            {mobileLayouts.map((l, i) => (
                                 <button
-                                    key={i}
-                                    onClick={() => setPage(i)}
-                                    className={`seg-btn ${page === i ? 'seg-btn--active' : ''}`}
+                                    key={l.label}
+                                    onClick={() => setLayoutIdx(i)}
+                                    className={`seg-btn ${layoutIdx === i ? 'seg-btn--active' : ''}`}
+                                    aria-label={`${l.label} columns`}
+                                    title={`${l.label} columns`}
                                 >
-                                    {i + 1}
+                                    <LayoutIcon cols={l.label} />
                                 </button>
                             ))}
                         </div>
-                    )}
 
-                    {/* Layout toggle — icon-based segmented control */}
-                    <div className="seg-control seg-control--right">
-                        {mobileLayouts.map((l, i) => (
-                            <button
-                                key={l.label}
-                                onClick={() => setLayoutIdx(i)}
-                                className={`seg-btn ${layoutIdx === i ? 'seg-btn--active' : ''}`}
-                                aria-label={`${l.label} columns`}
-                                title={`${l.label} columns`}
-                            >
-                                <LayoutIcon cols={l.label} />
-                            </button>
-                        ))}
                     </div>
-
                 </div>
+
+                <div
+                    style={{
+                        position: 'relative',   // ensures it's not affected by parent padding
+                        left: 0,
+                        right: 0,
+                        width: '100%',
+                        height: '1px',
+                        backgroundColor: '#d1d1d1',
+                        margin: '0',            // removes default spacing
+                    }}
+                />
+
+                {/* Plant grid */}
+                <div
+                    style={{
+                        display: "grid",
+                        gridTemplateColumns: `repeat(${layout.cardsPerRow}, minmax(0, ${layout.maxWidth}))`,
+                        gap: `${layout.gap}px`,
+                        padding: `${layout.padding}px`,
+                        justifyContent: "center",
+                    }}
+                >
+                    {itemsThisPage.map(plant => (
+                        <PlantCard
+                            key={plant.plantID}
+                            plant={plant}
+                            cardHeight={layout.cardHeight}
+                            onWater={handleWaterPlant}
+                            onDelete={handleDelete}
+                        />
+                    ))}
+                    {showAddCard && <AddPlantCard onClick={() => navigate("/plants/add")} />}
+                </div>
+
             </div>
-
-            <div
-                style={{
-                    position: 'relative',   // ensures it's not affected by parent padding
-                    left: 0,
-                    right: 0,
-                    width: '100%',
-                    height: '1px',
-                    backgroundColor: '#d1d1d1',
-                    margin: '0',            // removes default spacing
-                }}
-            />
-
-            {/* Plant grid */}
-            <div
-                style={{
-                    display: "grid",
-                    gridTemplateColumns: `repeat(${layout.cardsPerRow}, minmax(0, ${layout.maxWidth}))`,
-                    gap: `${layout.gap}px`,
-                    padding: `${layout.padding}px`,
-                    justifyContent: "center",
-                }}
-            >
-                {itemsThisPage.map(plant => (
-                    <PlantCard
-                        key={plant.plantID}
-                        plant={plant}
-                        cardHeight={layout.cardHeight}
-                        onWater={handleWaterPlant}
-                        onDelete={handleDelete}
-                    />
-                ))}
-                {showAddCard && <AddPlantCard onClick={() => navigate("/plants/add")} />}
-            </div>
-
-        </div>
-    </>
-);
+        </>
+    );
 }

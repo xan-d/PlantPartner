@@ -36,58 +36,52 @@ export default function Header({ searchTerm, onSearchChange }) {
         <header className="header">
             <div className="app-brand">
                 <img src="/plantPartnerLogo.svg" alt="Plant Partner Logo" className="app-logo" />
-                <h1 className="app-title">Plant Partner</h1>
+                <div className="app-title-wrapper">
+                    <h1 className="app-title">Plant Partner</h1>
+                </div>
             </div>
 
-            {/* Search bar — only renders on pages that pass the prop */}
-            {onSearchChange !== undefined && (
-                <div className="header-search-wrapper">
-                    <input
-                        type="text"
-                        className="header-search-input"
-                        placeholder="Search plants…"
-                        value={searchTerm ?? ''}
-                        onChange={e => onSearchChange(e.target.value)}
-                    />
-                    <img
-                        src="/search-icon-light.png"
-                        alt=""
-                        className="header-search-icon"
-                        width="15"
-                        height="15"
-                    />
-                </div>
-            )}
-
-            <div className="menu-container">
-                <button
-                    className="hamburger"
-                    onClick={() => setMenuOpen(!menuOpen)}
-                    aria-label="Toggle menu"
-                >
-                    <span className={`hamburger-line ${menuOpen ? "open" : ""}`} />
-                    <span className={`hamburger-line ${menuOpen ? "open" : ""}`} />
-                    <span className={`hamburger-line ${menuOpen ? "open" : ""}`} />
-                </button>
-
-                {menuOpen && (
-                    <div className="dropdown">
-                        <a href="/dashboard" className="dropdown-item" onClick={() => setMenuOpen(false)}>
-                            Dashboard
-                        </a>
-                        <a href="/plants" className="dropdown-item" onClick={() => setMenuOpen(false)}>
-                            My Plants
-                        </a>
-                        <div className="dropdown-divider" />
-                        <button className="dropdown-item filter-item" onClick={() => setMenuOpen(false)}>
-                            🔍 Filter
-                        </button>
-                        <div className="dropdown-divider" />
-                        <button className="dropdown-item logout" onClick={handleLogout}>
-                            🚪 Logout
-                        </button>
+            <div className="header-right">
+                {onSearchChange !== undefined && (
+                    <div className="header-search-wrapper">
+                        <input
+                            type="text"
+                            className="header-search-input"
+                            placeholder="Search plants…"
+                            value={searchTerm ?? ''}
+                            onChange={e => onSearchChange(e.target.value)}
+                        />
+                        <img
+                            src="/search-icon-light.png"
+                            alt=""
+                            className="header-search-icon"
+                            width="15"
+                            height="15"
+                        />
                     </div>
                 )}
+
+                <div className={`menu-container ${menuOpen ? "open" : ""}`}>
+                    <button
+                        className="hamburger"
+                        onClick={() => setMenuOpen(!menuOpen)}
+                        aria-label="Toggle menu"
+                    >
+                        <span className={`hamburger-line ${menuOpen ? "open" : ""}`} />
+                        <span className={`hamburger-line ${menuOpen ? "open" : ""}`} />
+                        <span className={`hamburger-line ${menuOpen ? "open" : ""}`} />
+                    </button>
+
+                    { /* Dropdown menu inside menu-container */}
+                    <div className="dropdown">
+                        <a href="/dashboard" className="dropdown-item">Dashboard</a>
+                        <a href="/plants" className="dropdown-item">My Plants</a>
+                        <div className="dropdown-divider" />
+                        <button className="dropdown-item filter-item">Filter</button>
+                        <div className="dropdown-divider" />
+                        <button className="dropdown-item logout" onClick={handleLogout}>Logout</button>
+                    </div>
+                </div>
             </div>
         </header>
     );
