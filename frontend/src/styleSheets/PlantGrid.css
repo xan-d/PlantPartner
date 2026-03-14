@@ -76,7 +76,7 @@
     border: none;
     border-radius: 6px;
     background: transparent;
-    color: #7a7060;
+    color: #ffffff;
     font-family: var(--font-ui);
     font-size: 0.8rem;
     font-weight: 500;
@@ -92,7 +92,7 @@
 
 .seg-btn--active {
     background: #fff;
-    color: var(--terra-dark, #7a3e2a);
+    color:  #505050;
     box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.06);
 }
 
