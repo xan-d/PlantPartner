@@ -129,3 +129,60 @@
 .dropdown-divider { height: 1px; background: var(--cream-tan); margin: 4px 0; }
 
 .filter-item { color: var(--ink-500); font-style: italic; }
+
+/* ── Inline header search ───────────────────────────────────── */
+
+.header-search-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+    flex: 1;
+    max-width: 340px;
+    margin: 0 24px;
+}
+
+.header-search-input {
+    width: 100%;
+    font-family: var(--font-ui);
+    font-size: 0.875rem;
+    font-weight: 400;
+    color: var(--cream);
+    background: rgba(255, 255, 255, 0.1);
+    border: 1px solid rgba(246, 245, 238, 0.2);
+    border-radius: 9999px;
+    padding: 7px 36px 7px 16px;
+    outline: none;
+    box-sizing: border-box;
+    transition: background 0.2s ease, border-color 0.2s ease;
+    letter-spacing: 0.01em;
+}
+
+.header-search-input::placeholder {
+    color: rgba(246, 245, 238, 0.45);
+    font-style: italic;
+}
+
+.header-search-input:focus {
+    background: rgba(255, 255, 255, 0.16);
+    border-color: rgba(246, 245, 238, 0.5);
+}
+
+.header-search-icon {
+    position: absolute;
+    right: 12px;
+    opacity: 0.45;
+    pointer-events: none;
+    display: block;
+}
+
+/* Hide search/name on narrow screens — hamburger takes priority */
+@media (max-width: 480px) {
+    .app-title {
+        display: none;
+    }
+    .header-search-wrapper {
+        display: flex;
+        max-width: 100%;
+        margin: 0 12px;
+    }
+}

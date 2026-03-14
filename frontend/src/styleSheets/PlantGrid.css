@@ -58,8 +58,6 @@
     padding-top: 10px;
     padding-bottom: 3px;
     z-index: 10;       /* above plant grid */
-    background-color: var(--glass-gray);    /* optional extra padding */
-    box-shadow: 0 2px 6px rgba(0,0,0,0.08); /* subtle shadow for elevation */
     margin-left: 5px;
     margin-right: 5px;
 }
@@ -73,6 +71,107 @@
 @media (max-width: 480px) {
     .layout-btn[data-label="3"],
     .layout-btn[data-label="4"] {
+        display: none;
+    }
+}
+
+/* ── Toolbar ─────────────────────────────────────────────────── */
+
+.toolbar-controls {
+    position: sticky;
+    top: 84px;                          /* your header height */
+    z-index: 10;
+    background: none;
+    border-bottom: 1px solid #e4ddd0;
+    margin-bottom: 8px;
+}
+
+.toolbar-inner {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 8px 20px;
+    max-width: 1200px;
+    margin: 0 auto;
+    min-height: 44px;
+}
+
+/* ── Segmented control shell ─────────────────────────────────── */
+
+.seg-control {
+    display: flex;
+    align-items: center;
+    background: #ede8df;
+    border-radius: 8px;
+    padding: 3px;
+    gap: 2px;
+    box-shadow: 0px 4px 2px rgba(0,0,0,0.08); /* subtle shadow for elevation */
+}
+
+.seg-control--right {
+    margin-left: auto;  /* push to right if no pagination */
+}
+
+/* ── Individual segment button ───────────────────────────────── */
+
+.seg-btn {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 28px;
+    padding: 0 10px;
+    border: none;
+    border-radius: 6px;
+    background: transparent;
+    color: #7a7060;
+    font-family: var(--font-ui);
+    font-size: 0.8rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s ease, color 0.15s ease, box-shadow 0.15s ease;
+    letter-spacing: 0.02em;
+}
+
+.seg-btn:hover:not(.seg-btn--active) {
+    background: rgba(255, 255, 255, 0.6);
+    color: #3d3528;
+}
+
+.seg-btn--active {
+    background: #fff;
+    color: var(--terra-dark, #7a3e2a);
+    box-shadow: 0 1px 3px rgba(0, 0, 0, 0.12), 0 1px 1px rgba(0, 0, 0, 0.06);
+}
+
+/* ── Layout icon (grid preview) ─────────────────────────────── */
+
+.layout-icon {
+    display: grid;
+    grid-template-columns: repeat(var(--cols), 1fr);
+    grid-template-rows: repeat(2, 1fr);
+    gap: 2px;
+    width: 18px;
+    height: 14px;
+    
+}
+
+.layout-icon__cell {
+    background: currentColor;
+    border-radius: 1px;
+    opacity: 0.85;
+    
+}
+
+.layout-icon__cell--faded {
+    opacity: 0.3;
+}
+
+/* ── Hide extra layout options on mobile ─────────────────────── */
+
+@media (max-width: 480px) {
+    /* If you want to hide 3-col and 4-col options on small screens */
+    .seg-control--right .seg-btn:nth-child(n+3) {
         display: none;
     }
 }

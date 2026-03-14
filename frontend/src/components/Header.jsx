@@ -3,7 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import "../styleSheets/Header.css";
 
-export default function Header() {
+export default function Header({ searchTerm, onSearchChange }) {
     const [menuOpen, setMenuOpen] = useState(false);
     const navigate = useNavigate();
 
@@ -38,6 +38,26 @@ export default function Header() {
                 <img src="/plantPartnerLogo.svg" alt="Plant Partner Logo" className="app-logo" />
                 <h1 className="app-title">Plant Partner</h1>
             </div>
+
+            {/* Search bar — only renders on pages that pass the prop */}
+            {onSearchChange !== undefined && (
+                <div className="header-search-wrapper">
+                    <input
+                        type="text"
+                        className="header-search-input"
+                        placeholder="Search plants…"
+                        value={searchTerm ?? ''}
+                        onChange={e => onSearchChange(e.target.value)}
+                    />
+                    <img
+                        src="/search-icon-light.png"
+                        alt=""
+                        className="header-search-icon"
+                        width="15"
+                        height="15"
+                    />
+                </div>
+            )}
 
             <div className="menu-container">
                 <button

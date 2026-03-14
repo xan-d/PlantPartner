@@ -117,56 +117,69 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                                 </div>
                             </div>
 
-                            {/* Care flip button */}
-                            <div className="card-care-link">
-                                {plant.careLink ? (
-                                    <button
-                                        className="card-care-btn"
-                                        onClick={handleFlip}
-                                    >
-                                        Care Info
-                                    </button>
-                                ) : (
-                                    <span className="inactive">No Care Link</span>
-                                )}
-                            </div>
+                            <div className="card-actions-row">
 
-                            {/* Water button */}
-                            <div className="card-water-btn-wrap" onClick={e => e.stopPropagation()}>
-                                {pendingWater && (
-                                    <div className="card-undo-progress" style={{ width: `${progress}%` }} />
-                                )}
-                                <button
-                                    className="card-water-btn"
-                                    style={{
-                                        background: pendingWater ? "var(--status-thirsty)"
-                                            : watered ? "var(--g-sage)"
-                                                : "var(--g-ghost)",
-                                    }}
-                                    onClick={() => {
-                                        if (pendingWater) {
-                                            clearInterval(timerRef.current);
-                                            setPendingWater(false);
-                                            setProgress(100);
-                                            return;
-                                        }
-                                        setPendingWater(true);
-                                        let timeLeft = 3000;
-                                        const interval = 100;
-                                        timerRef.current = setInterval(() => {
-                                            timeLeft -= interval;
-                                            setProgress((timeLeft / 3000) * 100);
-                                            if (timeLeft <= 0) {
+                                {/* Water button */}
+                                <div className="card-water-btn-wrap" onClick={e => e.stopPropagation()}>
+                                    {pendingWater && (
+                                        <div
+                                            className="card-undo-progress"
+                                            style={{ width: `${progress}%` }}
+                                        />
+                                    )}
+                                    <button
+                                        className="card-water-btn"
+                                        style={{
+                                            background: pendingWater
+                                                ? "var(--status-thirsty)"
+                                                : watered
+                                                    ? "var(--g-sage)"
+                                                    : "var(--cream-tan)",
+                                        }}
+                                        onClick={() => {
+                                            if (pendingWater) {
                                                 clearInterval(timerRef.current);
                                                 setPendingWater(false);
                                                 setProgress(100);
-                                                handleWater();
+                                                return;
                                             }
-                                        }, interval);
-                                    }}
-                                >
-                                    {pendingWater ? "Undo" : watered ? "✓ Watered!" : "Mark as Watered"}
-                                </button>
+                                            setPendingWater(true);
+                                            let timeLeft = 3000;
+                                            const interval = 100;
+                                            timerRef.current = setInterval(() => {
+                                                timeLeft -= interval;
+                                                setProgress((timeLeft / 3000) * 100);
+                                                if (timeLeft <= 0) {
+                                                    clearInterval(timerRef.current);
+                                                    setPendingWater(false);
+                                                    setProgress(100);
+                                                    handleWater();
+                                                }
+                                            }, interval);
+                                        }}
+                                    >
+                                        {pendingWater ? "Undo" : watered ? "✓ Watered!" : "Mark as Watered"}
+                                    </button>
+                                </div>
+
+                                {/* Care flip button */}
+                                <div className="card-care-link">
+                                    {plant.careLink ? (
+                                        <button
+                                            className="card-care-btn"
+                                            onClick={handleFlip}
+                                        >
+                                            <img
+                                                src="/care-info.png"
+                                                alt="Care Info"
+                                                className="card-care-icon"
+                                            />
+                                        </button>
+                                    ) : (
+                                        <span className="inactive">No Care Link</span>
+                                    )}
+                                </div>
+
                             </div>
                         </div>
                     </div>
