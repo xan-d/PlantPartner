@@ -100,7 +100,7 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                                 <div className="card-name-content">
                                     <div className="card-name">
                                         {isMobile
-                                            ? truncateText(plant.name, 12)
+                                            ? truncateText(plant.name, 10)
                                             : truncateText(plant.name, 18)
                                         }
                                     </div>
