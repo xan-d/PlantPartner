@@ -210,7 +210,7 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                         <button
                             className="card-back-close"
                             onClick={(e) => { e.stopPropagation(); setFlipped(false); }}
-                        >✕</button>
+                        >↩</button>
                     </div>
 
                     <div className="card-back-body">
