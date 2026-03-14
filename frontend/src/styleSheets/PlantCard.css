@@ -284,7 +284,7 @@
 }
 
 .card-water-label {
-    font-size: 11px;
+    font-size: 1px;
     color: var(--ink-300);
     font-family: var(--font-ui);
     margin-top: 3px;
@@ -651,4 +651,129 @@
 
 .card-notes-save:hover {
     background: var(--g-mid);
+}
+
+@media (max-width: 480px) {
+
+    .card-delete-btn {
+    position: absolute;
+    top: 0px;
+    left: 0px;
+    background: rgba(246, 245, 238, 0.60);
+    backdrop-filter: var(--blur-xs);
+    -webkit-backdrop-filter: var(--blur-xs);
+    border: 1px solid rgba(255, 255, 255, 0.45);
+    border-radius: 0%;
+    border-bottom-right-radius: 8px;
+    width: 20px;
+    height: 20px;
+    color: var(--ink-700);
+    font-size: 12px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.2s, color 0.2s;
+}
+
+    /* Hide scientific name on mobile */
+    .card-scientific {
+        display: none;
+    }
+
+
+
+    /* Hide light requirement info */
+    .card-light {
+        display: none;
+    }
+
+    /* Hide room badge */
+    .card-room-badge {
+        position: absolute;
+        top: 0px;
+        right: 0px;
+        background: var(--glass);
+        backdrop-filter: var(--blur-sm);
+        -webkit-backdrop-filter: var(--blur-sm);
+        color: var(--ink-800);
+        font-size: 12px;
+        font-family: var(--font-ui);
+        font-weight: 500;
+        letter-spacing: 0.08em;
+        text-transform: uppercase;
+        padding: 1px 6px;
+        border-radius: 0px;
+        border-bottom-left-radius: 8px;
+        border: 1px solid var(--glass-border);
+    }
+
+    /* Optional: adjust font sizes or padding for smaller screens */
+    .card-name {
+        font-size: 24px;
+    }
+
+    .card-body {
+        padding: 8px 10px 12px;
+    }
+
+    .card-water-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        font-size: 16px;
+        font-family: var(--font-ui);
+        color: var(--ink-500);
+        margin-bottom: 10px;
+    }
+
+    .card-water-label {
+        font-size: 14px;
+        color: var(--ink-300);
+        font-family: var(--font-ui);
+        margin-top: 6px;
+    }
+
+    /* Shrink the card itself */
+    .plant-card {
+        height: auto !important;
+        /* let content determine height */
+        min-height: 240px;
+        /* optional minimum */
+    }
+
+    /* Move buttons closer to water section */
+    .card-actions-row {
+        margin-top: 6px;
+        /* remove auto spacing */
+        gap: 4px;
+    }
+
+    /* Reduce padding inside body */
+    .card-body {
+        padding: 6px 10px 8px;
+    }
+
+    /* Reduce image height */
+    .card-image {
+        height: auto;
+        /* smaller on mobile */
+    }
+
+    /* Optional: shrink water & care buttons */
+    .card-care-btn,
+    .card-water-btn {
+        height: 28px;
+        font-size: 11px;
+    }
+
+    /* Remove extra bottom margin from water section */
+    .card-water-section {
+        margin-bottom: 4px;
+    }
+
+    /* Remove extra bottom margin from notes */
+    .card-notes-section {
+        margin-bottom: 4px;
+    }
 }

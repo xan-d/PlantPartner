@@ -52,8 +52,8 @@
     border-radius: 8px;
 
     background: var(--glass-terra);
-    backdrop-filter: var(--blur-sm);
-    -webkit-backdrop-filter: var(--blur-sm);
+    backdrop-filter: var(--blur-xxs);
+    -webkit-backdrop-filter: var(--blur-xxs);
     
     padding: 3px;
     gap: 2px;

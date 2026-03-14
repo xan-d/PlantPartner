@@ -98,7 +98,12 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                             <div className="card-name-row">
                                 <div className="card-color-bar" style={{ backgroundColor: plant.color }} />
                                 <div className="card-name-content">
-                                    <div className="card-name">{truncateText(plant.name, 18)}</div>
+                                    <div className="card-name">
+                                        {isMobile
+                                            ? truncateText(plant.name, 12)
+                                            : truncateText(plant.name, 18)
+                                        }
+                                    </div>
                                     <div className="card-scientific">{plant.scientific}</div>
                                 </div>
                             </div>
@@ -109,7 +114,10 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
 
                             <div className="card-water-section">
                                 <div className="card-water-header">
-                                    <span>💧 Water</span>
+                                    <span>{isMobile
+                                            ? "💧"
+                                            :"💧 Water"
+                                        }</span>
                                     <span style={{ color: status.color, fontWeight: 700 }}>{status.label}</span>
                                 </div>
                                 <div className="card-water-bar-track">

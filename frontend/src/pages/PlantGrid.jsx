@@ -16,10 +16,6 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
     const navigate = useNavigate();
     const [internalPlants, setInternalPlants] = useState([]);
 
-    
-
-    const toolbar = document.querySelector('.toolbar-controls');
-
     const [page, setPage] = useState(0);
     const PLANTS_PER_PAGE = 8;
 
@@ -63,13 +59,17 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
         return () => window.removeEventListener('resize', handleResize);
     }, []);
 
-    window.addEventListener('scroll', () => {
-        if (window.scrollY > 20) {   // change threshold as needed
-            toolbar.classList.add('scrolled');
-        } else {
-            toolbar.classList.remove('scrolled');
-        }
-    });
+    const toolbarRef = useRef(null);
+
+    useEffect(() => {
+        const handleScroll = () => {
+            if (!toolbarRef.current) return;
+            toolbarRef.current.classList.toggle('scrolled', window.scrollY > 20);
+        };
+
+        window.addEventListener('scroll', handleScroll);
+        return () => window.removeEventListener('scroll', handleScroll);
+    }, []);
 
     async function fetchPlants() {
         try {
@@ -198,41 +198,41 @@ export default function PlantGrid({ plants: externalPlants, hideHeader = false }
             <div ref={gridTopRef} style={{ maxWidth: '1200px', margin: '0 auto' }}>
 
                 {/* Toolbar: pagination left, layout right */}
-                <div className="toolbar-controls">
-                    <div className="toolbar-inner">
+                    <div className="toolbar-controls" ref={toolbarRef}>
+                        <div className="toolbar-inner">
 
-                        {/* Pagination — segmented control */}
-                        {totalPages > 1 && (
-                            <div className="seg-control">
-                                {Array.from({ length: totalPages }, (_, i) => (
+                            {/* Pagination — segmented control */}
+                            {totalPages > 1 && (
+                                <div className="seg-control">
+                                    {Array.from({ length: totalPages }, (_, i) => (
+                                        <button
+                                            key={i}
+                                            onClick={() => setPage(i)}
+                                            className={`seg-btn ${page === i ? 'seg-btn--active' : ''}`}
+                                        >
+                                            {i + 1}
+                                        </button>
+                                    ))}
+                                </div>
+                            )}
+
+                            {/* Layout toggle — icon-based segmented control */}
+                            <div className="seg-control seg-control--right">
+                                {mobileLayouts.map((l, i) => (
                                     <button
-                                        key={i}
-                                        onClick={() => setPage(i)}
-                                        className={`seg-btn ${page === i ? 'seg-btn--active' : ''}`}
+                                        key={l.label}
+                                        onClick={() => setLayoutIdx(i)}
+                                        className={`seg-btn ${layoutIdx === i ? 'seg-btn--active' : ''}`}
+                                        aria-label={`${l.label} columns`}
+                                        title={`${l.label} columns`}
                                     >
-                                        {i + 1}
+                                        <LayoutIcon cols={l.label} />
                                     </button>
                                 ))}
                             </div>
-                        )}
 
-                        {/* Layout toggle — icon-based segmented control */}
-                        <div className="seg-control seg-control--right">
-                            {mobileLayouts.map((l, i) => (
-                                <button
-                                    key={l.label}
-                                    onClick={() => setLayoutIdx(i)}
-                                    className={`seg-btn ${layoutIdx === i ? 'seg-btn--active' : ''}`}
-                                    aria-label={`${l.label} columns`}
-                                    title={`${l.label} columns`}
-                                >
-                                    <LayoutIcon cols={l.label} />
-                                </button>
-                            ))}
                         </div>
-
                     </div>
-                </div>
 
                 <div
                     style={{
