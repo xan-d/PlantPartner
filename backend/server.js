@@ -11,6 +11,7 @@ const plantCardsRoutes = require('./routes/plantCard');
 const authRoutes = require('./routes/auth');
 const pushRoutes = require('./routes/push');
 const userStatsRoutes = require('./routes/userStats');
+const bugRoutes = require('./routes/bugReport');
 
 const { sendWateringNotifications } = require('./controllers/pushController');
 
@@ -52,6 +53,7 @@ app.use('/api/plants', plantCardsRoutes);
 app.use('/api/auth', authRoutes);
 app.use('/api/push', pushRoutes);
 app.use('/api/user/stats', userStatsRoutes);
+app.use('/api/bugs', bugRoutes);
 
 setInterval(async () => {
     const now = new Date();

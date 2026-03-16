@@ -1,0 +1,79 @@
+@import './tokens.css';
+
+.bug-card {
+    position: fixed;
+    bottom: 85px;
+    right: 20px;
+    width: 320px;
+
+    background: #e1e1e1bc;
+    border-radius: 12px;
+    padding: 16px;
+
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.15);
+    border: 1px solid #e6e6e6;
+
+    backdrop-filter: var(--blur-xs);
+    -webkit-backdrop-filter: var(--blur-xs);
+
+    z-index: 9999;
+    animation: bugPop 0.18s ease-out;
+}
+
+.bug-card h3 {
+    margin-top: 0;
+    font-size: 28px;
+    font-family: var(--font-display);
+    font-weight: 900;
+    color: var(--ink-700)
+}
+
+
+.bug-card input,
+.bug-card textarea {
+    width: 100%;
+    margin-top: 8px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ddd;
+    font-size: 14px;
+}
+
+.bug-card textarea {
+    resize: vertical;
+}
+
+.bug-card-buttons {
+    margin-top: 12px;
+    display: flex;
+    justify-content: flex-end;
+    gap: 8px;
+}
+
+.bug-card-buttons button {
+    padding: 6px 10px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+}
+
+.bug-card-buttons button[type="submit"] {
+    background: #4CAF50;
+    color: white;
+}
+
+.bug-card-buttons button[type="button"] {
+    background: #ffffff;
+}
+
+@keyframes bugPop {
+    from {
+        transform: translateY(8px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}

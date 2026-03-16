@@ -64,6 +64,33 @@ body {
 
 /* ── Tooltip ────────────────────────────────────────────────── */
 
+.bug-float {
+    position: fixed;
+    bottom: 20px;
+    right: 20px;
+    border-radius: 50%;
+    z-index: 9999;
+    width: 50px;
+    height: 50px;
+    font-size: 22px;
+    border: none;
+    cursor: pointer;
+
+    filter: grayscale(100%);
+    transition: filter 0.3s ease;
+
+    background: #ffffff56;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.2);
+
+    backdrop-filter: var(--blur-xxs);
+    -webkit-backdrop-filter: var(--blur-xxs);
+}
+
+.bug-float:hover {
+    filter: grayscale(0%);
+    /* restores color on hover */
+}
+
 .info-tooltip {
     position: fixed;
     top: 20px;
