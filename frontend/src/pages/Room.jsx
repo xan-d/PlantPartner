@@ -11,6 +11,7 @@ import Header from '../components/Header';
 import PlantGrid from './PlantGrid';
 import { groupPlantsByRoom, getRoomSummaries } from '../utils/roomHelpers';
 import { daysSince } from '../utils/plantHelpers';
+import Icon from '../components/Icon';
 import '../styleSheets/Room.css';
 
 export default function RoomPage() {
@@ -47,7 +48,7 @@ export default function RoomPage() {
     if (loading) {
         return (
             <div className="room-page-loading">
-                <p>🌱 Loading room...</p>
+                <p><Icon name="leaf" size={18} /> Loading room...</p>
             </div>
         );
     }
@@ -71,16 +72,16 @@ export default function RoomPage() {
                             ↤ Back
                         </button>
                         <div className="room-stat-chip">
-                            <span>🌿</span>
+                            <span><img src="/logoWhite.png" alt="logo" style={{ width: 20, height: 20, verticalAlign: 'middle' }} /></span>
                             <span>{roomPlants.length} Total</span>
                         </div>
                         <div className="room-stat-chip healthy">
-                            <span>✅</span>
+                            <span><Icon name="leaf" size={16} /></span>
                             <span>{healthyCount} Hydrated</span>
                         </div>
                         {overdueCount > 0 && (
                             <div className="room-stat-chip overdue">
-                                <span>💧</span>
+                                <span><Icon name="drop" size={16} /></span>
                                 <span>{overdueCount} Overdue</span>
                             </div>
                         )}

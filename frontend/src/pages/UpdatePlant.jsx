@@ -1,34 +1,5 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate, useParams } from 'react-router-dom';
-import { API_URL } from '../config';
-import '../App.css';
-
 // UTILS
 import { daysSince } from '../utils/plantHelpers';
-
-const FIELD_STYLE = {
-    width: '100%',
-    padding: '8px 12px',
-    borderRadius: 8,
-    border: '1.5px solid #e8e2d4',
-    background: '#faf8f3',
-    fontFamily: "'Helvetica Neue', sans-serif",
-    fontSize: 13,
-    color: '#2d3a28',
-    boxSizing: 'border-box',
-    outline: 'none',
-};
-
-const LABEL_STYLE = {
-    display: 'block',
-    fontSize: 11,
-    fontFamily: "'Helvetica Neue', sans-serif",
-    color: '#6b7c60',
-    fontWeight: 700,
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-};
 
 export default function UpdatePlant() {
     const navigate = useNavigate();
@@ -39,6 +10,7 @@ export default function UpdatePlant() {
     const [submitting, setSubmitting] = useState(false);
     const [loading, setLoading] = useState(true);
     const [error, setError] = useState(null);
+    const [fetching, setFetching] = useState(false);
     const fileInputRef = useRef();
 
     const [form, setForm] = useState({
@@ -109,6 +81,41 @@ export default function UpdatePlant() {
         }
     }
 
+    async function handleFetchCare() {
+        if (!form.careLink) return;
+        setFetching(true);
+        setError(null);
+        try {
+            const res = await fetch(`${API_URL}/api/plants/care-preview?url=${encodeURIComponent(form.careLink)}`, {
+                credentials: 'include',
+            });
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                setError(body.error || 'Could not fetch care info');
+                return;
+            }
+            const care = await res.json();
+            setForm(prev => ({
+                ...prev,
+                ...(care.commonName && { name: care.commonName }),
+                ...(care.scientificName && { scientific: care.scientificName }),
+                ...(care.sun && { light: care.sun }),
+            }));
+
+            if (care.imageUrl) {
+                setImagePreview(care.imageUrl);
+                const proxyUrl = `${API_URL}/api/plants/proxy-image?url=${encodeURIComponent(care.imageUrl)}`;
+                const blob = await fetch(proxyUrl, { credentials: 'include' }).then(r => r.blob());
+                const file = new File([blob], 'plant-cover.webp', { type: 'image/webp' });
+                setImageFile(file);
+            }
+        } catch (err) {
+            setError('Failed to fetch care info');
+        } finally {
+            setFetching(false);
+        }
+    }
+
     async function handleSubmit() {
         if (!form.name || !form.scientific) {
             setError('Name and scientific name are required.');
@@ -121,12 +128,12 @@ export default function UpdatePlant() {
         // only append image if a new one was selected
         if (imageFile) formData.append('image', imageFile);
         Object.entries(form).forEach(([key, val]) => {
-        // if we have a new imageFile, don't append the old image URL/path
-        if (key === 'image' && imageFile) {
-            return; 
-        }
-        formData.append(key, val);
-    });
+            // if we have a new imageFile, don't append the old image URL/path
+            if (key === 'image' && imageFile) {
+                return;
+            }
+            formData.append(key, val);
+        });
 
         try {
             const res = await fetch(`${API_URL}/api/plants/${id}`, {
@@ -148,106 +155,32 @@ export default function UpdatePlant() {
 
     if (loading) {
         return (
-            <div style={{
-                minHeight: '100vh',
-                background: '#f2efe8',
-                display: 'flex',
-                alignItems: 'center',
-                justifyContent: 'center',
-                fontFamily: "'Helvetica Neue', sans-serif",
-                color: '#6b7c60',
-                fontSize: 14,
-            }}>
+            <div className="plant-form-root" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', color: '#6b7c60', fontSize: 14 }}>
                 Loading plant...
             </div>
         );
     }
 
     return (
-        <div style={{
-            height: '97vh',
-            display: 'flex',
-            flexDirection: 'column',
-            alignItems: 'center',
-            justifyContent: 'center',
-            textAlign: 'center',
-            padding: '0px 0px',
-            fontFamily: "'Georgia', serif",
-            background: '#f2efe8',
-            borderRadius: 15,
-        }}>
-            <div style={{
-                maxWidth: 480,
-                margin: '0 auto',
-                background: '#faf8f3',
-                borderRadius: 20,
-                border: '1.5px solid #e8e2d4',
-                boxShadow: '0 4px 24px rgba(60,80,40,0.08)',
-                padding: '32px 32px',
-            }}>
-                {/* Header */}
-                <h2 style={{
-                    fontSize: 26, color: '#2d3a28', fontWeight: 700,
-                    margin: '0 0 6px', letterSpacing: '-0.02em',
-                }}>✏️ Update Plant</h2>
-                <p style={{
-                    color: '#8a9e80', fontSize: 13, fontStyle: 'italic',
-                    margin: '0 0 28px', fontFamily: "'Helvetica Neue', sans-serif",
-                }}>Edit the details for {form.name || 'your plant'}</p>
-
+        <div className="plant-form-root">
+            <div className="plant-form-card">
+                <h2 className="plant-form-title">✏️ Update Plant</h2>
+                <p className="plant-form-subtitle">Edit the details for {form.name || 'your plant'}</p>
                 {/* Image Drop Zone */}
-                <div style={{ marginBottom: 20 }}>
-                    <label style={LABEL_STYLE}>Plant Photo</label>
-                    <div
-                        onClick={() => fileInputRef.current.click()}
-                        onDragOver={e => { e.preventDefault(); setDragging(true); }}
-                        onDragLeave={() => setDragging(false)}
-                        onDrop={handleImageDrop}
-                        style={{
-                            border: `2px dashed ${dragging ? '#4a7c59' : '#c8d8c0'}`,
-                            borderRadius: 12,
-                            height: 140,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            background: dragging ? '#eef5eb' : '#f5f7f3',
-                            overflow: 'hidden',
-                            transition: 'border-color 0.2s, background 0.2s',
-                            position: 'relative',
-                        }}
-                    >
-                        {imagePreview ? (
-                            <>
-                                <img src={imagePreview} alt="preview" style={{
-                                    width: '100%', height: '100%', objectFit: 'cover',
-                                }} />
-                                {/* Hover overlay hint */}
-                                <div style={{
-                                    position: 'absolute', inset: 0,
-                                    background: 'rgba(0,0,0,0.35)',
-                                    display: 'flex', alignItems: 'center', justifyContent: 'center',
-                                    opacity: 0,
-                                    transition: 'opacity 0.2s',
-                                    color: '#fff',
-                                    fontSize: 12,
-                                    fontFamily: "'Helvetica Neue', sans-serif",
-                                }}
-                                    onMouseEnter={e => e.currentTarget.style.opacity = 1}
-                                    onMouseLeave={e => e.currentTarget.style.opacity = 0}
-                                >
-                                    Click to replace photo
-                                </div>
-                            </>
-                        ) : (
-                            <div style={{ textAlign: 'center', color: '#8a9e80' }}>
-                                <div style={{ fontSize: 32, marginBottom: 6 }}>📷</div>
-                                <div style={{ fontSize: 12, fontFamily: "'Helvetica Neue', sans-serif" }}>
-                                    Drag & drop or click to upload
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                <div className={`plant-form-dropzone${dragging ? ' dragging' : ''}`}
+                    onClick={() => fileInputRef.current.click()}
+                    onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={handleImageDrop}
+                >
+                    {imagePreview ? (
+                        <img src={imagePreview} alt="preview" />
+                    ) : (
+                        <div className="dropzone-hint">
+                            <div style={{ fontSize: 32, marginBottom: 6 }}>📷</div>
+                            Drag & drop or click to upload
+                        </div>
+                    )}
                     <input
                         ref={fileInputRef}
                         type="file"
@@ -256,24 +189,23 @@ export default function UpdatePlant() {
                         style={{ display: 'none' }}
                     />
                 </div>
-
                 {/* Form Fields */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-                    <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={LABEL_STYLE}>Common Name *</label>
-                        <input name="name" value={form.name} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. Golden Pothos" />
+                <div className="plant-form-fields">
+                    <div className="full-width">
+                        <label className="plant-form-label">Common Name *</label>
+                        <input name="name" value={form.name} onChange={handleChange} className="plant-form-input" placeholder="e.g. Golden Pothos" />
                     </div>
-                    <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={LABEL_STYLE}>Scientific Name *</label>
-                        <input name="scientific" value={form.scientific} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. Epipremnum aureum" />
-                    </div>
-                    <div>
-                        <label style={LABEL_STYLE}>Room</label>
-                        <input name="room" value={form.room} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. Living Room" />
+                    <div className="full-width">
+                        <label className="plant-form-label">Scientific Name *</label>
+                        <input name="scientific" value={form.scientific} onChange={handleChange} className="plant-form-input" placeholder="e.g. Epipremnum aureum" />
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Light</label>
-                        <select name="light" value={form.light} onChange={handleChange} style={FIELD_STYLE}>
+                        <label className="plant-form-label">Room</label>
+                        <input name="room" value={form.room} onChange={handleChange} className="plant-form-input" placeholder="e.g. Living Room" />
+                    </div>
+                    <div>
+                        <label className="plant-form-label">Light</label>
+                        <select name="light" value={form.light} onChange={handleChange} className="plant-form-select">
                             <option>Low</option>
                             <option>Indirect</option>
                             <option>Bright</option>
@@ -281,44 +213,51 @@ export default function UpdatePlant() {
                         </select>
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Last Watered (days ago)</label>
-                        <input name="lastWatered" type="number" min="0" value={form.lastWatered} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. 2" />
+                        <label className="plant-form-label">Last Watered (days ago)</label>
+                        <input name="lastWatered" type="number" min="0" value={form.lastWatered} onChange={handleChange} className="plant-form-input" placeholder="e.g. 2" />
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Water Every (days)</label>
-                        <input name="waterFreq" type="number" min="1" value={form.waterFreq} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. 7" />
+                        <label className="plant-form-label">Water Every (days)</label>
+                        <input name="waterFreq" type="number" min="1" value={form.waterFreq} onChange={handleChange} className="plant-form-input" placeholder="e.g. 7" />
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Last Fed (days ago)</label>
-                        <input name="lastFed" type="number" min="0" value={form.lastFed} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. 14" />
+                        <label className="plant-form-label">Last Fed (days ago)</label>
+                        <input name="lastFed" type="number" min="0" value={form.lastFed} onChange={handleChange} className="plant-form-input" placeholder="e.g. 14" />
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Health</label>
-                        <select name="health" value={form.health} onChange={handleChange} style={FIELD_STYLE}>
+                        <label className="plant-form-label">Health</label>
+                        <select name="health" value={form.health} onChange={handleChange} className="plant-form-select">
                             <option value="happy">Happy</option>
                             <option value="okay">Okay</option>
                             <option value="thirsty">Thirsty</option>
                         </select>
                     </div>
-                    <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={LABEL_STYLE}>Care Link</label>
-                        <input name="careLink" value={form.careLink} onChange={handleChange} style={FIELD_STYLE} placeholder="https://..." />
+                    <div className="full-width">
+                        <label className="plant-form-label">Care Link</label>
+                        <div className="plant-form-care-row">
+                            <input
+                                name="careLink"
+                                value={form.careLink}
+                                onChange={handleChange}
+                                className="plant-form-input custom-input"
+                                placeholder="https://gardenish.co/plants/your-plant"
+                                style={{ flex: 1, fontSize: 12, color: '#3d3d3d', fontWeight: 500 }}
+                            />
+                            <button
+                                onClick={handleFetchCare}
+                                disabled={!form.careLink || fetching}
+                                className="plant-form-care-btn"
+                            >
+                                {fetching ? '...' : '🔍 Fetch'}
+                            </button>
+                        </div>
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Card Color</label>
-                        <input name="color" type="color" value={form.color} onChange={handleChange} style={{ ...FIELD_STYLE, padding: 4, height: 36, cursor: 'pointer' }} />
+                        <label className="plant-form-label">Card Color</label>
+                        <input name="color" type="color" value={form.color} onChange={handleChange} className="plant-form-input plant-form-color" />
                     </div>
                 </div>
-
-                {/* Error */}
-                {error && (
-                    <p style={{
-                        color: '#e07b4a', fontSize: 12,
-                        fontFamily: "'Helvetica Neue', sans-serif",
-                        margin: '0 0 12px',
-                    }}>{error}</p>
-                )}
-
+                {error && <div className="plant-form-error">{error}</div>}
                 {/* Buttons */}
                 <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
                     <button
@@ -343,7 +282,7 @@ export default function UpdatePlant() {
                             opacity: submitting ? 0.7 : 1,
                         }}
                     >
-                        {submitting ? 'Saving...' : '🌿 Save Changes'}
+                        {submitting ? 'Saving...' : <><img src="/logoWhite.png" alt="logo" style={{ width: 20, height: 20, verticalAlign: 'middle', marginRight: 6 }} />Save Changes</>}
                     </button>
                 </div>
             </div>

@@ -49,4 +49,42 @@ ${logsMarkdown}`,
     }
 }
 
-module.exports = { reportBug };
+async function roomRequest(req, res) {
+    const { roomName } = req.body;
+    if (!roomName || !roomName.trim()) {
+        return res.status(400).json({ error: 'Room name is required' });
+    }
+
+    try {
+        const response = await fetch(
+            "https://api.github.com/repos/xan-d/PlantPartner/issues",
+            {
+                method: "POST",
+                headers: {
+                    "Authorization": `Bearer ${process.env.GITHUB_TOKEN}`,
+                    "Accept": "application/vnd.github+json",
+                    "Content-Type": "application/json"
+                },
+                body: JSON.stringify({
+                    title: `Room icon request: ${roomName.trim()}`,
+                    body: `A user has requested an icon for the room: **${roomName.trim()}**`,
+                    labels: ["room request"]
+                })
+            }
+        );
+
+        const data = await response.json();
+
+        if (!response.ok) {
+            console.error("GitHub API error:", data);
+            return res.status(response.status).json({ error: data.message });
+        }
+
+        res.json({ success: true });
+    } catch (err) {
+        console.error("Room request error:", err);
+        res.status(500).json({ error: "Failed to submit room request" });
+    }
+}
+
+module.exports = { reportBug, roomRequest };

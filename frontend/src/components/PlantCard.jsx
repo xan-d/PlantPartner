@@ -2,6 +2,7 @@ import React, { useState, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { daysSince, waterStatus, CARE_LABELS, truncateText, greenShades } from '../utils/plantHelpers';
+import Icon from './Icon';
 import '../styleSheets/PlantCard.css';
 
 export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
@@ -109,14 +110,14 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                             </div>
 
                             <div className="card-light">
-                                <span>☀️</span><span>{plant.light} light</span>
+                                <span><Icon name="sun" size={16} /></span><span>{plant.light} light</span>
                             </div>
 
                             <div className="card-water-section">
                                 <div className="card-water-header">
                                     <span>{isMobile
-                                            ? "💧"
-                                            :"💧 Water"
+                                            ? <Icon name="drop" size={16} />
+                                            :<><Icon name="drop" size={16} /> Water</>
                                         }</span>
                                     <span style={{ color: status.color, fontWeight: 700 }}>{status.label}</span>
                                 </div>
@@ -224,7 +225,7 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                                     e.currentTarget.classList.toggle('open');
                                 }}
                             >
-                                📝 Notes
+                                                                <Icon name="edit" size={14} /> Notes
                             </button>
                             <div id={`notes-${plant.plantID}`} className="card-notes-body">
                                 <div
@@ -271,7 +272,7 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                             </div>
                         </div>
                         {careLoading && (
-                            <div className="care-loading">🌱 Loading care info...</div>
+                            <div className="care-loading"><Icon name="leaf" size={16} /> Loading care info...</div>
                         )}
                         {careError && !careLoading && (
                             <div className="care-error">{careError}</div>
@@ -281,7 +282,7 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                                 {Object.entries(careData).map(([key, value]) =>
                                     CARE_LABELS[key] ? (
                                         <div key={key} className="care-item">
-                                            <div className="care-item-label">{CARE_LABELS[key]}</div>
+                                            <div className="care-item-label"><Icon name={CARE_LABELS[key].icon} size={14} /> {CARE_LABELS[key].label}</div>
                                             <div className="care-item-value">{value}</div>
                                         </div>
                                     ) : null

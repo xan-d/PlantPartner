@@ -1,5 +1,5 @@
 /* ================================================================
-   Dashboard.css — v3
+   Dashboard.css
    ================================================================ */
 @import './Tokens.css';
 
@@ -20,7 +20,7 @@
 }
 
 .dashboard-content {
-    padding: 28px 24px;
+    padding: 56px 24px 28px 24px;
     max-width: 1000px;
     margin: 0 auto;
 }
@@ -31,7 +31,7 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    margin-bottom: 20px;
+    margin-bottom: 48px;
 }
 
 .stat-card {
@@ -40,22 +40,39 @@
     -webkit-backdrop-filter: var(--blur-md);
     border: 1px solid var(--glass-border);
     border-radius: var(--r-lg);
-    padding: 20px 16px;
+    padding: 20px 16px 16px 16px;
     text-align: center;
-    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.80);
+    box-shadow: var(--shadow-sm);
     transition: transform 0.22s ease, box-shadow 0.22s ease;
     cursor: default;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    min-height: 120px;
+}
+
+.stat-card-clickable {
+    cursor: pointer;
 }
 
 .stat-card:hover {
     transform: translateY(-4px);
-    box-shadow: var(--shadow-md), inset 0 1px 0 rgba(255, 255, 255, 0.80);
+    box-shadow: var(--shadow-md);
+}
+
+.stat-card-clickable:hover {
+    transform: translateY(-6px) scale(1.02);
 }
 
 .stat-icon {
-    font-size: 26px;
-    margin-bottom: 10px;
-    display: block;
+    font-size: 32px;
+    margin-bottom: 12px;
+    margin-top: 0;
+    display: flex;
+    align-items: flex-start;
+    justify-content: center;
+    width: 100%;
     filter: saturate(0.85);
 }
 
@@ -66,6 +83,7 @@
     color: var(--g-deep);
     letter-spacing: -0.02em;
     line-height: 1;
+    margin-bottom: 2px;
 }
 
 .stat-label {
@@ -78,40 +96,21 @@
     margin-top: 6px;
 }
 
-/* ── Bottom grid ────────────────────────────────────────────── */
-
-.dashboard-grid {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    gap: 12px;
-}
-
-.dashboard-section {
-    background: var(--glass-strong);
-    backdrop-filter: var(--blur-md);
-    -webkit-backdrop-filter: var(--blur-md);
-    border: 1px solid var(--glass-border);
-    border-radius: var(--r-lg);
-    padding: 20px;
-    box-shadow: var(--shadow-sm), inset 0 1px 0 rgba(255, 255, 255, 0.80);
-}
+/* ── Section labels ─────────────────────────────────────────── */
 
 .dashboard-section-label {
     display: block;
-    /* span full width */
-    width: max-content;
-    /* ensure full container width */
+    width: fit-content;
+    margin: 0 auto 24px auto;
     background: var(--g-deep);
     padding: 10px 16px;
-    font-family: var(--font-ui);
     font-size: 12px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
-    color: rgba(246, 245, 238, 0.75);
+    color: rgba(255, 255, 255, 0.75);
     border-radius: 6px;
-    margin-bottom: 24px
-        /* include padding in width */
+    text-align: center;
 }
 
 .section-title {
@@ -131,6 +130,30 @@
     font-family: var(--font-ui);
 }
 
+/* ── Layout ─────────────────────────────────────────────────── */
+
+.dashboard-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+}
+
+.dashboard-section {
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border-radius: var(--r-lg);
+    padding: 20px;
+}
+
+.dashboard-section-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    width: 100%;
+    gap: 8px;
+}
+
 /* ── Thirsty list ───────────────────────────────────────────── */
 
 .thirsty-list {
@@ -145,7 +168,6 @@
     gap: 10px;
     padding: 8px 10px;
     border-radius: var(--r-md);
-    border: 1px solid var(--cream-tan);
     background: var(--glass);
     cursor: pointer;
     transition: background 0.15s, transform 0.15s;
@@ -154,15 +176,6 @@
 .thirsty-item:hover {
     background: var(--glass-strong);
     transform: translateX(2px);
-}
-
-.dashboard-section-header {
-    display: flex;
-    justify-content: space-between;
-    /* label left, tooltip right */
-    align-items: center;
-    width: 100%;
-    gap: 8px;
 }
 
 .thirsty-img {
@@ -219,23 +232,50 @@
     border: 1px solid var(--g-mist);
 }
 
+/* ── Tooltip ────────────────────────────────────────────────── */
+
+.info-tooltip {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.info-icon {
+    cursor: pointer;
+    font-size: 12px;
+    font-weight: bold;
+    background: var(--g-mist);
+    border-radius: 50%;
+    width: 16px;
+    height: 16px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.tooltip-text {
+    position: absolute;
+    top: 120%;
+    right: 0;
+    background: var(--g-deep);
+    color: white;
+    font-size: 11px;
+    padding: 8px;
+    border-radius: 6px;
+    width: 220px;
+    opacity: 0;
+    pointer-events: none;
+    transition: 0.2s;
+}
+
+.info-tooltip:hover .tooltip-text {
+    opacity: 1;
+}
+
 /* ── Inspection ─────────────────────────────────────────────── */
 
 .inspection-info {
     margin-bottom: 18px;
-}
-
-.dashboard-info-tooltip {
-    display: flex;
-    align-items: center;
-    /* ensures the icon is centered with the label */
-}
-
-.dashbaord-info-icon {
-  cursor: pointer;
-  display: flex;
-  align-items: center;  /* vertically centers icon */
-  justify-content: center;
 }
 
 .inspection-countdown {
@@ -278,7 +318,6 @@
 .inspection-input {
     padding: 8px 12px;
     border-radius: var(--r-sm);
-    border: 1px solid var(--cream-tan);
     background: var(--glass);
     backdrop-filter: var(--blur-sm);
     font-family: var(--font-ui);

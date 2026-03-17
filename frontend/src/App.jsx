@@ -63,7 +63,7 @@ if (!authChecked) return (
         alignItems: 'center', justifyContent: 'center', gap: 16,
         fontFamily: "'Georgia', serif", background: '#f2efe8',
     }}>
-        <div style={{ fontSize: 48, animation: 'spin 1.5s linear infinite' }}>🌿</div>
+        <img src="/logoWhite.png" alt="logo" style={{ width: 48, height: 48, animation: 'spin 1.5s linear infinite' }} />
         <p style={{ color: '#6b7c60', fontSize: 14, fontStyle: 'italic' }}>
             Tending to your garden...
         </p>

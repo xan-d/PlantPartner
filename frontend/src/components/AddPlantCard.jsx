@@ -1,4 +1,5 @@
 import React, { useState } from "react";
+import Icon from './Icon';
 
 export default function AddPlantCard({ onClick }) {
     const [hovered, setHovered] = useState(false);
@@ -40,7 +41,7 @@ export default function AddPlantCard({ onClick }) {
                 transition: "background 0.18s, transform 0.18s",
                 transform: hovered ? "scale(1.12)" : "scale(1)",
             }}>
-                🌱
+                <Icon name="leaf" size={26} />
             </div>
             <div style={{ textAlign: "center" }}>
                 <div style={{

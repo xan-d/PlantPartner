@@ -28,33 +28,33 @@ export function groupPlantsByRoom(plants = []) {
  * @returns {Array} [{ name, plants, overdueCount, emoji }]
  */
 export function getRoomSummaries(grouped, daysSince) {
-    const ROOM_EMOJIS = {
-        'living room':  '🛋️',
-        'bedroom':      '🛏️',
-        'kitchen':      '🍳',
-        'bathroom':     '🚿',
-        'office':       '💻',
-        'balcony':      '🌇',
-        'garden':       '🌳',
-        'hallway':      '🚪',
-        'dining room':  '🍽️',
-        'garage':       '🔧',
-        'unassigned':   '📦',
+    const ROOM_ICONS = {
+        'living room':  'sofa',
+        'bedroom':      'bed',
+        'kitchen':      'bowl',
+        'bathroom':     'bathtub',
+        'office':       'computer',
+        'balcony':      'sun',
+        'garden':       'leaf',
+        'hallway':      'door',
+        'dining room':  'restaurant',
+        'garage':       'wrench',
+        'unassigned':   'building',
     };
 
-    const getRoomEmoji = (name) => {
+    const getRoomIcon = (name) => {
         const key = name.toLowerCase();
-        for (const [keyword, emoji] of Object.entries(ROOM_EMOJIS)) {
-            if (key.includes(keyword)) return emoji;
+        for (const [keyword, icon] of Object.entries(ROOM_ICONS)) {
+            if (key.includes(keyword)) return icon;
         }
-        return '🪴';
+        return 'plant';
     };
 
     const entries = Object.entries(grouped).map(([name, plants]) => ({
         name,
         plants,
         overdueCount: plants.filter(p => daysSince(p.lastWatered) >= p.waterFreq).length,
-        emoji: getRoomEmoji(name),
+        icon: getRoomIcon(name),
     }));
 
     return entries.sort((a, b) => {

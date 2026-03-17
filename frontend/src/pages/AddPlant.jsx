@@ -1,31 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
-import '../styleSheets/AddPlant.css';
-
-const FIELD_STYLE = {
-    width: '100%',
-    padding: '8px 12px',
-    borderRadius: 8,
-    border: '1.5px solid #e8e2d4',
-    background: '#faf8f3',
-    fontFamily: "'Helvetica Neue', sans-serif",
-    fontSize: 13,
-    color: '#2d3a28',
-    boxSizing: 'border-box',
-    outline: 'none',
-};
-
-const LABEL_STYLE = {
-    display: 'block',
-    fontSize: 11,
-    fontFamily: "'Helvetica Neue', sans-serif",
-    color: '#6b7c60',
-    fontWeight: 700,
-    letterSpacing: '0.06em',
-    textTransform: 'uppercase',
-    marginBottom: 4,
-};
+import '../styleSheets/AddUpdatePlant.css';
 
 export default function AddPlant() {
     const navigate = useNavigate();
@@ -33,6 +9,7 @@ export default function AddPlant() {
     const [imageFile, setImageFile] = useState(null);
     const [imagePreview, setImagePreview] = useState(null);
     const [submitting, setSubmitting] = useState(false);
+    const [fetching, setFetching] = useState(false);
     const [error, setError] = useState(null);
     const fileInputRef = useRef();
 
@@ -71,46 +48,11 @@ export default function AddPlant() {
         }
     }
 
-    async function handleSubmit() {
-        if (!form.name || !form.scientific || !imageFile) {
-            setError('Name, scientific name, and image are required.');
-            return;
-        }
-        setSubmitting(true);
-        setError(null);
-
-        const formData = new FormData();
-        formData.append('image', imageFile);
-        Object.entries(form).forEach(([key, val]) => formData.append(key, val));
-
-        try {
-            const res = await fetch(`${API_URL}/api/plants`, {
-                method: 'POST',
-                body: formData,
-                credentials: 'include',
-            },);
-            if (!res.ok) {
-                const body = await res.json().catch(() => ({}));
-                setError(body.error || 'Failed to create plant');
-                return;
-            }
-            navigate('/plants');
-        } catch (err) {
-            setError('Failed to connect to server');
-        } finally {
-            setSubmitting(false);
-        }
-    }
-
-    const [fetching, setFetching] = useState(false);
-
     async function handleFetchCare() {
         if (!form.careLink) return;
         setFetching(true);
         setError(null);
         try {
-            // You'll need to pass a plantID, so this is best used on edit — 
-            // for AddPlant, you may want a separate /api/plants/care-preview endpoint
             const res = await fetch(`${API_URL}/api/plants/care-preview?url=${encodeURIComponent(form.careLink)}`, {
                 credentials: 'include',
             });
@@ -126,7 +68,6 @@ export default function AddPlant() {
                 ...(care.scientificName && { scientific: care.scientificName }),
                 ...(care.sun && { light: care.sun }),
             }));
-
             if (care.imageUrl) {
                 setImagePreview(care.imageUrl);
                 const proxyUrl = `${API_URL}/api/plants/proxy-image?url=${encodeURIComponent(care.imageUrl)}`;
@@ -141,68 +82,57 @@ export default function AddPlant() {
         }
     }
 
+    async function handleSubmit() {
+        if (!form.name || !form.scientific) {
+            setError('Name and scientific name are required.');
+            return;
+        }
+        setSubmitting(true);
+        setError(null);
+        const formData = new FormData();
+        if (imageFile) formData.append('image', imageFile);
+        Object.entries(form).forEach(([key, val]) => formData.append(key, val));
+        try {
+            const res = await fetch(`${API_URL}/api/plants`, {
+                method: 'POST',
+                body: formData,
+                credentials: 'include',
+            });
+            if (!res.ok) {
+                const body = await res.json().catch(() => ({}));
+                setError(body.error || 'Failed to add plant');
+                return;
+            }
+            navigate('/plants');
+        } catch (err) {
+            setError('Failed to connect to server');
+        } finally {
+            setSubmitting(false);
+        }
+    }
+
     return (
-        <div style={{
-            minHeight: '100vh',
-            background: '#f2efe8',
-            backgroundImage: 'radial-gradient(circle at 20% 20%, #e8f0e0 0%, transparent 60%)',
-            padding: '48px 24px',
-            fontFamily: "'Georgia', serif",
-        }}>
-            <div style={{
-                maxWidth: 480,
-                margin: '0 auto',
-                background: '#faf8f3',
-                borderRadius: 20,
-                border: '1.5px solid #e8e2d4',
-                boxShadow: '0 4px 24px rgba(60,80,40,0.08)',
-                padding: '32px 32px',
-            }}>
-                {/* Header */}
-                <h2 style={{
-                    fontSize: 26, color: '#2d3a28', fontWeight: 700,
-                    margin: '0 0 6px', letterSpacing: '-0.02em',
-                }}>🌱 Add a Plant</h2>
-                <p style={{
-                    color: '#8a9e80', fontSize: 13, fontStyle: 'italic',
-                    margin: '0 0 28px', fontFamily: "'Helvetica Neue', sans-serif",
-                }}>Fill in the details for your new plant</p>
+        <div className="plant-form-root">
+            <div className="plant-form-card">
+                <h2 className="plant-form-title">Add a Plant</h2>
+                <p className="plant-form-subtitle">Fill in the details for your new plant</p>
 
                 {/* Image Drop Zone */}
-                <div style={{ marginBottom: 20 }}>
-                    <label style={LABEL_STYLE}>Plant Photo</label>
-                    <div
-                        onClick={() => fileInputRef.current.click()}
-                        onDragOver={e => { e.preventDefault(); setDragging(true); }}
-                        onDragLeave={() => setDragging(false)}
-                        onDrop={handleImageDrop}
-                        style={{
-                            border: `2px dashed ${dragging ? '#4a7c59' : '#c8d8c0'}`,
-                            borderRadius: 12,
-                            height: 140,
-                            display: 'flex',
-                            alignItems: 'center',
-                            justifyContent: 'center',
-                            cursor: 'pointer',
-                            background: dragging ? '#eef5eb' : '#f5f7f3',
-                            overflow: 'hidden',
-                            transition: 'border-color 0.2s, background 0.2s',
-                            position: 'relative',
-                        }}
-                    >
-                        {imagePreview ? (
-                            <img src={imagePreview} alt="preview" style={{
-                                width: '100%', height: '100%', objectFit: 'cover',
-                            }} />
-                        ) : (
-                            <div style={{ textAlign: 'center', color: '#8a9e80' }}>
-                                <div style={{ fontSize: 32, marginBottom: 6 }}>📷</div>
-                                <div style={{ fontSize: 12, fontFamily: "'Helvetica Neue', sans-serif" }}>
-                                    Drag & drop or click to upload
-                                </div>
-                            </div>
-                        )}
-                    </div>
+                <div
+                    className={`plant-form-dropzone${dragging ? ' dragging' : ''}`}
+                    onClick={() => fileInputRef.current.click()}
+                    onDragOver={e => { e.preventDefault(); setDragging(true); }}
+                    onDragLeave={() => setDragging(false)}
+                    onDrop={handleImageDrop}
+                >
+                    {imagePreview ? (
+                        <img src={imagePreview} alt="preview" />
+                    ) : (
+                        <div className="dropzone-hint">
+                            <img src="/logoWhite.png" alt="PlantPartner Logo" style={{ width: 48, height: 48, marginBottom: 6 }} />
+                            Drag & drop or click to upload
+                        </div>
+                    )}
                     <input
                         ref={fileInputRef}
                         type="file"
@@ -213,22 +143,22 @@ export default function AddPlant() {
                 </div>
 
                 {/* Form Fields */}
-                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: 14, marginBottom: 14 }}>
-                    <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={LABEL_STYLE}>Common Name *</label>
-                        <input name="name" value={form.name} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. Golden Pothos" />
+                <div className="plant-form-fields">
+                    <div className="full-width">
+                        <label className="plant-form-label">Common Name *</label>
+                        <input name="name" value={form.name} onChange={handleChange} className="plant-form-input" placeholder="e.g. Golden Pothos" />
                     </div>
-                    <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={LABEL_STYLE}>Scientific Name *</label>
-                        <input name="scientific" value={form.scientific} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. Epipremnum aureum" />
-                    </div>
-                    <div>
-                        <label style={LABEL_STYLE}>Room</label>
-                        <input name="room" value={form.room} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. Living Room" />
+                    <div className="full-width">
+                        <label className="plant-form-label">Scientific Name *</label>
+                        <input name="scientific" value={form.scientific} onChange={handleChange} className="plant-form-input" placeholder="e.g. Epipremnum aureum" />
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Light</label>
-                        <select name="light" value={form.light} onChange={handleChange} style={FIELD_STYLE}>
+                        <label className="plant-form-label">Room</label>
+                        <input name="room" value={form.room} onChange={handleChange} className="plant-form-input" placeholder="e.g. Living Room" />
+                    </div>
+                    <div>
+                        <label className="plant-form-label">Light</label>
+                        <select name="light" value={form.light} onChange={handleChange} className="plant-form-select">
                             <option>Low</option>
                             <option>Indirect</option>
                             <option>Bright</option>
@@ -236,77 +166,52 @@ export default function AddPlant() {
                         </select>
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Last Watered (days ago)</label>
-                        <input name="lastWatered" type="number" min="0" value={form.lastWatered} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. 2" />
+                        <label className="plant-form-label">Last Watered (days ago)</label>
+                        <input name="lastWatered" type="number" min="0" value={form.lastWatered} onChange={handleChange} className="plant-form-input" placeholder="e.g. 2" />
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Water Every (days)</label>
-                        <input name="waterFreq" type="number" min="1" value={form.waterFreq} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. 7" />
+                        <label className="plant-form-label">Water Every (days)</label>
+                        <input name="waterFreq" type="number" min="1" value={form.waterFreq} onChange={handleChange} className="plant-form-input" placeholder="e.g. 7" />
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Last Fed (days ago)</label>
-                        <input name="lastFed" type="number" min="0" value={form.lastFed} onChange={handleChange} style={FIELD_STYLE} placeholder="e.g. 14" />
+                        <label className="plant-form-label">Last Fed (days ago)</label>
+                        <input name="lastFed" type="number" min="0" value={form.lastFed} onChange={handleChange} className="plant-form-input" placeholder="e.g. 14" />
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Health</label>
-                        <select name="health" value={form.health} onChange={handleChange} style={FIELD_STYLE}>
+                        <label className="plant-form-label">Health</label>
+                        <select name="health" value={form.health} onChange={handleChange} className="plant-form-select">
                             <option value="happy">Happy</option>
                             <option value="okay">Okay</option>
                             <option value="thirsty">Thirsty</option>
                         </select>
                     </div>
-                    <div style={{ gridColumn: '1 / -1' }}>
-                        <label style={LABEL_STYLE}>Care Link</label>
-                        <div style={{ display: 'flex', gap: 8 }}>
+                    <div className="full-width">
+                        <label className="plant-form-label">Care Link</label>
+                        <div className="plant-form-care-row">
                             <input
                                 name="careLink"
                                 value={form.careLink}
                                 onChange={handleChange}
-                                style={{
-                                    ...FIELD_STYLE,
-                                    flex: 1,
-                                    fontSize: 12,
-                                    color: "#3d3d3d",
-                                    fontWeight: 500 // text color
-                                }}
-                                className="custom-input"
+                                className="plant-form-input custom-input"
                                 placeholder="https://gardenish.co/plants/your-plant"
+                                style={{ flex: 1, fontSize: 12, color: '#3d3d3d', fontWeight: 500 }}
                             />
                             <button
                                 onClick={handleFetchCare}
                                 disabled={!form.careLink || fetching}
-                                style={{
-                                    padding: '8px 14px',
-                                    borderRadius: 8,
-                                    border: '1.5px solid #c8d8c0',
-                                    background: fetching ? '#e8f0e0' : '#eef5eb',
-                                    color: '#4a7c59',
-                                    fontFamily: "'Helvetica Neue', sans-serif",
-                                    fontSize: 12,
-                                    fontWeight: 700,
-                                    cursor: form.careLink && !fetching ? 'pointer' : 'not-allowed',
-                                    whiteSpace: 'nowrap',
-                                    opacity: !form.careLink ? 0.5 : 1,
-                                }}
+                                className="plant-form-care-btn"
                             >
                                 {fetching ? '...' : '🔍 Fetch'}
                             </button>
                         </div>
                     </div>
                     <div>
-                        <label style={LABEL_STYLE}>Card Color</label>
-                        <input name="color" type="color" value={form.color} onChange={handleChange} style={{ ...FIELD_STYLE, padding: 4, height: 36, cursor: 'pointer' }} />
+                        <label className="plant-form-label">Card Color</label>
+                        <input name="color" type="color" value={form.color} onChange={handleChange} className="plant-form-input plant-form-color" />
                     </div>
                 </div>
 
-                {/* Error */}
-                {error && (
-                    <p style={{
-                        color: '#e07b4a', fontSize: 12,
-                        fontFamily: "'Helvetica Neue', sans-serif",
-                        margin: '0 0 12px',
-                    }}>{error}</p>
-                )}
+                {error && <div className="plant-form-error">{error}</div>}
 
                 {/* Buttons */}
                 <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
@@ -332,7 +237,7 @@ export default function AddPlant() {
                             opacity: submitting ? 0.7 : 1,
                         }}
                     >
-                        {submitting ? 'Adding...' : '🌿 Add Plant'}
+                        {submitting ? 'Adding...' : <><img src="/logoWhite.png" alt="logo" style={{ width: 20, height: 20, verticalAlign: 'middle', marginRight: 6 }} />Add Plant</>}
                     </button>
                 </div>
             </div>

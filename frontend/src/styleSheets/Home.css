@@ -1,0 +1,190 @@
+/* Home.css — Modern UI for Home Page */
+@import './Tokens.css';
+
+.home-title-group {
+    position: relative;
+    width: 100%;
+    height: 3.2rem;
+    margin-bottom: 8px;
+    z-index: 2;
+}
+
+.home-title-plant {
+    position: absolute;
+    left: -15%;
+    top: 0;
+    /* Adjust left/top as needed for custom placement */
+}
+
+.home-title-partner {
+    position: absolute;
+    left: 20%;
+    top: 0;
+    /* Adjust left/top as needed for custom placement */
+}
+
+.home-title-plant,
+.home-title-partner {
+    display: block;
+    text-align: left;
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    white-space: nowrap;
+}
+
+.home-title-plant,
+.home-title-partner {
+    display: block;
+    width: 100%;
+    text-align: center;
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+}
+
+.home-root {
+    min-height: 100vh;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    text-align: center;
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    font-family: var(--font-ui);
+    padding: 0;
+}
+
+.home-circle {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid var(--g-deep, #4a7c59);
+    width: 420px;
+    height: 420px;
+    max-width: 90vw;
+    max-height: 90vw;
+    margin: 0 auto;
+    padding: 36px 24px;
+    position: relative;
+    box-shadow: none;
+}
+
+.home-outer-circle {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 450px;
+    height: 450px;
+    max-width: 98vw;
+    max-height: 98vw;
+    border-radius: 50%;
+    border: 4px solid var(--g-deep, #4a7c59);
+    box-sizing: border-box;
+    z-index: 0;
+    pointer-events: none;
+    background: transparent;
+}
+
+.home-emoji {
+    position: absolute;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 0;
+    opacity: 0.04;
+    filter: invert(1);
+    pointer-events: none;
+    width: 130%;
+    height: 130%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.app-title {
+    font-family: var(--font-display);
+    font-size: 2.8rem;
+    color: var(--g-deep);
+    margin-bottom: 100px;
+    font-weight: 700;
+    letter-spacing: -0.01em;
+    text-align: center;
+    width: 100%;
+    align-self: center;
+    display: block;
+    /* Add this — spans are inline by default */
+}
+
+.app-subtitle {
+    font-family: var(--font-ui);
+    font-size: 1.5rem;
+    color: var(--g-sage);
+    margin-bottom: 32px;
+    font-style: italic;
+    text-align: center;
+    font-weight: 500;
+    width: 100%;
+    display: block;
+}
+
+@keyframes pulse {
+    0% {
+        transform: scale(1);
+        box-shadow: 0 4px 18px rgba(74, 124, 89, 0.30);
+    }
+
+    50% {
+        transform: scale(1.08);
+        box-shadow: 0 8px 32px rgba(74, 124, 89, 0.45);
+    }
+
+    100% {
+        transform: scale(1);
+        box-shadow: 0 4px 18px rgba(74, 124, 89, 0.30);
+    }
+}
+
+.home-cta-btn {
+    display: inline-block;
+    background: var(--g-deep);
+    color: #fff;
+    text-decoration: none;
+    padding: 14px 36px;
+    border-radius: 10px;
+    font-size: 15px;
+    font-family: var(--font-ui);
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    box-shadow: 0 4px 18px rgba(74, 124, 89, 0.30);
+    transition: transform 0.15s, box-shadow 0.15s, background 0.18s;
+    border: none;
+    cursor: pointer;
+    animation: pulse 1.2s ease-in-out infinite;
+    animation-delay: 2s;
+    animation-iteration-count: infinite;
+    animation-play-state: running;
+    animation-direction: normal;
+    animation-fill-mode: both;
+    /* The pulse will repeat every 4s, with 2.8s pause */
+    animation-name: pulse;
+    animation-duration: 1.2s;
+    animation-timing-function: ease-in-out;
+    animation-iteration-count: 10;
+    animation-delay: 2s;
+    animation-fill-mode: both;
+}
+
+.home-cta-btn:hover {
+    background: var(--g-mid);
+    transform: translateY(-2px);
+    box-shadow: 0 8px 24px rgba(74, 124, 89, 0.40);
+}

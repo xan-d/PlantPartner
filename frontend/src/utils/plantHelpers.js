@@ -12,20 +12,20 @@ export function daysSince(dateStr) {
 }
 
 export const CARE_LABELS = {
-    sun: "☀️ Sun",
-    water: "💧 Water Needs",
-    temp: "🌡️ Temp Range",
-    zones: "🗺️ USDA Zones",
-    soil: "🪴 Soil Type",
-    toxicity: "⚠️ Toxicity",
-    drought: "🏜️ Drought",
-    type: "🌿 Plant Type",
-    fertilizer: "🧪 Fertilizer",
-    pruning: "✂️ Pruning",
-    lifespan: "⏳ Lifespan",
-    size: "📏 Mature Size",
-    ph: "🧬 Soil pH",
-    difficulty: "⭐ Difficulty",
+    sun:        { icon: 'sun',         label: 'Sun' },
+    water:      { icon: 'drop',        label: 'Water Needs' },
+    temp:       { icon: 'thermometer',  label: 'Temp Range' },
+    zones:      { icon: 'earth',       label: 'USDA Zones' },
+    soil:       { icon: 'plant',       label: 'Soil Type' },
+    toxicity:   { icon: 'alert',       label: 'Toxicity' },
+    drought:    { icon: 'hourglass',   label: 'Drought' },
+    type:       { icon: 'leaf',        label: 'Plant Type' },
+    fertilizer: { icon: 'testTube',    label: 'Fertilizer' },
+    pruning:    { icon: 'scissors',    label: 'Pruning' },
+    lifespan:   { icon: 'hourglass',   label: 'Lifespan' },
+    size:       { icon: 'ruler',       label: 'Mature Size' },
+    ph:         { icon: 'dna',         label: 'Soil pH' },
+    difficulty: { icon: 'star',        label: 'Difficulty' },
 };
 
 export function truncateText(text, maxChars) {

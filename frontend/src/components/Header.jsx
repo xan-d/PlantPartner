@@ -1,10 +1,22 @@
-import { useState } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import "../styleSheets/Header.css";
 
 export default function Header({ searchTerm, onSearchChange }) {
     const [menuOpen, setMenuOpen] = useState(false);
+    const menuRef = useRef(null);
+
+    useEffect(() => {
+        if (!menuOpen) return;
+        const handleClick = (e) => {
+            if (menuRef.current && !menuRef.current.contains(e.target)) {
+                setMenuOpen(false);
+            }
+        };
+        document.addEventListener('mousedown', handleClick);
+        return () => document.removeEventListener('mousedown', handleClick);
+    }, [menuOpen]);
     const navigate = useNavigate();
 
     async function handleLogout() {
@@ -61,7 +73,7 @@ export default function Header({ searchTerm, onSearchChange }) {
                     </div>
                 )}
 
-                <div className={`menu-container ${menuOpen ? "open" : ""}`}>
+                <div ref={menuRef} className={`menu-container ${menuOpen ? "open" : ""}`}>
                     <button
                         className="hamburger"
                         onClick={() => setMenuOpen(!menuOpen)}
