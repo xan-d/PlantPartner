@@ -1,6 +1,7 @@
 import React, { useState, useRef } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { API_URL } from '../config';
+import Icon from '../components/Icon';
 import '../styleSheets/AddUpdatePlant.css';
 
 export default function AddPlant() {
@@ -114,7 +115,7 @@ export default function AddPlant() {
     return (
         <div className="plant-form-root">
             <div className="plant-form-card">
-                <h2 className="plant-form-title">Add a Plant</h2>
+                <h2 className="plant-form-title"><Icon name="plant" size={24} /> Add a Plant</h2>
                 <p className="plant-form-subtitle">Fill in the details for your new plant</p>
 
                 {/* Image Drop Zone */}
@@ -129,7 +130,7 @@ export default function AddPlant() {
                         <img src={imagePreview} alt="preview" />
                     ) : (
                         <div className="dropzone-hint">
-                            <img src="/logoWhite.png" alt="PlantPartner Logo" style={{ width: 48, height: 48, marginBottom: 6 }} />
+                            <Icon name="camera" size={32} style={{ marginBottom: 6 }} />
                             Drag & drop or click to upload
                         </div>
                     )}
@@ -194,14 +195,14 @@ export default function AddPlant() {
                                 onChange={handleChange}
                                 className="plant-form-input custom-input"
                                 placeholder="https://gardenish.co/plants/your-plant"
-                                style={{ flex: 1, fontSize: 12, color: '#3d3d3d', fontWeight: 500 }}
+                                style={{ flex: 1 }}
                             />
                             <button
                                 onClick={handleFetchCare}
                                 disabled={!form.careLink || fetching}
                                 className="plant-form-care-btn"
                             >
-                                {fetching ? '...' : '🔍 Fetch'}
+                                {fetching ? '...' : <><Icon name="search" size={12} /> Fetch</>}
                             </button>
                         </div>
                     </div>
@@ -214,30 +215,19 @@ export default function AddPlant() {
                 {error && <div className="plant-form-error">{error}</div>}
 
                 {/* Buttons */}
-                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                <div className="plant-form-actions">
                     <button
                         onClick={() => navigate('/plants')}
-                        style={{
-                            flex: 1, padding: '10px 0', borderRadius: 10,
-                            border: '1.5px solid #e8e2d4', background: 'transparent',
-                            color: '#6b7c60', fontFamily: "'Helvetica Neue', sans-serif",
-                            fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                        }}
+                        className="plant-form-btn-cancel"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}
-                        style={{
-                            flex: 2, padding: '10px 0', borderRadius: 10,
-                            border: 'none', background: '#4a7c59',
-                            color: '#fff', fontFamily: "'Helvetica Neue', sans-serif",
-                            fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                            opacity: submitting ? 0.7 : 1,
-                        }}
+                        className="plant-form-btn-submit"
                     >
-                        {submitting ? 'Adding...' : <><img src="/logoWhite.png" alt="logo" style={{ width: 20, height: 20, verticalAlign: 'middle', marginRight: 6 }} />Add Plant</>}
+                        {submitting ? 'Adding...' : <><Icon name="plant" size={16} />Add Plant</>}
                     </button>
                 </div>
             </div>

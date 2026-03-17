@@ -1,59 +1,68 @@
-/* AddUpdatePlant.css — Modern UI for Add/Update Plant forms */
+/* AddUpdatePlant.css — Glassmorphism style matching Dashboard */
 @import './Tokens.css';
 
 .plant-form-root {
-    min-height: 100vh;
-    background: var(--glass-strong);
-    backdrop-filter: var(--blur-md);
-    -webkit-backdrop-filter: var(--blur-md);
-    padding: 48px 24px;
+    height: 100vh;
+    overflow: hidden;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 12px 24px 12px;
     font-family: var(--font-ui);
+    box-sizing: border-box;
 }
 
 .plant-form-card {
+    width: 100%;
     max-width: 480px;
-    margin: 0 auto;
-    background: #faf8f3;
-    border-radius: 20px;
-    border: 1.5px solid #e8e2d4;
-    box-shadow: 0 4px 24px rgba(60,80,40,0.08);
-    padding: 32px 32px;
+    padding: 16px 24px 16px;
+    overflow-y: auto;
+    background: var(--glass-strong);
+    backdrop-filter: var(--blur-md);
+    -webkit-backdrop-filter: var(--blur-md);
+    border: 1px solid var(--glass-border);
+    border-radius: var(--r-lg);
+    box-shadow: var(--shadow-sm);
 }
 
 .plant-form-title {
-    font-size: 26px;
-    color: #2d3a28;
+    font-size: 20px;
+    color: var(--g-deep);
     font-weight: 700;
-    margin: 0 0 6px;
+    margin: 0 0 2px;
     letter-spacing: -0.02em;
     font-family: var(--font-display);
+    display: flex;
+    align-items: center;
+    gap: 6px;
 }
 
 .plant-form-subtitle {
-    color: #8a9e80;
-    font-size: 13px;
+    color: var(--ink-300);
+    font-size: 12px;
     font-style: italic;
-    margin: 0 0 28px;
+    margin: 0 0 12px;
     font-family: var(--font-ui);
 }
 
 .plant-form-dropzone {
-    border: 2px dashed #c8d8c0;
-    border-radius: 12px;
-    height: 140px;
+    border: 2px dashed var(--ink-100);
+    border-radius: var(--r-md);
+    height: 100px;
     display: flex;
     align-items: center;
     justify-content: center;
     cursor: pointer;
-    background: #f5f7f3;
+    background: var(--glass);
     overflow: hidden;
     transition: border-color 0.2s, background 0.2s;
     position: relative;
-    margin-bottom: 20px;
+    margin-bottom: 12px;
 }
 .plant-form-dropzone.dragging {
-    border-color: #4a7c59;
-    background: #eef5eb;
+    border-color: var(--g-mid);
+    background: var(--g-ghost);
 }
 .plant-form-dropzone img {
     width: 100%;
@@ -62,44 +71,50 @@
 }
 .plant-form-dropzone .dropzone-hint {
     text-align: center;
-    color: #8a9e80;
-    font-size: 12px;
+    color: var(--ink-300);
+    font-size: 11px;
     font-family: var(--font-ui);
 }
 .plant-form-fields {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 14px;
-    margin-bottom: 14px;
+    gap: 10px;
+    margin-bottom: 10px;
 }
 .plant-form-fields .full-width {
     grid-column: 1 / -1;
 }
 .plant-form-label {
     display: block;
-    font-size: 11px;
+    font-size: 10px;
     font-family: var(--font-ui);
-    color: #6b7c60;
+    color: var(--ink-500);
     font-weight: 700;
     letter-spacing: 0.06em;
     text-transform: uppercase;
-    margin-bottom: 4px;
+    margin-bottom: 2px;
 }
 .plant-form-input, .plant-form-select {
     width: 100%;
-    padding: 8px 12px;
-    border-radius: 8px;
-    border: 1.5px solid #e8e2d4;
-    background: #faf8f3;
+    padding: 6px 10px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--glass-border);
+    background: var(--cream);
+    backdrop-filter: var(--blur-sm);
     font-family: var(--font-ui);
-    font-size: 13px;
-    color: #2d3a28;
+    font-size: 12px;
+    color: var(--ink-900);
     box-sizing: border-box;
     outline: none;
+    transition: border-color 0.2s, background 0.2s;
+}
+.plant-form-input:focus, .plant-form-select:focus {
+    border-color: var(--g-mist);
+    background: var(--glass-strong);
 }
 .plant-form-color {
     padding: 4px;
-    height: 36px;
+    height: 32px;
     cursor: pointer;
 }
 .plant-form-care-row {
@@ -107,13 +122,13 @@
     gap: 8px;
 }
 .plant-form-care-btn {
-    padding: 8px 14px;
-    border-radius: 8px;
-    border: 1.5px solid #c8d8c0;
-    background: #eef5eb;
-    color: #4a7c59;
+    padding: 6px 12px;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--g-mist);
+    background: var(--g-ghost);
+    color: var(--g-deep);
     font-family: var(--font-ui);
-    font-size: 12px;
+    font-size: 11px;
     font-weight: 700;
     cursor: pointer;
     white-space: nowrap;
@@ -125,7 +140,56 @@
     cursor: not-allowed;
 }
 .plant-form-error {
-    color: #c0392b;
-    margin: 0 0 10px 0;
-    font-size: 14px;
+    color: var(--terra);
+    margin: 0 0 8px 0;
+    font-size: 13px;
+}
+
+/* ── Action buttons ─────────────────────────────────────────── */
+.plant-form-actions {
+    display: flex;
+    gap: 10px;
+    margin-top: 6px;
+}
+
+.plant-form-btn-cancel {
+    flex: 1;
+    padding: 8px 0;
+    border-radius: var(--r-sm);
+    border: 1px solid var(--terra);
+    background: transparent;
+    color: var(--ink-500);
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.18s;
+}
+.plant-form-btn-cancel:hover {
+    background: var(--g-ghost);
+}
+
+.plant-form-btn-submit {
+    flex: 2;
+    padding: 8px 0;
+    border-radius: var(--r-xs);
+    border: none;
+    background: var(--g-mid);
+    color: #fff;
+    font-family: var(--font-ui);
+    font-size: 12px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: background 0.18s, opacity 0.18s;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+}
+.plant-form-btn-submit:hover {
+    background: var(--g-deep);
+}
+.plant-form-btn-submit:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
 }

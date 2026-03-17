@@ -1,5 +1,9 @@
-// UTILS
+import React, { useState, useRef, useEffect } from 'react';
+import { useNavigate, useParams } from 'react-router-dom';
+import { API_URL } from '../config';
 import { daysSince } from '../utils/plantHelpers';
+import Icon from '../components/Icon';
+import '../styleSheets/AddUpdatePlant.css';
 
 export default function UpdatePlant() {
     const navigate = useNavigate();
@@ -164,7 +168,7 @@ export default function UpdatePlant() {
     return (
         <div className="plant-form-root">
             <div className="plant-form-card">
-                <h2 className="plant-form-title">✏️ Update Plant</h2>
+                <h2 className="plant-form-title"><Icon name="pencil" size={24} /> Update Plant</h2>
                 <p className="plant-form-subtitle">Edit the details for {form.name || 'your plant'}</p>
                 {/* Image Drop Zone */}
                 <div className={`plant-form-dropzone${dragging ? ' dragging' : ''}`}
@@ -177,7 +181,7 @@ export default function UpdatePlant() {
                         <img src={imagePreview} alt="preview" />
                     ) : (
                         <div className="dropzone-hint">
-                            <div style={{ fontSize: 32, marginBottom: 6 }}>📷</div>
+                            <Icon name="camera" size={32} style={{ marginBottom: 6 }} />
                             Drag & drop or click to upload
                         </div>
                     )}
@@ -241,14 +245,14 @@ export default function UpdatePlant() {
                                 onChange={handleChange}
                                 className="plant-form-input custom-input"
                                 placeholder="https://gardenish.co/plants/your-plant"
-                                style={{ flex: 1, fontSize: 12, color: '#3d3d3d', fontWeight: 500 }}
+                                style={{ flex: 1 }}
                             />
                             <button
                                 onClick={handleFetchCare}
                                 disabled={!form.careLink || fetching}
                                 className="plant-form-care-btn"
                             >
-                                {fetching ? '...' : '🔍 Fetch'}
+                                {fetching ? '...' : <><Icon name="search" size={12} /> Fetch</>}
                             </button>
                         </div>
                     </div>
@@ -259,30 +263,19 @@ export default function UpdatePlant() {
                 </div>
                 {error && <div className="plant-form-error">{error}</div>}
                 {/* Buttons */}
-                <div style={{ display: 'flex', gap: 10, marginTop: 8 }}>
+                <div className="plant-form-actions">
                     <button
                         onClick={() => navigate('/plants')}
-                        style={{
-                            flex: 1, padding: '10px 0', borderRadius: 10,
-                            border: '1.5px solid #e8e2d4', background: 'transparent',
-                            color: '#6b7c60', fontFamily: "'Helvetica Neue', sans-serif",
-                            fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                        }}
+                        className="plant-form-btn-cancel"
                     >
                         Cancel
                     </button>
                     <button
                         onClick={handleSubmit}
                         disabled={submitting}
-                        style={{
-                            flex: 2, padding: '10px 0', borderRadius: 10,
-                            border: 'none', background: '#4a7c59',
-                            color: '#fff', fontFamily: "'Helvetica Neue', sans-serif",
-                            fontSize: 13, fontWeight: 700, cursor: 'pointer',
-                            opacity: submitting ? 0.7 : 1,
-                        }}
+                        className="plant-form-btn-submit"
                     >
-                        {submitting ? 'Saving...' : <><img src="/logoWhite.png" alt="logo" style={{ width: 20, height: 20, verticalAlign: 'middle', marginRight: 6 }} />Save Changes</>}
+                        {submitting ? 'Saving...' : <><Icon name="pencil" size={16} />Save Changes</>}
                     </button>
                 </div>
             </div>

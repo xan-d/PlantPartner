@@ -8,7 +8,7 @@
     align-items: center;
     justify-content: space-between;
     /* brand left, menu right */
-    padding: 4px 20px;
+    padding: 10px 20px;
 
     /* Gradient instead of flat dark green */
     background: linear-gradient(90deg, var(--g-deep) 30%, var(--g-mid) 80%, var(--g-sage));

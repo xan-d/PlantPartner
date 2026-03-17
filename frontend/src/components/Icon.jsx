@@ -22,10 +22,12 @@ import infoFillSvg           from '../assets/icons/information-fill.svg?raw';
 import infoSvg               from '../assets/icons/information-line.svg?raw';
 import leafSvg               from '../assets/icons/leaf-line.svg?raw';
 import notificationSvg       from '../assets/icons/notification-3-line.svg?raw';
+import pencilSvg             from '../assets/icons/pencil-line.svg?raw';
 import plantSvg              from '../assets/icons/plant-line.svg?raw';
 import restaurantSvg         from '../assets/icons/restaurant-line.svg?raw';
 import rulerSvg              from '../assets/icons/ruler-line.svg?raw';
 import scissorsSvg           from '../assets/icons/scissors-2-line.svg?raw';
+import cameraSvg             from '../assets/icons/camera-line.svg?raw';
 import searchSvg             from '../assets/icons/search-line.svg?raw';
 import sofaSvg               from '../assets/icons/sofa-line.svg?raw';
 import starSvg               from '../assets/icons/star-line.svg?raw';
@@ -55,10 +57,12 @@ const registry = {
   info:          infoSvg,
   leaf:          leafSvg,
   notification:  notificationSvg,
+  pencil:        pencilSvg,
   plant:         plantSvg,
   restaurant:    restaurantSvg,
   ruler:         rulerSvg,
   scissors:      scissorsSvg,
+  camera:        cameraSvg,
   search:        searchSvg,
   sofa:          sofaSvg,
   star:          starSvg,
