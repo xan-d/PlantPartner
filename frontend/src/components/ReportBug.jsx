@@ -1,5 +1,6 @@
 import React, { useState, useEffect } from "react";
 import { API_URL } from "../config";
+import Icon from './Icon';
 import '../styleSheets/BugForm.css';
 
 export default function BugReportModal({ isOpen, onClose }) {
@@ -60,7 +61,7 @@ export default function BugReportModal({ isOpen, onClose }) {
 
   return (
     <div className="bug-card">
-      <h3>🐞 Report a Bug</h3>
+      <h3><Icon name="bug" size={18} /> Report a Bug</h3>
       <form onSubmit={submitBug}>
         <input
           value={title}

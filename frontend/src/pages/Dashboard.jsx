@@ -65,7 +65,7 @@ export default function Dashboard() {
             <Header />
             <div className="dashboard-content">
                 {/* Stat Cards Grid at the top with padding */}
-                <div className="stat-grid" style={{ marginTop: 32, marginBottom: 40 }}>
+                <div className="stat-grid" style={{ marginTop: 24, marginBottom: 12 }}>
                     {statCards.map(card => (
                         <div
                             key={card.label}

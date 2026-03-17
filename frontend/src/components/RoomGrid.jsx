@@ -71,7 +71,7 @@ export default function RoomGrid({ plants = [] }) {
     };
 
     return (
-        <div className="room-grid-section" style={{ marginBottom: '20px' }}>
+        <div className="room-grid-section" style={{ marginBottom: '10px' }}>
             <div className="room-grid-outer-card">
                 <h2 className="room-grid-label">
                     <span className="room-grid-label-text"><Icon name="home" size={16} /> Plants by Room</span>

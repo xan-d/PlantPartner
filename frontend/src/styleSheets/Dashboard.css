@@ -20,7 +20,7 @@
 }
 
 .dashboard-content {
-    padding: 56px 24px 28px 24px;
+    padding: 0px 24px 8px 24px;
     max-width: 1000px;
     margin: 0 auto;
 }
@@ -31,7 +31,7 @@
     display: grid;
     grid-template-columns: repeat(4, 1fr);
     gap: 12px;
-    margin-bottom: 48px;
+    margin-bottom: 0px;
 }
 
 .stat-card {
@@ -40,7 +40,7 @@
     -webkit-backdrop-filter: var(--blur-md);
     border: 1px solid var(--glass-border);
     border-radius: var(--r-lg);
-    padding: 20px 16px 16px 16px;
+    padding: 12px 12px 10px 12px;
     text-align: center;
     box-shadow: var(--shadow-sm);
     transition: transform 0.22s ease, box-shadow 0.22s ease;
@@ -49,7 +49,7 @@
     flex-direction: column;
     align-items: center;
     justify-content: flex-start;
-    min-height: 120px;
+    min-height: 80px;
 }
 
 .stat-card-clickable {
@@ -66,8 +66,8 @@
 }
 
 .stat-icon {
-    font-size: 32px;
-    margin-bottom: 12px;
+    font-size: 24px;
+    margin-bottom: 4px;
     margin-top: 0;
     display: flex;
     align-items: flex-start;
@@ -78,7 +78,7 @@
 
 .stat-value {
     font-family: var(--font-display);
-    font-size: 34px;
+    font-size: 26px;
     font-weight: 600;
     color: var(--g-deep);
     letter-spacing: -0.02em;
@@ -87,7 +87,7 @@
 }
 
 .stat-label {
-    font-size: 9px;
+    font-size: 8px;
     color: var(--ink-500);
     font-family: var(--font-ui);
     font-weight: 700;
@@ -101,10 +101,10 @@
 .dashboard-section-label {
     display: block;
     width: fit-content;
-    margin: 0 auto 24px auto;
+    margin: 0 auto 8px auto;
     background: var(--g-deep);
-    padding: 10px 16px;
-    font-size: 12px;
+    padding: 6px 12px;
+    font-size: 11px;
     font-weight: 700;
     letter-spacing: 0.12em;
     text-transform: uppercase;
@@ -117,7 +117,7 @@
     font-size: 10px;
     font-weight: 700;
     color: var(--ink-500);
-    margin: 0 0 14px;
+    margin: 0 0 6px;
     font-family: var(--font-ui);
     text-transform: uppercase;
     letter-spacing: 0.10em;
@@ -135,7 +135,7 @@
 .dashboard-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
-    gap: 12px;
+    gap: 6px;
 }
 
 .dashboard-section {
@@ -143,7 +143,7 @@
     backdrop-filter: var(--blur-md);
     -webkit-backdrop-filter: var(--blur-md);
     border-radius: var(--r-lg);
-    padding: 20px;
+    padding: 12px;
 }
 
 .dashboard-section-header {
@@ -159,14 +159,14 @@
 .thirsty-list {
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    gap: 6px;
 }
 
 .thirsty-item {
     display: flex;
     align-items: center;
-    gap: 10px;
-    padding: 8px 10px;
+    gap: 8px;
+    padding: 5px 8px;
     border-radius: var(--r-md);
     background: var(--glass);
     cursor: pointer;
@@ -280,7 +280,7 @@
 
 .inspection-countdown {
     font-family: var(--font-display);
-    font-size: 36px;
+    font-size: 28px;
     font-weight: 600;
     color: var(--g-deep);
     letter-spacing: -0.02em;
@@ -297,7 +297,7 @@
 .inspection-divider {
     height: 1px;
     background: var(--cream-tan);
-    margin: 16px 0;
+    margin: 18px 0;
 }
 
 .inspection-set {

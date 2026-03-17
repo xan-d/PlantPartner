@@ -28,10 +28,10 @@ body {
 
 .app-title {
     font-family: var(--font-display);
-    font-size: clamp(32px, 4vw, 48px);
+    font-size: 28px;
     font-weight: 600;
     color: var(--cream);
-    margin: 0 0 10px;
+    margin: 0;
     letter-spacing: -0.01em;
     white-space: nowrap;
     line-height: 1;

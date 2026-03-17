@@ -8,6 +8,7 @@ import UpdatePlant from './pages/UpdatePlant';
 import Login from './pages/Login';
 import Register from './pages/Register';
 import Dashboard from './pages/Dashboard';
+import Icon from './components/Icon';
 import Room from './pages/Room';
 import BugReportModal from "./components/ReportBug";
 
@@ -79,7 +80,7 @@ return (
                 className="bug-float"
                 onClick={() => setBugOpen(true)}
             >
-                🐞
+                <Icon name="bug" size={32} style={{ opacity: 0.3 }} />
             </button>
 
             {/* Modal */}

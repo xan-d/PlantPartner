@@ -8,7 +8,7 @@
     align-items: center;
     justify-content: space-between;
     /* brand left, menu right */
-    padding: 14px 24px;
+    padding: 4px 20px;
 
     /* Gradient instead of flat dark green */
     background: linear-gradient(90deg, var(--g-deep) 30%, var(--g-mid) 80%, var(--g-sage));
@@ -18,7 +18,7 @@
     position: sticky;
     top: 0;
     z-index: 100;
-    margin-bottom: 12px;
+    margin-bottom: 4px;
 }
 
 .header-right {
@@ -47,25 +47,25 @@
     display: flex;
     align-items: center;
     /* vertically center text with logo */
-    gap: 8px;
-    height: 64px;
+    gap: 6px;
+    height: 28px;
     /* match the logo's height */
 }
 
 /* CSS variable to toggle logo vertical placement */
 .app-logo {
-    width: 64px;
-    height: 64px;
+    width: 28px;
+    height: 28px;
     filter: invert(1);
     vertical-align: middle;
-    transform: translateY(var(--logo-offset, -5px));
+    transform: translateY(var(--logo-offset, -3px));
     /* adjustable via --logo-offset */
 }
 
 /* Title vertically centered naturally */
 .app-title {
     font-family: var(--font-display);
-    font-size: clamp(22px, 3vw, 30px);
+    font-size: 14px;
     font-weight: 600;
     color: var(--cream);
     margin: 0;
@@ -76,7 +76,7 @@
     display: flex;
     align-items: center;
     /* vertical center with logo */
-    transform: translate3d(-15px, 5px, 0px);
+    transform: translate3d(-10px, 1px, 0px);
 }
 
 /* Wrapper around title for underline only */
@@ -87,14 +87,14 @@
     /* vertical center */
     width: max-content;
     /* line matches text width */
-    padding-bottom: 8px;
+    padding-bottom: 4px;
     border-bottom: none;
 }
 
 .app-title-wrapper::after {
     content: '';
     display: block;
-    height: 3px;
+    height: 2px;
     width: 100%;
     background: linear-gradient(90deg, var(--g-deep), var(--g-mid), var(--g-sage));
     border-radius: 2px;
@@ -112,7 +112,7 @@
 
 .header-search-wrapper {
     flex: 1;
-    max-width: 500px;
+    max-width: 360px;
     display: flex;
     align-items: center;
     position: relative;
@@ -121,13 +121,13 @@
 .header-search-input {
     width: 100%;
     font-family: var(--font-ui);
-    font-size: 0.95rem;
+    font-size: 0.8rem;
     font-weight: 400;
     color: var(--cream);
     background: rgba(255, 255, 255, 0.1);
     border: 1px solid rgba(246, 245, 238, 0.2);
     border-radius: 9999px;
-    padding: 10px 36px 10px 16px;
+    padding: 4px 24px 4px 10px;
     outline: none;
     box-sizing: border-box;
     transition: background 0.2s ease, border-color 0.2s ease;
@@ -157,12 +157,12 @@
     display: flex;
     flex-direction: column;
     justify-content: center;
-    gap: 5px;
+    gap: 3px;
     background: none;
     border: none;
     cursor: pointer;
-    padding: 7px;
-    margin-right: 25px;
+    padding: 4px;
+    margin-right: 20px;
     border-radius: var(--r-sm);
     transition: background 0.15s;
 }
@@ -173,8 +173,8 @@
 
 .hamburger-line {
     display: block;
-    width: 22px;
-    height: 2px;
+    width: 16px;
+    height: 1.5px;
     background-color: var(--cream);
     border-radius: 2px;
     transition: transform 0.25s ease, opacity 0.25s ease;
@@ -182,7 +182,7 @@
 }
 
 .hamburger-line.open:nth-child(1) {
-    transform: translateY(7px) rotate(45deg);
+    transform: translateY(4.5px) rotate(45deg);
 }
 
 .hamburger-line.open:nth-child(2) {
@@ -191,7 +191,7 @@
 }
 
 .hamburger-line.open:nth-child(3) {
-    transform: translateY(-7px) rotate(-45deg);
+    transform: translateY(-4.5px) rotate(-45deg);
 }
 
 /* ── Dropdown — cream glass, drops below dark header ────────── */
