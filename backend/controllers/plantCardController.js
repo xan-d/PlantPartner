@@ -151,26 +151,73 @@ exports.deletePlant = async (req, res) => {
 exports.waterPlant = async (req, res) => {
     const plantId = req.params.id;
     const userID = req.session.userID;
-    const conn = await db.promise().getConnection();
+    if (!plantId || !userID) {
+        console.error('Missing plantId or userID', { plantId, userID, session: req.session });
+        return res.status(400).json({ error: 'Missing plantId or userID in request.' });
+    }
+    let conn;
     try {
+        conn = await db.promise().getConnection();
         await conn.beginTransaction();
-        await conn.query(
+        const [plantResult] = await conn.query(
             'UPDATE Plants SET lastWatered = CURDATE() WHERE plantID = ? AND userID = ?',
             [plantId, userID]
         );
-        await conn.query(
+        if (plantResult.affectedRows === 0) {
+            await conn.rollback();
+            return res.status(404).json({ error: 'Plant not found or not owned by user.' });
+        }
+        const [userResult] = await conn.query(
             'UPDATE Users SET timesWatered = timesWatered + 1 WHERE userID = ?',
             [userID]
         );
+        if (userResult.affectedRows === 0) {
+            await conn.rollback();
+            return res.status(404).json({ error: 'User not found.' });
+        }
         await conn.commit();
         res.json({ message: 'Plant watered' });
     } catch (err) {
-        await conn.rollback();
-        res.status(500).json({ error: err.message });
+        if (conn) {
+            try { await conn.rollback(); } catch (rollbackErr) { console.error('Rollback failed:', rollbackErr); }
+        }
+        console.error('waterPlant error:', {
+            message: err.message,
+            stack: err.stack,
+            plantId,
+            userID,
+            session: req.session,
+            body: req.body
+        });
+        res.status(500).json({ error: 'Failed to water plant', details: err.message });
     } finally {
-        conn.release();
+        if (conn) conn.release();
     }
 };
+
+//  exports.waterPlant = async (req, res) => {
+//      const plantId = req.params.id;
+//      const userID = req.session.userID;
+//      const conn = await db.promise().getConnection();
+//      try {
+//          await conn.beginTransaction();
+//          await conn.query(
+//              'UPDATE Plants SET lastWatered = CURDATE() WHERE plantID = ? AND userID = ?',
+//              [plantId, userID]
+//          );
+//          await conn.query(
+//              'UPDATE Users SET timesWatered = timesWatered + 1 WHERE userID = ?',
+//              [userID]
+//          );
+//          await conn.commit();
+//          res.json({ message: 'Plant watered' });
+//      } catch (err) {
+//          await conn.rollback();
+//          res.status(500).json({ error: err.message });
+//      } finally {
+//          conn.release();
+//      }
+//  };
 
 // ─── GET care info by scraping careLink ───────────────────────────────────────
 const https = require('https');
