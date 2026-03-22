@@ -119,20 +119,30 @@ exports.updatePlant = async (req, res) => {
             waterFreq, lastFedFormatted, health, careLink, color
         ];
 
-        // 2. ONLY add the image to the SQL if a new file was actually uploaded
+        // 2. Fetch existing plant data if needed (for old image path and careLink comparison)
         let oldImage = null;
-        if (req.file) {
-            // Fetch old image path so we can clean it up after update
+        let existingCareLink = null;
+        if (req.file || careLink !== undefined) {
             const [rows] = await db.promise().query(
-                'SELECT image FROM Plants WHERE plantID=? AND userID=?',
+                'SELECT image, careLink FROM Plants WHERE plantID=? AND userID=?',
                 [plantId, userID]
             );
-            oldImage = rows[0]?.image;
+            if (rows.length) {
+                oldImage = rows[0]?.image;
+                existingCareLink = rows[0]?.careLink;
+            }
+        }
+        if (req.file) {
             sql += `, image=?`;
             params.push(`/plantImages/${req.file.filename}`);
         }
 
-        // 3. Complete the query with the WHERE clause
+        // 3. Clear care cache if careLink changed
+        if (careLink !== undefined && existingCareLink !== null && existingCareLink !== careLink) {
+            sql += `, careCache=NULL`;
+        }
+
+        // 4. Complete the query with the WHERE clause
         sql += ` WHERE plantID=? AND userID=?`;
         params.push(plantId, userID);
 
@@ -340,13 +350,19 @@ exports.getPlantCare = async (req, res) => {
     const userID = req.session.userID;
     try {
         const [rows] = await db.promise().query(
-            'SELECT careLink FROM Plants WHERE plantID = ? AND userID = ?',
+            'SELECT careLink, careCache FROM Plants WHERE plantID = ? AND userID = ?',
             [plantId, userID]
         );
         if (!rows.length) return res.status(404).json({ error: 'Plant not found' });
 
-        const careLink = rows[0].careLink;
+        const { careLink, careCache } = rows[0];
         if (!careLink) return res.status(400).json({ error: 'No care link set for this plant' });
+
+        // Return cached data if available (handle both object and string forms)
+        const parsedCache = typeof careCache === 'string' ? JSON.parse(careCache) : careCache;
+        if (parsedCache && typeof parsedCache === 'object' && Object.keys(parsedCache).length > 0) {
+            return res.json(parsedCache);
+        }
 
         const html = await fetchRenderedHTML(careLink);
         console.log('HTML length:', html?.length);
@@ -356,6 +372,13 @@ exports.getPlantCare = async (req, res) => {
         if (Object.keys(care).length === 0) {
             return res.status(422).json({ error: 'Could not parse care info from that page' });
         }
+
+        // Persist care data to DB for future requests
+        await db.promise().query(
+            'UPDATE Plants SET careCache = ? WHERE plantID = ? AND userID = ?',
+            [JSON.stringify(care), plantId, userID]
+        );
+
         res.json(care);
     } catch (err) {
         console.error('getPlantCare error:', err.message);
