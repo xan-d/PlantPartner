@@ -1,0 +1,160 @@
+name: 🧠 Socratic Code Review Quiz
+
+on:
+  pull_request:
+    types: [opened, synchronize]
+  workflow_dispatch:
+    inputs:
+      difficulty:
+        description: 'Override difficulty level (1-4)'
+        required: false
+        default: ''
+
+permissions:
+  contents: read
+  pull-requests: write
+
+jobs:
+  quiz:
+    name: Generate Interview Questions
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      - name: Get changed files
+        id: changed
+        run: |
+          CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -E '\.(js|ts|sql|json|env\.example|md)$' | head -10)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+          echo "Changed files: $CHANGED"
+
+      - name: Load quiz memory
+        id: memory
+        run: |
+          if [ -f ".github/quiz-memory.json" ]; then
+            echo "memory=$(cat .github/quiz-memory.json | tr -d '\n')" >> $GITHUB_OUTPUT
+            LEVEL=$(cat .github/quiz-memory.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('difficultyLevel', 2))")
+            WEAK=$(cat .github/quiz-memory.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(', '.join(d.get('weakAreas', [])) or 'none yet')")
+            SESSION=$(cat .github/quiz-memory.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sessionCount', 0) + 1)")
+            echo "level=$LEVEL" >> $GITHUB_OUTPUT
+            echo "weak=$WEAK" >> $GITHUB_OUTPUT
+            echo "session=$SESSION" >> $GITHUB_OUTPUT
+          else
+            echo "level=2" >> $GITHUB_OUTPUT
+            echo "weak=none yet" >> $GITHUB_OUTPUT
+            echo "session=1" >> $GITHUB_OUTPUT
+          fi
+
+      - name: Build question prompt
+        id: prompt
+        run: |
+          CHANGED_FILES="${{ steps.changed.outputs.files }}"
+          LEVEL="${{ steps.memory.outputs.level }}"
+          WEAK="${{ steps.memory.outputs.weak }}"
+
+          # Read changed file contents (up to 300 lines each, max 3 files)
+          FILE_CONTEXT=""
+          COUNT=0
+          while IFS= read -r file; do
+            if [ -f "$file" ] && [ $COUNT -lt 3 ]; then
+              FILE_CONTEXT="$FILE_CONTEXT\n\n### File: $file\n\`\`\`\n$(head -300 "$file")\n\`\`\`"
+              COUNT=$((COUNT+1))
+            fi
+          done <<< "$CHANGED_FILES"
+
+          PROMPT="You are a senior software engineer conducting a technical interview. \
+          The developer just submitted a pull request. Your job: ask them 3 targeted questions \
+          about their code changes to verify they understand what they built. \
+          \n\nRules:\
+          \n- Ask exactly 3 questions, numbered\
+          \n- Difficulty level: L${LEVEL} (1=foundational, 2=applied, 3=edge cases, 4=expert)\
+          \n- Weak areas to probe: ${WEAK}\
+          \n- Focus on: Node.js/MySQL architecture, API design, DB integrity, security, performance\
+          \n- For each question, put the answer in a <details> HTML block so it's collapsed by default\
+          \n- Format answers as: what a strong developer would say + common mistakes\
+          \n\nCode context:\n${FILE_CONTEXT}\
+          \n\nRespond ONLY with the formatted questions. No preamble."
+
+          echo "prompt<<PROMPTEOF" >> $GITHUB_OUTPUT
+          echo "$PROMPT" >> $GITHUB_OUTPUT
+          echo "PROMPTEOF" >> $GITHUB_OUTPUT
+
+      - name: Call Anthropic API for questions
+        id: questions
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+        run: |
+          PROMPT='${{ steps.prompt.outputs.prompt }}'
+
+          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+            -H "x-api-key: $ANTHROPIC_API_KEY" \
+            -H "anthropic-version: 2023-06-01" \
+            -H "content-type: application/json" \
+            -d "{
+              \"model\": \"claude-opus-4-5\",
+              \"max_tokens\": 1500,
+              \"messages\": [{
+                \"role\": \"user\",
+                \"content\": $(echo "$PROMPT" | python3 -c \"import json,sys; print(json.dumps(sys.stdin.read()))\")
+              }]
+            }")
+
+          QUESTIONS=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['content'][0]['text'])" 2>/dev/null || echo "Could not generate questions. Check ANTHROPIC_API_KEY secret.")
+
+          echo "questions<<QEOF" >> $GITHUB_OUTPUT
+          echo "$QUESTIONS" >> $GITHUB_OUTPUT
+          echo "QEOF" >> $GITHUB_OUTPUT
+
+      - name: Post quiz comment on PR
+        uses: actions/github-script@v7
+        with:
+          script: |
+            const session = `${{ steps.memory.outputs.session }}`;
+            const level = `${{ steps.memory.outputs.level }}`;
+            const weak = `${{ steps.memory.outputs.weak }}`;
+            const changed = `${{ steps.changed.outputs.files }}`.trim().split('\n').filter(Boolean);
+            const questions = `${{ steps.questions.outputs.questions }}`;
+
+            const levelLabels = { '1': 'Foundational', '2': 'Applied', '3': 'Edge Cases', '4': 'Expert' };
+            const levelBars = { '1': '█░░░', '2': '██░░', '3': '███░', '4': '████' };
+
+            const fileList = changed.map(f => `- \`${f}\``).join('\n') || '- (no tracked files changed)';
+
+            const body = [
+              `## 🧠 Technical Review — Session #${session}`,
+              ``,
+              `| | |`,
+              `|---|---|`,
+              `| **Difficulty** | L${level} — ${levelLabels[level] || 'Applied'} ${levelBars[level] || '██░░'} |`,
+              `| **Weak areas** | ${weak} |`,
+              `| **Files reviewed** | ${changed.length} file(s) |`,
+              ``,
+              `### Files in scope`,
+              fileList,
+              ``,
+              `---`,
+              ``,
+              `### 📋 Your Questions`,
+              ``,
+              `> Answer these **before** expanding the hidden answers below.`,
+              `> Say \`show answer\` in a Copilot Chat session, or expand the \`<details>\` block.`,
+              ``,
+              questions,
+              ``,
+              `---`,
+              ``,
+              `<sub>🤖 Generated by Socratic Reviewer Agent · Update \`.github/quiz-memory.json\` after your session to track progress</sub>`
+            ].join('\n');
+
+            await github.rest.issues.createComment({
+              owner: context.repo.owner,
+              repo: context.repo.repo,
+              issue_number: context.issue.number,
+              body: body
+            });
