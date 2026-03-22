@@ -1,6 +1,16 @@
 const db = require('../db');
 const multer = require('multer');
 const path = require('path');
+const fs = require('fs');
+
+const IMAGE_DIR = path.join(__dirname, '../../frontend/public/plantImages');
+
+/** Silently remove an image file from disk given its DB path (e.g. /plantImages/foo.jpg) */
+function removeImageFile(dbPath) {
+    if (!dbPath) return;
+    const filePath = path.join(IMAGE_DIR, path.basename(dbPath));
+    fs.unlink(filePath, () => {});
+}
 
 // ─── Multer Image Upload Setup ────────────────────────────────────────────────
 const storage = multer.diskStorage({
@@ -110,7 +120,14 @@ exports.updatePlant = async (req, res) => {
         ];
 
         // 2. ONLY add the image to the SQL if a new file was actually uploaded
+        let oldImage = null;
         if (req.file) {
+            // Fetch old image path so we can clean it up after update
+            const [rows] = await db.promise().query(
+                'SELECT image FROM Plants WHERE plantID=? AND userID=?',
+                [plantId, userID]
+            );
+            oldImage = rows[0]?.image;
             sql += `, image=?`;
             params.push(`/plantImages/${req.file.filename}`);
         }
@@ -125,6 +142,9 @@ exports.updatePlant = async (req, res) => {
             return res.status(404).json({ error: 'Plant not found' });
         }
 
+        // Remove old image file if it was replaced
+        if (req.file && oldImage) removeImageFile(oldImage);
+
         res.json({ message: 'Plant updated' });
     } catch (err) {
         console.error('updatePlant error:', err.message);
@@ -136,11 +156,17 @@ exports.deletePlant = async (req, res) => {
     const plantId = req.params.id;
     const userID = req.session.userID;
     try {
+        // Grab the image path before deleting the row
+        const [rows] = await db.promise().query(
+            'SELECT image FROM Plants WHERE plantID=? AND userID=?',
+            [plantId, userID]
+        );
         const [result] = await db.promise().query(
             'DELETE FROM Plants WHERE plantID=? AND userID=?',
             [plantId, userID]
         );
         if (!result.affectedRows) return res.status(404).json({ error: 'Plant not found' });
+        if (rows[0]?.image) removeImageFile(rows[0].image);
         res.status(204).send();
     } catch (err) {
         res.status(500).json({ error: err.message });
