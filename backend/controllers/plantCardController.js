@@ -195,30 +195,6 @@ exports.waterPlant = async (req, res) => {
     }
 };
 
-//  exports.waterPlant = async (req, res) => {
-//      const plantId = req.params.id;
-//      const userID = req.session.userID;
-//      const conn = await db.promise().getConnection();
-//      try {
-//          await conn.beginTransaction();
-//          await conn.query(
-//              'UPDATE Plants SET lastWatered = CURDATE() WHERE plantID = ? AND userID = ?',
-//              [plantId, userID]
-//          );
-//          await conn.query(
-//              'UPDATE Users SET timesWatered = timesWatered + 1 WHERE userID = ?',
-//              [userID]
-//          );
-//          await conn.commit();
-//          res.json({ message: 'Plant watered' });
-//      } catch (err) {
-//          await conn.rollback();
-//          res.status(500).json({ error: err.message });
-//      } finally {
-//          conn.release();
-//      }
-//  };
-
 // ─── GET care info by scraping careLink ───────────────────────────────────────
 const https = require('https');
 const http = require('http');

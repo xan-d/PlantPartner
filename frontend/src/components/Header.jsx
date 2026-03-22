@@ -5,7 +5,15 @@ import "../styleSheets/Header.css";
 
 export default function Header({ searchTerm, onSearchChange }) {
     const [menuOpen, setMenuOpen] = useState(false);
+    const [isSmallScreen, setIsSmallScreen] = useState(() => window.matchMedia('(max-width: 480px)').matches);
     const menuRef = useRef(null);
+
+    useEffect(() => {
+        const mql = window.matchMedia('(max-width: 480px)');
+        const handler = (e) => setIsSmallScreen(e.matches);
+        mql.addEventListener('change', handler);
+        return () => mql.removeEventListener('change', handler);
+    }, []);
 
     useEffect(() => {
         if (!menuOpen) return;
@@ -59,7 +67,7 @@ export default function Header({ searchTerm, onSearchChange }) {
                         <input
                             type="text"
                             className="header-search-input"
-                            placeholder="Search plants…"
+                            placeholder={isSmallScreen ? "Search…" : "Search plants…"}
                             value={searchTerm ?? ''}
                             onChange={e => onSearchChange(e.target.value)}
                         />
