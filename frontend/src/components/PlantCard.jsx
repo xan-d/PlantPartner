@@ -3,6 +3,7 @@ import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
 import { daysSince, waterStatus, CARE_LABELS, truncateText, greenShades } from '../utils/plantHelpers';
 import Icon from './Icon';
+import useMediaQuery from '../utils/useMediaQuery';
 import '../styleSheets/PlantCard.css';
 
 export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
@@ -16,7 +17,7 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
     const timerRef = useRef(null);
     const navigate = useNavigate();
 
-    const isMobile = window.innerWidth <= 480; // breakpoint for mobile
+    const isMobile = useMediaQuery('(max-width: 480px)');
     const waterLabel = pendingWater
         ? "Undo"
         : watered
@@ -110,15 +111,16 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                             </div>
 
                             <div className="card-light">
-                                <span><Icon name="sun" size={16} /></span><span>{plant.light} light</span>
+                                <span><Icon name="sun" size={16} /></span>
+                                <span className="card-light-desc">{plant.light}</span>
                             </div>
 
                             <div className="card-water-section">
                                 <div className="card-water-header">
                                     <span>{isMobile
-                                            ? <Icon name="drop" size={16} />
-                                            :<><Icon name="drop" size={16} /> Water</>
-                                        }</span>
+                                        ? <Icon name="drop" size={16} />
+                                        : <><Icon name="drop" size={16} /> Water</>
+                                    }</span>
                                     <span style={{ color: status.color, fontWeight: 700 }}>{status.label}</span>
                                 </div>
                                 <div className="card-water-bar-track">
@@ -225,7 +227,7 @@ export default function PlantCard({ plant, onDelete, onWater, cardHeight }) {
                                     e.currentTarget.classList.toggle('open');
                                 }}
                             >
-                                                                <Icon name="edit" size={14} /> Notes
+                                <Icon name="edit" size={14} /> Notes
                             </button>
                             <div id={`notes-${plant.plantID}`} className="card-notes-body">
                                 <div

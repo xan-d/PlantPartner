@@ -1,19 +1,13 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { API_URL } from "../config";
+import useMediaQuery from "../utils/useMediaQuery";
 import "../styleSheets/Header.css";
 
 export default function Header({ searchTerm, onSearchChange }) {
     const [menuOpen, setMenuOpen] = useState(false);
-    const [isSmallScreen, setIsSmallScreen] = useState(() => window.matchMedia('(max-width: 480px)').matches);
+    const isSmallScreen = useMediaQuery('(max-width: 480px)');
     const menuRef = useRef(null);
-
-    useEffect(() => {
-        const mql = window.matchMedia('(max-width: 480px)');
-        const handler = (e) => setIsSmallScreen(e.matches);
-        mql.addEventListener('change', handler);
-        return () => mql.removeEventListener('change', handler);
-    }, []);
 
     useEffect(() => {
         if (!menuOpen) return;

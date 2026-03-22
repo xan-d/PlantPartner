@@ -207,7 +207,6 @@
     display: flex;
     align-items: stretch;
     border-radius: var(--r-xs);
-    overflow: hidden;
     margin-bottom: 6px;
 }
 
@@ -231,6 +230,11 @@
     color: var(--ink-900);
     letter-spacing: 0em;
     line-height: 1.15;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 90%;
+    display: block;
 }
 
 .card-scientific {
@@ -251,6 +255,18 @@
     font-family: var(--font-ui);
     margin-bottom: 10px;
     letter-spacing: 0.01em;
+    max-width: 70%;
+    min-width: 0;
+    flex: 1 1 0%;
+}
+
+.card-light-desc {
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    display: block;
+    min-width: 0;
+    flex: 1;
 }
 
 /* ── Water section ──────────────────────────────────────────── */
@@ -454,7 +470,7 @@
 .card-back-subtitle {
     font-family: var(--font-display);
     font-style: italic;
-    color: var( --ink-100);
+    color: var(--ink-100);
     font-size: 12px;
     margin-top: 1px;
 }
@@ -708,9 +724,15 @@
         border: 1px solid var(--glass-border);
     }
 
-    /* Optional: adjust font sizes or padding for smaller screens */
     .card-name {
         font-size: 24px;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        max-width: 100%;
+        /* or a specific px/em value if you want */
+        display: block;
+        /* or inline-block if needed */
     }
 
     .card-body {
