@@ -24,7 +24,15 @@ jobs:
                 key: ${{ secrets.SSH_PRIVATE_KEY }}
                 script: |
                   cd /var/www/myapp
+
+                  # Preserve user-uploaded images across git pull
+                  cp -r frontend/public/plantImages /tmp/plantImages-backup
+
                   git pull origin main
+
+                  # Restore uploaded images (merge back without overwriting newer files)
+                  cp -rn /tmp/plantImages-backup/* frontend/public/plantImages/ 2>/dev/null || true
+                  rm -rf /tmp/plantImages-backup
                   
                   # 1. Install dependencies
                   npm install --prefix backend
