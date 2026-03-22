@@ -101,7 +101,7 @@
 .dashboard-section-label {
     display: block;
     width: fit-content;
-    margin: 0 auto 8px auto;
+    margin: 0 auto 16px auto;
     background: var(--g-deep);
     padding: 6px 12px;
     font-size: 11px;
@@ -111,6 +111,17 @@
     color: rgba(255, 255, 255, 0.75);
     border-radius: 6px;
     text-align: center;
+    position: relative;
+}
+
+.dashboard-section-label::after {
+    content: '';
+    position: absolute;
+    left: 0;
+    right: 0;
+    bottom: -9px;
+    height: 1px;
+    background: var(--cream-dark);
 }
 
 .section-title {

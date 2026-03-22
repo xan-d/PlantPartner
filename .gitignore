@@ -138,5 +138,9 @@ dump.sql
 config.local.js
 config.js
 
+# User-uploaded plant images (runtime data, not source code)
+frontend/public/plantImages/*
+!frontend/public/plantImages/.gitkeep
+
 Documentation/
 
