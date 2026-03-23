@@ -1,6 +1,6 @@
 {
   "lastSession": "2026-03-22",
-  "difficultyLevel": 2,
+  "difficultyLevel": 0,
   "weakAreas": [
     "Query indexing",
     "Auth & security",
