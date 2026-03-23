@@ -142,5 +142,8 @@ config.js
 frontend/public/plantImages/*
 !frontend/public/plantImages/.gitkeep
 
+frontend/package-lock.json
+backend/package-lock.json
+
 Documentation/
 
