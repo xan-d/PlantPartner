@@ -163,7 +163,10 @@ jobs:
           import json
           payload = {
               "contents": [{"parts": [{"text": open("/tmp/prompt.txt").read()}]}],
-              "generationConfig": {"maxOutputTokens": 4000}
+              "generationConfig": {
+                  "maxOutputTokens": 8192,
+                  "thinkingConfig": {"thinkingBudget": 0}
+              }
           }
           with open("/tmp/gemini-request.json", "w") as f:
               json.dump(payload, f)
@@ -204,7 +207,9 @@ jobs:
               if 'error' in d:
                   print(f"API error: {d['error']}", file=sys.stderr)
                   sys.exit(1)
-              raw = d['candidates'][0]['content']['parts'][0]['text'].strip()
+              # Get the last text part (skip any thinking parts)
+              parts = d['candidates'][0]['content']['parts']
+              raw = [p['text'] for p in parts if 'text' in p][-1].strip()
               # Strip markdown fences if Gemini added them
               if raw.startswith("```"):
                   raw = "\n".join(raw.split("\n")[1:])
