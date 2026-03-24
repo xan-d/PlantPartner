@@ -58,6 +58,7 @@ CREATE TABLE
         careLink VARCHAR(500),
         color VARCHAR(7),
         notes TEXT NULL,
+        careCache JSON NULL,
         FOREIGN KEY (userID) REFERENCES Users (userID)
     ) ENGINE = InnoDB;
 
