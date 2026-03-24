@@ -162,7 +162,7 @@ jobs:
           python3 << 'PYEOF'
           import json
           payload = {
-              "model": "claude-3-5-haiku-20241022",
+              "model": "claude-3-5-haiku-latest",
               "max_tokens": 4000,
               "messages": [{"role": "user", "content": open("/tmp/prompt.txt").read()}]
           }
