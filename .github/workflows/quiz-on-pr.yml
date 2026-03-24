@@ -5,6 +5,9 @@ on:
     types: [opened, synchronize]
   workflow_dispatch:
     inputs:
+      pr_number:
+        description: 'PR number to post the quiz on (required for manual runs)'
+        required: true
       difficulty:
         description: 'Override difficulty level (1-4)'
         required: false
@@ -51,12 +54,10 @@ jobs:
             echo "session=1" >> $GITHUB_OUTPUT
           fi
 
-      # NOTE: "Build question prompt" and "Call Anthropic API" are intentionally merged
-      # into one step. Passing the prompt through ${{ steps.prompt.outputs.prompt }}
-      # into a shell assignment (PROMPT='...') breaks whenever the prompt contains
-      # single quotes — which it always does. Keeping everything in one step avoids
-      # that entirely: the prompt is written to a temp file via heredoc, which is
-      # immune to special characters.
+      # NOTE: Prompt building and the API call are intentionally one step.
+      # Passing the prompt through ${{ steps.x.outputs.y }} into PROMPT='...'
+      # always breaks on single quotes. The prompt is written to a temp file
+      # via heredoc instead, which is immune to special characters.
       - name: Generate quiz questions
         id: questions
         env:
@@ -81,7 +82,6 @@ jobs:
           done <<< "$CHANGED_FILES"
 
           # ── 2. Write prompt to a temp file via heredoc ─────────────────────────
-          #    Heredocs are safe regardless of quotes or special chars in variables.
           cat > /tmp/prompt.txt << PROMPT_EOF
           You are a senior software engineer conducting a technical interview. The developer just submitted a pull request. Your job: ask them 3 targeted questions about their code changes to verify they understand what they built.
 
@@ -120,7 +120,7 @@ jobs:
               }]
             }")
 
-          # ── 5. Extract the text from the response ──────────────────────────────
+          # ── 5. Extract the response text ───────────────────────────────────────
           QUESTIONS=$(echo "$RESPONSE" | python3 << 'PYEOF'
           import sys, json
           try:
@@ -141,23 +141,18 @@ jobs:
         with:
           script: |
             // ── Resolve PR number ──────────────────────────────────────────────
-            // context.issue.number is only set on pull_request events.
-            // On workflow_dispatch we look up the PR associated with the current SHA.
-            let prNumber = context.issue.number;
+            // On pull_request events context.issue.number is set automatically.
+            // On workflow_dispatch the user must supply pr_number explicitly —
+            // dispatch runs on the default branch, not a PR branch, so there is
+            // no commit association to look up.
+            const prNumber =
+              context.issue.number ||
+              Number('${{ github.event.inputs.pr_number }}') ||
+              null;
 
             if (!prNumber) {
-              const prs = await github.rest.repos.listPullRequestsAssociatedWithCommit({
-                owner: context.repo.owner,
-                repo: context.repo.repo,
-                commit_sha: context.sha,
-              });
-              const openPR = prs.data.find(pr => pr.state === 'open');
-              if (openPR) {
-                prNumber = openPR.number;
-              } else {
-                core.warning('No open PR found for this commit. Skipping comment.');
-                return;
-              }
+              core.setFailed('Could not determine PR number. For manual runs, supply the pr_number input.');
+              return;
             }
 
             // ── Build comment body ─────────────────────────────────────────────
