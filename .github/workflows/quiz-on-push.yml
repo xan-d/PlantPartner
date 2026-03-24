@@ -169,18 +169,27 @@ jobs:
               json.dump(payload, f)
           PYEOF
 
-          HTTP_CODE=$(curl -s -o /tmp/gemini-response.json -w "%{http_code}" \
-            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
-            -H "content-type: application/json" \
-            -d @/tmp/gemini-request.json)
+          # Retry up to 3 times with backoff (handles 429 rate limits)
+          for ATTEMPT in 1 2 3; do
+            HTTP_CODE=$(curl -s -o /tmp/gemini-response.json -w "%{http_code}" \
+              "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
+              -H "content-type: application/json" \
+              -d @/tmp/gemini-request.json)
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              break
+            elif [ "$HTTP_CODE" = "429" ] && [ "$ATTEMPT" -lt 3 ]; then
+              WAIT=$((ATTEMPT * 30))
+              echo "Rate limited (429). Waiting ${WAIT}s before retry $((ATTEMPT+1))/3..."
+              sleep $WAIT
+            else
+              echo "::error::Gemini API returned HTTP $HTTP_CODE"
+              cat /tmp/gemini-response.json
+              exit 1
+            fi
+          done
 
           RESPONSE=$(cat /tmp/gemini-response.json)
-
-          if [ "$HTTP_CODE" != "200" ]; then
-            echo "::error::Gemini API returned HTTP $HTTP_CODE"
-            echo "Response body: $RESPONSE"
-            exit 1
-          fi
 
           if [ -z "$RESPONSE" ]; then
             echo "::error::Gemini API returned an empty response (HTTP $HTTP_CODE)"
