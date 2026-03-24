@@ -173,7 +173,7 @@ jobs:
           HTTP_CODE=$(curl -s -o /tmp/claude-response.json -w "%{http_code}" \
             https://api.anthropic.com/v1/messages \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2025-01-01" \
+            -H "anthropic-version: 2023-06-01" \
             -H "content-type: application/json" \
             -d @/tmp/claude-request.json)
 
