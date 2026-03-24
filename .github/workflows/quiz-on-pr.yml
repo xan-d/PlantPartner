@@ -92,6 +92,8 @@ jobs:
         run: |
           PROMPT='${{ steps.prompt.outputs.prompt }}'
 
+          CONTENT=$(echo "$PROMPT" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
+
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
@@ -101,7 +103,7 @@ jobs:
               \"max_tokens\": 1500,
               \"messages\": [{
                 \"role\": \"user\",
-                \"content\": $(echo "$PROMPT" | python3 -c \"import json,sys; print(json.dumps(sys.stdin.read()))\")
+                \"content\": $CONTENT
               }]
             }")
 
