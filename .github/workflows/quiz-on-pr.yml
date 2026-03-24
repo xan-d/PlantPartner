@@ -39,9 +39,9 @@ jobs:
         run: |
           if [ -f ".github/quiz-memory.json" ]; then
             echo "memory=$(cat .github/quiz-memory.json | tr -d '\n')" >> $GITHUB_OUTPUT
-            LEVEL=$(cat .github/quiz-memory.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('difficultyLevel', 2))")
-            WEAK=$(cat .github/quiz-memory.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(', '.join(d.get('weakAreas', [])) or 'none yet')")
-            SESSION=$(cat .github/quiz-memory.json | python3 -c "import sys,json; d=json.load(sys.stdin); print(d.get('sessionCount', 0) + 1)")
+            LEVEL=$(python3 -c "import json; d=json.load(open('.github/quiz-memory.json')); print(d.get('difficultyLevel', 2))")
+            WEAK=$(python3 -c "import json; d=json.load(open('.github/quiz-memory.json')); print(', '.join(d.get('weakAreas', [])) or 'none yet')")
+            SESSION=$(python3 -c "import json; d=json.load(open('.github/quiz-memory.json')); print(d.get('sessionCount', 0) + 1)")
             echo "level=$LEVEL" >> $GITHUB_OUTPUT
             echo "weak=$WEAK" >> $GITHUB_OUTPUT
             echo "session=$SESSION" >> $GITHUB_OUTPUT
@@ -51,53 +51,62 @@ jobs:
             echo "session=1" >> $GITHUB_OUTPUT
           fi
 
-      - name: Build question prompt
-        id: prompt
+      # NOTE: "Build question prompt" and "Call Anthropic API" are intentionally merged
+      # into one step. Passing the prompt through ${{ steps.prompt.outputs.prompt }}
+      # into a shell assignment (PROMPT='...') breaks whenever the prompt contains
+      # single quotes — which it always does. Keeping everything in one step avoids
+      # that entirely: the prompt is written to a temp file via heredoc, which is
+      # immune to special characters.
+      - name: Generate quiz questions
+        id: questions
+        env:
+          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          CHANGED_FILES: ${{ steps.changed.outputs.files }}
+          LEVEL: ${{ steps.memory.outputs.level }}
+          WEAK: ${{ steps.memory.outputs.weak }}
         run: |
-          CHANGED_FILES="${{ steps.changed.outputs.files }}"
-          LEVEL="${{ steps.memory.outputs.level }}"
-          WEAK="${{ steps.memory.outputs.weak }}"
-
-          # Read changed file contents (up to 300 lines each, max 3 files)
+          # ── 1. Build file context (up to 3 files, 300 lines each) ──────────────
           FILE_CONTEXT=""
           COUNT=0
           while IFS= read -r file; do
             if [ -f "$file" ] && [ $COUNT -lt 3 ]; then
-              FILE_CONTEXT="$FILE_CONTEXT\n\n### File: $file\n\`\`\`\n$(head -300 "$file")\n\`\`\`"
+              FILE_CONTEXT="${FILE_CONTEXT}
+
+          ### File: ${file}
+          \`\`\`
+          $(head -300 "$file")
+          \`\`\`"
               COUNT=$((COUNT+1))
             fi
           done <<< "$CHANGED_FILES"
 
-          PROMPT="You are a senior software engineer conducting a technical interview. \
-          The developer just submitted a pull request. Your job: ask them 3 targeted questions \
-          about their code changes to verify they understand what they built. \
-          \n\nRules:\
-          \n- Ask exactly 3 questions, numbered\
-          \n- Difficulty level: L${LEVEL} (1=foundational, 2=applied, 3=edge cases, 4=expert)\
-          \n- Weak areas to probe: ${WEAK}\
-          \n- Focus on: Node.js/MySQL architecture, API design, DB integrity, security, performance\
-          \n- For each question, put the answer in a <details> HTML block so it's collapsed by default\
-          \n- Format answers as: what a strong developer would say + common mistakes\
-          \n\nCode context:\n${FILE_CONTEXT}\
-          \n\nRespond ONLY with the formatted questions. No preamble."
+          # ── 2. Write prompt to a temp file via heredoc ─────────────────────────
+          #    Heredocs are safe regardless of quotes or special chars in variables.
+          cat > /tmp/prompt.txt << PROMPT_EOF
+          You are a senior software engineer conducting a technical interview. The developer just submitted a pull request. Your job: ask them 3 targeted questions about their code changes to verify they understand what they built.
 
-          echo "prompt<<PROMPTEOF" >> $GITHUB_OUTPUT
-          echo "$PROMPT" >> $GITHUB_OUTPUT
-          echo "PROMPTEOF" >> $GITHUB_OUTPUT
+          Rules:
+          - Ask exactly 3 questions, numbered
+          - Difficulty level: L${LEVEL} (1=foundational, 2=applied, 3=edge cases, 4=expert)
+          - Weak areas to probe: ${WEAK}
+          - Focus on: Node.js/MySQL architecture, API design, DB integrity, security, performance
+          - For each question, put the answer in a <details> HTML block so it's collapsed by default
+          - Format answers as: what a strong developer would say + common mistakes
 
-      - name: Call Anthropic API for questions
-        id: questions
-        env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
-        run: |
-          PROMPT='${{ steps.prompt.outputs.prompt }}'
+          Code context:
+          ${FILE_CONTEXT}
 
-          CONTENT=$(echo "$PROMPT" | python3 << 'PYEOF'
-          import json, sys
-          print(json.dumps(sys.stdin.read()))
+          Respond ONLY with the formatted questions. No preamble.
+          PROMPT_EOF
+
+          # ── 3. JSON-encode the prompt for the curl body ────────────────────────
+          CONTENT=$(python3 << 'PYEOF'
+          import json
+          print(json.dumps(open('/tmp/prompt.txt').read()))
           PYEOF
           )
 
+          # ── 4. Call the Anthropic API ──────────────────────────────────────────
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
@@ -111,7 +120,17 @@ jobs:
               }]
             }")
 
-          QUESTIONS=$(echo "$RESPONSE" | python3 -c "import sys,json; d=json.load(sys.stdin); print(d['content'][0]['text'])" 2>/dev/null || echo "Could not generate questions. Check ANTHROPIC_API_KEY secret.")
+          # ── 5. Extract the text from the response ──────────────────────────────
+          QUESTIONS=$(echo "$RESPONSE" | python3 << 'PYEOF'
+          import sys, json
+          try:
+              d = json.load(sys.stdin)
+              print(d['content'][0]['text'])
+          except Exception as e:
+              print(f"Could not parse API response: {e}")
+              sys.exit(1)
+          PYEOF
+          ) || QUESTIONS="Could not generate questions. Check ANTHROPIC_API_KEY secret."
 
           echo "questions<<QEOF" >> $GITHUB_OUTPUT
           echo "$QUESTIONS" >> $GITHUB_OUTPUT
@@ -121,14 +140,14 @@ jobs:
         uses: actions/github-script@v7
         with:
           script: |
-            const session = `${{ steps.memory.outputs.session }}`;
-            const level = `${{ steps.memory.outputs.level }}`;
-            const weak = `${{ steps.memory.outputs.weak }}`;
-            const changed = `${{ steps.changed.outputs.files }}`.trim().split('\n').filter(Boolean);
+            const session  = `${{ steps.memory.outputs.session }}`;
+            const level    = `${{ steps.memory.outputs.level }}`;
+            const weak     = `${{ steps.memory.outputs.weak }}`;
+            const changed  = `${{ steps.changed.outputs.files }}`.trim().split('\n').filter(Boolean);
             const questions = `${{ steps.questions.outputs.questions }}`;
 
             const levelLabels = { '1': 'Foundational', '2': 'Applied', '3': 'Edge Cases', '4': 'Expert' };
-            const levelBars = { '1': '█░░░', '2': '██░░', '3': '███░', '4': '████' };
+            const levelBars   = { '1': '█░░░', '2': '██░░', '3': '███░', '4': '████' };
 
             const fileList = changed.map(f => `- \`${f}\``).join('\n') || '- (no tracked files changed)';
 
