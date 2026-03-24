@@ -53,11 +53,11 @@ jobs:
           echo "weak=$WEAK"     >> $GITHUB_OUTPUT
           echo "session=$SESSION" >> $GITHUB_OUTPUT
 
-      # ── 4. Build context & generate quiz JSON via Claude ──────────────────
+      # ── 4. Build context & generate quiz JSON via Gemini ──────────────────
       - name: Generate quiz JSON
         id: quiz
         env:
-          ANTHROPIC_API_KEY: ${{ secrets.ANTHROPIC_API_KEY }}
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
           CHANGED_FILES:     ${{ steps.diff.outputs.files }}
           DIFF_LINES:        ${{ steps.diff.outputs.lines }}
           LEVEL:             ${{ steps.memory.outputs.level }}
@@ -152,9 +152,9 @@ jobs:
           }
           PROMPT_EOF
 
-          # ── Call Claude ────────────────────────────────────────────────────
-          if [ -z "$ANTHROPIC_API_KEY" ]; then
-            echo "::error::ANTHROPIC_API_KEY secret is not set. Add it in Settings → Secrets and variables → Actions."
+          # ── Call Gemini ───────────────────────────────────────────────────
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::error::GEMINI_API_KEY secret is not set. Add it in Settings → Secrets and variables → Actions."
             exit 1
           fi
 
@@ -162,31 +162,28 @@ jobs:
           python3 << 'PYEOF'
           import json
           payload = {
-              "model": "claude-haiku-4-5",
-              "max_tokens": 4000,
-              "messages": [{"role": "user", "content": open("/tmp/prompt.txt").read()}]
+              "contents": [{"parts": [{"text": open("/tmp/prompt.txt").read()}]}],
+              "generationConfig": {"maxOutputTokens": 4000}
           }
-          with open("/tmp/claude-request.json", "w") as f:
+          with open("/tmp/gemini-request.json", "w") as f:
               json.dump(payload, f)
           PYEOF
 
-          HTTP_CODE=$(curl -s -o /tmp/claude-response.json -w "%{http_code}" \
-            https://api.anthropic.com/v1/messages \
-            -H "x-api-key: $ANTHROPIC_API_KEY" \
-            -H "anthropic-version: 2023-06-01" \
+          HTTP_CODE=$(curl -s -o /tmp/gemini-response.json -w "%{http_code}" \
+            "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
             -H "content-type: application/json" \
-            -d @/tmp/claude-request.json)
+            -d @/tmp/gemini-request.json)
 
-          RESPONSE=$(cat /tmp/claude-response.json)
+          RESPONSE=$(cat /tmp/gemini-response.json)
 
           if [ "$HTTP_CODE" != "200" ]; then
-            echo "::error::Claude API returned HTTP $HTTP_CODE"
+            echo "::error::Gemini API returned HTTP $HTTP_CODE"
             echo "Response body: $RESPONSE"
             exit 1
           fi
 
           if [ -z "$RESPONSE" ]; then
-            echo "::error::Claude API returned an empty response (HTTP $HTTP_CODE)"
+            echo "::error::Gemini API returned an empty response (HTTP $HTTP_CODE)"
             exit 1
           fi
 
@@ -194,12 +191,12 @@ jobs:
           import json, sys
           d = {}
           try:
-              d = json.load(open("/tmp/claude-response.json"))
+              d = json.load(open("/tmp/gemini-response.json"))
               if 'error' in d:
                   print(f"API error: {d['error']}", file=sys.stderr)
                   sys.exit(1)
-              raw = d['content'][0]['text'].strip()
-              # Strip markdown fences if Claude added them anyway
+              raw = d['candidates'][0]['content']['parts'][0]['text'].strip()
+              # Strip markdown fences if Gemini added them
               if raw.startswith("```"):
                   raw = "\n".join(raw.split("\n")[1:])
               if raw.endswith("```"):
