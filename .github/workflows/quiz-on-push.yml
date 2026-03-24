@@ -190,11 +190,11 @@ jobs:
             exit 1
           fi
 
-          QUIZ_JSON=$(echo "$RESPONSE" | python3 << 'PYEOF'
-          import sys, json
+          QUIZ_JSON=$(python3 << 'PYEOF'
+          import json, sys
           d = {}
           try:
-              d = json.load(sys.stdin)
+              d = json.load(open("/tmp/claude-response.json"))
               if 'error' in d:
                   print(f"API error: {d['error']}", file=sys.stderr)
                   sys.exit(1)
