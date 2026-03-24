@@ -92,7 +92,11 @@ jobs:
         run: |
           PROMPT='${{ steps.prompt.outputs.prompt }}'
 
-          CONTENT=$(echo "$PROMPT" | python3 -c 'import json,sys; print(json.dumps(sys.stdin.read()))')
+          CONTENT=$(echo "$PROMPT" | python3 << 'PYEOF'
+          import json, sys
+          print(json.dumps(sys.stdin.read()))
+          PYEOF
+          )
 
           RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
