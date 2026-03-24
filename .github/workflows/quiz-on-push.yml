@@ -265,7 +265,7 @@ jobs:
           # Fetch or create gh-pages branch
           git fetch origin gh-pages 2>/dev/null || true
           if git rev-parse --verify origin/gh-pages >/dev/null 2>&1; then
-            git worktree add /tmp/gh-pages origin/gh-pages
+            git worktree add /tmp/gh-pages -b gh-pages origin/gh-pages
           else
             git worktree add --orphan /tmp/gh-pages
           fi
@@ -317,7 +317,7 @@ jobs:
           cd /tmp/gh-pages
           git add -A
           git commit -m "quiz: add session for commit ${{ github.sha }}" || echo "Nothing to commit"
-          git push origin gh-pages
+          git push origin HEAD:gh-pages
 
           echo "Deployed to: $QUIZ_URL"
 
