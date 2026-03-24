@@ -172,7 +172,7 @@ jobs:
           # Retry up to 3 times with backoff (handles 429 rate limits)
           for ATTEMPT in 1 2 3; do
             HTTP_CODE=$(curl -s -o /tmp/gemini-response.json -w "%{http_code}" \
-              "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.0-flash:generateContent?key=${GEMINI_API_KEY}" \
+              "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}" \
               -H "content-type: application/json" \
               -d @/tmp/gemini-request.json)
 
