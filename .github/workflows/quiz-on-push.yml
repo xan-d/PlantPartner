@@ -209,7 +209,7 @@ jobs:
           SESSION="${{ steps.memory.outputs.session }}"
           LEVEL="${{ steps.memory.outputs.level }}"
 
-          python3 << PYEOF
+          python3 << 'PYEOF'
           import json, os
 
           quiz = json.loads(open('/tmp/quiz-data.json').read())
@@ -217,6 +217,7 @@ jobs:
           repo = os.environ['REPO']
           actor = os.environ['ACTOR']
           quiz_json_str = json.dumps(quiz)
+          D = chr(36)  # dollar sign - avoids GH Actions treating JS template literals as expressions
 
           html = f"""<!DOCTYPE html>
           <html lang="en">
@@ -828,40 +829,40 @@ jobs:
               inputHTML = `<div class="options">` +
                 q.options.map((opt, oi) => {{
                   const letter = String.fromCharCode(65 + oi);
-                  return `<button class="option-btn" onclick="selectOption(${{i}}, '${{letter}}', this)" data-letter="${{letter}}">${{opt}}</button>`;
+                  return `<button class="option-btn" onclick="selectOption({D}{{i}}, '{D}{{letter}}', this)" data-letter="{D}{{letter}}">{D}{{opt}}</button>`;
                 }}).join('') +
                 `</div>`;
               if (q.type === 'multiple_choice_explained') {{
-                inputHTML += `<div class="explanation" id="exp-${{i}}">
+                inputHTML += `<div class="explanation" id="exp-{D}{{i}}">
                   <div class="explanation-label">📖 Explanation</div>
-                  <div>${{q.explanation || ''}}</div>
+                  <div>{D}{{q.explanation || ''}}</div>
                 </div>`;
               }}
             }}
 
             if (q.type === 'free_text') {{
               inputHTML = `
-                <textarea class="free-text-input" id="ft-${{i}}" placeholder="Type your answer here..." rows="5"></textarea>
-                <div class="grading-spinner" id="spinner-${{i}}">
+                <textarea class="free-text-input" id="ft-{D}{{i}}" placeholder="Type your answer here..." rows="5"></textarea>
+                <div class="grading-spinner" id="spinner-{D}{{i}}">
                   <div class="spinner"></div> AI is grading your answer...
                 </div>
-                <div class="grade-result" id="grade-${{i}}"></div>`;
+                <div class="grade-result" id="grade-{D}{{i}}"></div>`;
             }}
 
             return `
-            <div class="question-card" id="qcard-${{i}}">
+            <div class="question-card" id="qcard-{D}{{i}}">
               <div class="q-number">
-                <span>Question ${{i + 1}} / ${{QUIZ_DATA.questions.length}}</span>
-                <span class="q-type-badge">${{typeLabel}}</span>
+                <span>Question {D}{{i + 1}} / {D}{{QUIZ_DATA.questions.length}}</span>
+                <span class="q-type-badge">{D}{{typeLabel}}</span>
               </div>
-              <div class="q-text">${{q.question}}</div>
-              ${{inputHTML}}
-              <div class="btn-row" id="btnrow-${{i}}">
-                ${{q.type === 'free_text'
-                  ? `<button class="btn btn-primary" id="submit-ft-${{i}}" onclick="submitFreeText(${{i}})">Grade my answer →</button>`
+              <div class="q-text">{D}{{q.question}}</div>
+              {D}{{inputHTML}}
+              <div class="btn-row" id="btnrow-{D}{{i}}">
+                {D}{{q.type === 'free_text'
+                  ? `<button class="btn btn-primary" id="submit-ft-{D}{{i}}" onclick="submitFreeText({D}{{i}})">Grade my answer →</button>`
                   : ''
                 }}
-                <button class="btn btn-ghost" id="skip-${{i}}" onclick="nextQuestion(${{i}}, true)">Skip</button>
+                <button class="btn btn-ghost" id="skip-{D}{{i}}" onclick="nextQuestion({D}{{i}}, true)">Skip</button>
               </div>
             </div>`;
           }}
@@ -877,11 +878,11 @@ jobs:
             const total = QUIZ_DATA.questions.length;
             const pct = Math.round((index / total) * 100);
             document.getElementById('progress-fill').style.width = pct + '%';
-            document.getElementById('progress-text').textContent = `Question ${{index + 1}} of ${{total}}`;
-            document.getElementById('header-progress').textContent = `Q${{index + 1}} of ${{total}}`;
+            document.getElementById('progress-text').textContent = `Question {D}{{index + 1}} of {D}{{total}}`;
+            document.getElementById('header-progress').textContent = `Q{D}{{index + 1}} of {D}{{total}}`;
             const correct = Object.values(scores).filter(v => v === true).length;
             const graded  = Object.values(scores).filter(v => v !== null && v !== undefined).length;
-            document.getElementById('score-running').textContent = `Score: ${{correct}} / ${{graded}}`;
+            document.getElementById('score-running').textContent = `Score: {D}{{correct}} / {D}{{graded}}`;
           }}
 
           function selectOption(qIndex, letter, btn) {{
@@ -912,8 +913,8 @@ jobs:
             if (q.type === 'multiple_choice') {{
               const expDiv = document.createElement('div');
               expDiv.className = 'explanation show';
-              expDiv.innerHTML = `<div class="explanation-label">${{isCorrect ? '✅ Correct' : '❌ Incorrect'}}</div>
-                <div>${{q.explanation || (isCorrect ? 'Well done!' : 'The correct answer was ' + correct + '.')}}</div>`;
+              expDiv.innerHTML = `<div class="explanation-label">{D}{{isCorrect ? '✅ Correct' : '❌ Incorrect'}}</div>
+                <div>{D}{{q.explanation || (isCorrect ? 'Well done!' : 'The correct answer was ' + correct + '.')}}</div>`;
               card.querySelector('.options').after(expDiv);
             }}
 
@@ -936,14 +937,14 @@ jobs:
             try {{
               const gradePrompt = `You are grading a developer quiz answer.
 
-          Question: ${{q.question}}
+          Question: {D}{{q.question}}
 
           Sample answer / grading criteria:
-          ${{q.sampleAnswer || ''}}
-          ${{q.gradingCriteria || ''}}
+          {D}{{q.sampleAnswer || ''}}
+          {D}{{q.gradingCriteria || ''}}
 
           Developer's answer:
-          ${{input}}
+          {D}{{input}}
 
           Respond ONLY with valid JSON:
           {{"pass": true/false, "score": 0-10, "feedback": "2-3 sentence feedback explaining what was good and what was missing"}}`;
@@ -973,10 +974,10 @@ jobs:
               const gradeDiv = document.getElementById('grade-' + qIndex);
               gradeDiv.className = 'grade-result show ' + (grade.pass ? 'pass' : 'fail');
               gradeDiv.innerHTML = `
-                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;color:${{grade.pass ? 'var(--green)' : 'var(--red)'}}">${{grade.pass ? '✅ Passed' : '❌ Needs work'}} — ${{grade.score}}/10</div>
-                <div>${{grade.feedback}}</div>
+                <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;color:{D}{{grade.pass ? 'var(--green)' : 'var(--red)'}}">{D}{{grade.pass ? '✅ Passed' : '❌ Needs work'}} — {D}{{grade.score}}/10</div>
+                <div>{D}{{grade.feedback}}</div>
                 <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);color:var(--muted);font-size:12px">
-                  <strong style="color:var(--text)">Sample answer:</strong> ${{q.sampleAnswer || '(see grading criteria)'}}
+                  <strong style="color:var(--text)">Sample answer:</strong> {D}{{q.sampleAnswer || '(see grading criteria)'}}
                 </div>`;
 
               scores[q.id] = grade.pass;
@@ -992,10 +993,10 @@ jobs:
               gradeDiv.innerHTML = `
                 <div style="color:var(--amber);font-size:11px;text-transform:uppercase;margin-bottom:8px">⚠ AI grading unavailable — self-grade</div>
                 <div style="color:var(--muted)">Compare your answer to the sample below:</div>
-                <div style="margin-top:10px">${{q.sampleAnswer || q.gradingCriteria || ''}}</div>
+                <div style="margin-top:10px">{D}{{q.sampleAnswer || q.gradingCriteria || ''}}</div>
                 <div style="margin-top:14px;display:flex;gap:10px">
-                  <button class="btn btn-primary" style="font-size:12px;padding:8px 16px" onclick="markSelf(${{qIndex}},true)">✓ I got it right</button>
-                  <button class="btn btn-ghost"  style="font-size:12px;padding:8px 16px" onclick="markSelf(${{qIndex}},false)">✗ I got it wrong</button>
+                  <button class="btn btn-primary" style="font-size:12px;padding:8px 16px" onclick="markSelf({D}{{qIndex}},true)">✓ I got it right</button>
+                  <button class="btn btn-ghost"  style="font-size:12px;padding:8px 16px" onclick="markSelf({D}{{qIndex}},false)">✗ I got it wrong</button>
                 </div>`;
               scores[q.id] = null; // pending self-grade
             }}
@@ -1057,7 +1058,7 @@ jobs:
             document.getElementById('stat-total').textContent = total;
             document.getElementById('progress-fill').style.width = '100%';
             document.getElementById('progress-text').textContent = 'Quiz complete!';
-            document.getElementById('score-running').textContent = `Final: ${{correct}} / ${{total}}`;
+            document.getElementById('score-running').textContent = `Final: {D}{{correct}} / {D}{{total}}`;
           }}
 
           // ── Init ─────────────────────────────────────────────────────────────

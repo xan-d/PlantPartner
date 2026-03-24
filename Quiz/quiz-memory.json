@@ -1,7 +1,0 @@
-{
-  "difficultyLevel": 2,
-  "weakAreas": ["Query indexing", "Auth & security", "Error handling"],
-  "sessionCount": 0,
-  "lastSession": null,
-  "history": []
-}
