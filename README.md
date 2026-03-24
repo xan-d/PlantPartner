@@ -5,30 +5,6 @@ A plant care tracking web app built with React, Node.js, and MySQL.
 ## 🌐 Live Site
 [plant-partner.com](https://plant-partner.com)
 
-## To do
-- ~~Add user dashboard (landing page)~~
-  - ~~How many plants you have~~
-  - ~~top 5 plants coming up to water~~
-  -  ~~times watered~~
-  - ~~days until plant inspection~~
-    - ~~user sets how many days until new pictures and checkup is due~~
-- [optional] plant adoption date (so you can know their birthday!)
-- ~~Add notes to cards (do this later)~~
-- ~~Send push/text notifs for plant watering~~
-- ~~add choice of time for notifs~~
-- ~~refactor plant card component~~
-- ~~create fetch option when creating card~~
-- add filter options on plant grid
-- add PL/SQL to prevent SQL injections
-- ~~add header bar for nav, filter, and logo~~
-- ~~make plants grouped by room on dashboard~~
-  - ~~if user clicks room, opens only those plants~~
-- ~~Limit row count to prevent scrolling, add arrow on sides to navigate "pages" of plants~~
-- Google lens api for plant name/info fetching
-- add thirst sorting  on room.jsx
-- make view care infofr easier ot click on mobile
-- include sample url for fetch
-- change cloudflared nameserver from 100.100.100.100 (tailscale dns) to persistent 1.1.1.1
 
 ## Introduction and Overview
 
