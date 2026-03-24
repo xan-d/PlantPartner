@@ -158,22 +158,24 @@ jobs:
             exit 1
           fi
 
-          CONTENT=$(python3 << 'PYEOF'
+          # Build the request JSON safely in Python (avoids shell quoting issues)
+          python3 << 'PYEOF'
           import json
-          print(json.dumps(open('/tmp/prompt.txt').read()))
+          payload = {
+              "model": "claude-opus-4-5",
+              "max_tokens": 4000,
+              "messages": [{"role": "user", "content": open("/tmp/prompt.txt").read()}]
+          }
+          with open("/tmp/claude-request.json", "w") as f:
+              json.dump(payload, f)
           PYEOF
-          )
 
           HTTP_CODE=$(curl -s -o /tmp/claude-response.json -w "%{http_code}" \
             https://api.anthropic.com/v1/messages \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -H "content-type: application/json" \
-            -d "{
-              \"model\": \"claude-opus-4-5\",
-              \"max_tokens\": 4000,
-              \"messages\": [{\"role\": \"user\", \"content\": $CONTENT}]
-            }")
+            -d @/tmp/claude-request.json)
 
           RESPONSE=$(cat /tmp/claude-response.json)
 
