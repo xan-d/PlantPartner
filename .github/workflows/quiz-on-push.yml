@@ -171,6 +171,7 @@ jobs:
 
           QUIZ_JSON=$(echo "$RESPONSE" | python3 << 'PYEOF'
           import sys, json
+          d = {}
           try:
               d = json.load(sys.stdin)
               raw = d['content'][0]['text'].strip()
