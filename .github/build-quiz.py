@@ -29,7 +29,7 @@ html = f"""<!DOCTYPE html>
       --text: #e2e8e4;
       --muted: #6b7c72;
       --radius: 6px;
-    }} 
+    }}
 
     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
 
