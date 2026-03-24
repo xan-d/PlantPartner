@@ -153,13 +153,19 @@ jobs:
           PROMPT_EOF
 
           # ── Call Claude ────────────────────────────────────────────────────
+          if [ -z "$ANTHROPIC_API_KEY" ]; then
+            echo "::error::ANTHROPIC_API_KEY secret is not set. Add it in Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
           CONTENT=$(python3 << 'PYEOF'
           import json
           print(json.dumps(open('/tmp/prompt.txt').read()))
           PYEOF
           )
 
-          RESPONSE=$(curl -s https://api.anthropic.com/v1/messages \
+          HTTP_CODE=$(curl -s -o /tmp/claude-response.json -w "%{http_code}" \
+            https://api.anthropic.com/v1/messages \
             -H "x-api-key: $ANTHROPIC_API_KEY" \
             -H "anthropic-version: 2023-06-01" \
             -H "content-type: application/json" \
@@ -169,11 +175,27 @@ jobs:
               \"messages\": [{\"role\": \"user\", \"content\": $CONTENT}]
             }")
 
+          RESPONSE=$(cat /tmp/claude-response.json)
+
+          if [ "$HTTP_CODE" != "200" ]; then
+            echo "::error::Claude API returned HTTP $HTTP_CODE"
+            echo "Response body: $RESPONSE"
+            exit 1
+          fi
+
+          if [ -z "$RESPONSE" ]; then
+            echo "::error::Claude API returned an empty response (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
           QUIZ_JSON=$(echo "$RESPONSE" | python3 << 'PYEOF'
           import sys, json
           d = {}
           try:
               d = json.load(sys.stdin)
+              if 'error' in d:
+                  print(f"API error: {d['error']}", file=sys.stderr)
+                  sys.exit(1)
               raw = d['content'][0]['text'].strip()
               # Strip markdown fences if Claude added them anyway
               if raw.startswith("```"):
@@ -184,7 +206,8 @@ jobs:
               json.loads(raw)
               print(raw)
           except Exception as e:
-              print(json.dumps({"error": str(e), "raw": d.get('content', [])}), file=sys.stderr)
+              print(f"Failed to parse quiz from API response: {e}", file=sys.stderr)
+              print(f"Response keys: {list(d.keys()) if isinstance(d, dict) else 'not a dict'}", file=sys.stderr)
               sys.exit(1)
           PYEOF
           )
