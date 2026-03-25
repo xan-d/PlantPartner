@@ -1,0 +1,393 @@
+name: 🌿 Plant Partner — Push Quiz
+
+on:
+  push:
+    branches: ['**']
+
+permissions:
+  contents: write        # needed to push quiz files to gh-pages
+  pull-requests: read
+
+jobs:
+  generate-and-deploy-quiz:
+    name: Generate Quiz & Deploy
+    runs-on: ubuntu-latest
+
+    steps:
+      # ── 1. Checkout ────────────────────────────────────────────────────────
+      - name: Checkout repo
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 2
+
+      # ── 2. Measure the diff ────────────────────────────────────────────────
+      - name: Analyse diff size
+        id: diff
+        run: |
+          # Lines changed in this push (tracked source files only)
+          LINES=$(git diff --stat HEAD~1 HEAD -- '*.js' '*.ts' '*.sql' '*.json' '*.jsx' '*.tsx' \
+                  | tail -1 | grep -oE '[0-9]+ insertion|[0-9]+ deletion' \
+                  | grep -oE '[0-9]+' | awk '{s+=$1} END {print s+0}')
+
+          echo "lines=$LINES" >> $GITHUB_OUTPUT
+          echo "Lines changed: $LINES"
+
+          # Collect up to 3 changed files (≤300 lines each) for context
+          CHANGED=$(git diff --name-only HEAD~1 HEAD | grep -E '\.(js|ts|jsx|tsx|sql|json)$' | head -3)
+          echo "files<<EOF" >> $GITHUB_OUTPUT
+          echo "$CHANGED" >> $GITHUB_OUTPUT
+          echo "EOF" >> $GITHUB_OUTPUT
+
+      # ── 3. Load quiz memory ────────────────────────────────────────────────
+      - name: Load quiz memory
+        id: memory
+        run: |
+          if [ -f ".github/quiz-memory.json" ]; then
+            LEVEL=$(python3 -c "import json; d=json.load(open('.github/quiz-memory.json')); print(d.get('difficultyLevel', 2))")
+            WEAK=$(python3  -c "import json; d=json.load(open('.github/quiz-memory.json')); print(', '.join(d.get('weakAreas', [])) or 'general')")
+            SESSION=$(python3 -c "import json; d=json.load(open('.github/quiz-memory.json')); print(d.get('sessionCount', 0) + 1)")
+          else
+            LEVEL=2; WEAK="general"; SESSION=1
+          fi
+          echo "level=$LEVEL"   >> $GITHUB_OUTPUT
+          echo "weak=$WEAK"     >> $GITHUB_OUTPUT
+          echo "session=$SESSION" >> $GITHUB_OUTPUT
+
+      # ── 4. Build context & generate quiz JSON via Gemini ──────────────────
+      - name: Generate quiz JSON
+        id: quiz
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          CHANGED_FILES:     ${{ steps.diff.outputs.files }}
+          DIFF_LINES:        ${{ steps.diff.outputs.lines }}
+          LEVEL:             ${{ steps.memory.outputs.level }}
+          WEAK:              ${{ steps.memory.outputs.weak }}
+          SESSION:           ${{ steps.memory.outputs.session }}
+          COMMIT_SHA:        ${{ github.sha }}
+          COMMIT_MSG:        ${{ github.event.head_commit.message }}
+          PUSHER:            ${{ github.actor }}
+        run: |
+          # ── Build file context ─────────────────────────────────────────────
+          FILE_CONTEXT=""
+          COUNT=0
+          while IFS= read -r file; do
+            if [ -f "$file" ] && [ $COUNT -lt 3 ]; then
+              FILE_CONTEXT="${FILE_CONTEXT}
+
+          ### File: ${file}
+          \`\`\`
+          $(head -300 "$file")
+          \`\`\`"
+              COUNT=$((COUNT+1))
+            fi
+          done <<< "$CHANGED_FILES"
+
+          # If diff is tiny (<10 lines), supplement with broader project context
+          if [ "$DIFF_LINES" -lt 10 ]; then
+            echo "Small diff — adding broader project context"
+            for f in $(find . -name '*.js' -o -name '*.ts' -o -name '*.sql' | grep -v node_modules | head -5); do
+              if [ $COUNT -lt 5 ]; then
+                FILE_CONTEXT="${FILE_CONTEXT}
+
+          ### Project file: ${f}
+          \`\`\`
+          $(head -100 "$f")
+          \`\`\`"
+                COUNT=$((COUNT+1))
+              fi
+            done
+          fi
+
+          # ── Write prompt ───────────────────────────────────────────────────
+          cat > /tmp/prompt.txt << PROMPT_EOF
+          You are a senior software engineer generating a technical quiz for a developer who just pushed code.
+
+          Commit: ${COMMIT_SHA:0:7} — "${COMMIT_MSG}"
+          Pusher: ${PUSHER}
+          Difficulty: L${LEVEL} (1=foundational, 2=applied, 3=edge cases, 4=expert)
+          Weak areas to probe: ${WEAK}
+          Focus: Node.js/MySQL architecture, API design, DB integrity, security, performance
+
+          Code context:
+          ${FILE_CONTEXT}
+
+          Generate exactly 10 quiz questions. Mix ALL THREE formats proportionally:
+          - ~4 multiple choice questions (4 options each, exactly one correct)
+          - ~3 free-text questions (short answer, graded by AI)
+          - ~3 multiple choice WITH explanation (after answering, reveal a detailed explanation)
+
+          Return ONLY a valid JSON object, no markdown fences, no preamble:
+          {
+            "session": ${SESSION},
+            "commit": "${COMMIT_SHA:0:7}",
+            "commitMsg": "${COMMIT_MSG}",
+            "pusher": "${PUSHER}",
+            "level": ${LEVEL},
+            "weakAreas": "${WEAK}",
+            "questions": [
+              {
+                "id": 1,
+                "type": "multiple_choice",
+                "question": "...",
+                "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+                "correct": "A",
+                "explanation": "..."
+              },
+              {
+                "id": 2,
+                "type": "free_text",
+                "question": "...",
+                "sampleAnswer": "...",
+                "gradingCriteria": "..."
+              },
+              {
+                "id": 3,
+                "type": "multiple_choice_explained",
+                "question": "...",
+                "options": ["A. ...", "B. ...", "C. ...", "D. ..."],
+                "correct": "B",
+                "explanation": "A thorough explanation shown after answering..."
+              }
+            ]
+          }
+          PROMPT_EOF
+
+          # ── Call Gemini ───────────────────────────────────────────────────
+          if [ -z "$GEMINI_API_KEY" ]; then
+            echo "::error::GEMINI_API_KEY secret is not set. Add it in Settings → Secrets and variables → Actions."
+            exit 1
+          fi
+
+          # Build the request JSON safely in Python (avoids shell quoting issues)
+          python3 << 'PYEOF'
+          import json
+          payload = {
+              "contents": [{"parts": [{"text": open("/tmp/prompt.txt").read()}]}],
+              "generationConfig": {
+                  "maxOutputTokens": 8192,
+                  "thinkingConfig": {"thinkingBudget": 0}
+              }
+          }
+          with open("/tmp/gemini-request.json", "w") as f:
+              json.dump(payload, f)
+          PYEOF
+
+          # Retry up to 3 times with backoff (handles 429 rate limits)
+          for ATTEMPT in 1 2 3; do
+            HTTP_CODE=$(curl -s -o /tmp/gemini-response.json -w "%{http_code}" \
+              "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${GEMINI_API_KEY}" \
+              -H "content-type: application/json" \
+              -d @/tmp/gemini-request.json)
+
+            if [ "$HTTP_CODE" = "200" ]; then
+              break
+            elif [ "$HTTP_CODE" = "429" ] && [ "$ATTEMPT" -lt 3 ]; then
+              WAIT=$((ATTEMPT * 30))
+              echo "Rate limited (429). Waiting ${WAIT}s before retry $((ATTEMPT+1))/3..."
+              sleep $WAIT
+            else
+              echo "::error::Gemini API returned HTTP $HTTP_CODE"
+              cat /tmp/gemini-response.json
+              exit 1
+            fi
+          done
+
+          RESPONSE=$(cat /tmp/gemini-response.json)
+
+          if [ -z "$RESPONSE" ]; then
+            echo "::error::Gemini API returned an empty response (HTTP $HTTP_CODE)"
+            exit 1
+          fi
+
+          QUIZ_JSON=$(python3 << 'PYEOF'
+          import json, sys
+          d = {}
+          try:
+              d = json.load(open("/tmp/gemini-response.json"))
+              if 'error' in d:
+                  print(f"API error: {d['error']}", file=sys.stderr)
+                  sys.exit(1)
+              # Get the last text part (skip any thinking parts)
+              parts = d['candidates'][0]['content']['parts']
+              raw = [p['text'] for p in parts if 'text' in p][-1].strip()
+              # Strip markdown fences if Gemini added them
+              if raw.startswith("```"):
+                  raw = "\n".join(raw.split("\n")[1:])
+              if raw.endswith("```"):
+                  raw = "\n".join(raw.split("\n")[:-1])
+              # Validate it's real JSON
+              json.loads(raw)
+              print(raw)
+          except Exception as e:
+              print(f"Failed to parse quiz from API response: {e}", file=sys.stderr)
+              print(f"Response keys: {list(d.keys()) if isinstance(d, dict) else 'not a dict'}", file=sys.stderr)
+              sys.exit(1)
+          PYEOF
+          )
+
+          # Write quiz data to file for use in later steps
+          echo "$QUIZ_JSON" > /tmp/quiz-data.json
+          echo "Quiz JSON generated ($(echo "$QUIZ_JSON" | wc -c) bytes)"
+
+          # Generate a unique quiz ID for the URL
+          QUIZ_ID="${{ github.sha }}"
+          QUIZ_ID="${QUIZ_ID:0:8}"
+          echo "quiz_id=$QUIZ_ID" >> $GITHUB_OUTPUT
+
+      # ── 5. Build the quiz HTML page ────────────────────────────────────────
+      - name: Build quiz HTML page
+        id: build
+        env:
+          QUIZ_ID: ${{ steps.quiz.outputs.quiz_id }}
+          REPO:    ${{ github.repository }}
+          ACTOR:   ${{ github.actor }}
+        run: |
+          python3 .github/build-quiz.py
+
+          echo "page_path=quiz-pages/${QUIZ_ID}.html" >> $GITHUB_OUTPUT
+
+
+      # ── 6. Deploy to GitHub Pages ──────────────────────────────────────────
+      - name: Deploy quiz to GitHub Pages
+        id: deploy
+        env:
+          QUIZ_ID: ${{ steps.quiz.outputs.quiz_id }}
+          REPO:    ${{ github.repository }}
+        run: |
+          REPO_NAME=$(echo "$REPO" | cut -d'/' -f2)
+          QUIZ_URL="https://$(echo "$REPO" | cut -d'/' -f1).github.io/${REPO_NAME}/quizzes/${QUIZ_ID}.html"
+          echo "quiz_url=$QUIZ_URL" >> $GITHUB_OUTPUT
+
+          # Set up git for pushing to gh-pages
+          git config user.name  "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+
+          # Fetch or create gh-pages branch
+          git fetch origin gh-pages 2>/dev/null || true
+          if git rev-parse --verify origin/gh-pages >/dev/null 2>&1; then
+            git worktree add /tmp/gh-pages -b gh-pages origin/gh-pages
+          else
+            git worktree add --orphan /tmp/gh-pages
+          fi
+
+          # Copy quiz file
+          mkdir -p /tmp/gh-pages/quizzes
+          cp quiz-pages/${{ steps.quiz.outputs.quiz_id }}.html /tmp/gh-pages/quizzes/
+
+          # Regenerate index
+          python3 << 'PYEOF'
+          import os, glob, json
+
+          quiz_dir = '/tmp/gh-pages/quizzes'
+          files = sorted(glob.glob(f'{quiz_dir}/*.html'), reverse=True)
+
+          rows = []
+          for f in files:
+              qid = os.path.basename(f).replace('.html','')
+              rows.append(f'<li><a href="quizzes/{qid}.html">Quiz {qid}</a></li>')
+
+          index_html = f"""<!DOCTYPE html>
+          <html lang="en">
+          <head>
+            <meta charset="UTF-8">
+            <title>🌿 Plant Partner — Quiz Archive</title>
+            <link href="https://fonts.googleapis.com/css2?family=DM+Mono:wght@400;500&family=Fraunces:ital,wght@0,300;1,300&display=swap" rel="stylesheet">
+            <style>
+              body {{ background:#0d0f0e; color:#e2e8e4; font-family:'DM Mono',monospace; padding:60px 32px; max-width:600px; margin:0 auto; }}
+              h1 {{ font-family:'Fraunces',serif; font-weight:300; color:#4ade80; margin-bottom:8px; font-size:32px; }}
+              p {{ color:#6b7c72; margin-bottom:32px; font-size:13px; }}
+              ul {{ list-style:none; padding:0; }}
+              li {{ border-bottom:1px solid #1e2420; padding:14px 0; }}
+              a {{ color:#e2e8e4; text-decoration:none; font-size:13px; }}
+              a:hover {{ color:#4ade80; }}
+            </style>
+          </head>
+          <body>
+            <h1>🌿 Quiz Archive</h1>
+            <p>All quizzes generated on push. Sign in with GitHub to take one.</p>
+            <ul>{''.join(rows) or '<li style="color:#6b7c72">No quizzes yet.</li>'}</ul>
+          </body>
+          </html>"""
+
+          open('/tmp/gh-pages/index.html', 'w').write(index_html)
+          print("Index updated.")
+          PYEOF
+
+          # Commit and push
+          cd /tmp/gh-pages
+          git add -A
+          git commit -m "quiz: add session for commit ${{ github.sha }}" || echo "Nothing to commit"
+          git push origin HEAD:gh-pages
+
+          echo "Deployed to: $QUIZ_URL"
+
+      # ── 7. Send email notification ─────────────────────────────────────────
+      - name: Send quiz email
+        env:
+          QUIZ_URL:    ${{ steps.deploy.outputs.quiz_url }}
+          COMMIT_SHA:  ${{ github.sha }}
+          COMMIT_MSG:  ${{ github.event.head_commit.message }}
+          PUSHER:      ${{ github.actor }}
+          SESSION:     ${{ steps.memory.outputs.session }}
+          NOTIFY_EMAIL: ${{ secrets.QUIZ_NOTIFY_EMAIL }}
+          GMAIL_USER:   ${{ secrets.GMAIL_USER }}
+          GMAIL_APP_PW: ${{ secrets.GMAIL_APP_PW }}
+        run: |
+          python3 << 'PYEOF'
+          import smtplib, os
+          from email.mime.multipart import MIMEMultipart
+          from email.mime.text import MIMEText
+
+          to      = os.environ['NOTIFY_EMAIL']
+          sender  = os.environ['GMAIL_USER']
+          app_pw  = os.environ['GMAIL_APP_PW']
+          url     = os.environ['QUIZ_URL']
+          sha     = os.environ['COMMIT_SHA'][:7]
+          msg_txt = os.environ['COMMIT_MSG'][:80]
+          pusher  = os.environ['PUSHER']
+          session = os.environ['SESSION']
+
+          subject = f"🌿 Code Quiz Ready — Session #{session} ({sha})"
+
+          html_body = f"""
+          <div style="background:#0d0f0e;color:#e2e8e4;font-family:'Courier New',monospace;padding:40px;max-width:560px;margin:0 auto;border-radius:8px">
+            <h1 style="font-size:28px;font-weight:300;color:#4ade80;margin-bottom:4px">🌿 Code Quiz</h1>
+            <p style="color:#6b7c72;font-size:13px;margin-bottom:32px">Session #{session}</p>
+
+            <table style="width:100%;border-collapse:collapse;margin-bottom:28px">
+              <tr><td style="color:#6b7c72;font-size:12px;padding:8px 0;border-bottom:1px solid #1e2420">Commit</td>
+                  <td style="font-size:12px;padding:8px 0;border-bottom:1px solid #1e2420;color:#fbbf24"><code>{sha}</code></td></tr>
+              <tr><td style="color:#6b7c72;font-size:12px;padding:8px 0;border-bottom:1px solid #1e2420">Message</td>
+                  <td style="font-size:12px;padding:8px 0;border-bottom:1px solid #1e2420">{msg_txt}</td></tr>
+              <tr><td style="color:#6b7c72;font-size:12px;padding:8px 0">Pusher</td>
+                  <td style="font-size:12px;padding:8px 0">@{pusher}</td></tr>
+            </table>
+
+            <p style="color:#e2e8e4;font-size:13px;margin-bottom:24px">
+              Your 10-question quiz is ready. Answer before expanding the hints.
+            </p>
+
+            <a href="{url}" style="display:inline-block;background:#4ade80;color:#0d0f0e;padding:14px 32px;border-radius:6px;text-decoration:none;font-weight:500;font-size:14px;letter-spacing:.01em">
+              Take the Quiz →
+            </a>
+
+            <p style="color:#6b7c72;font-size:11px;margin-top:32px">
+              Generated by Plant Partner Socratic Reviewer · <a href="{url}" style="color:#4ade80">{url}</a>
+            </p>
+          </div>"""
+
+          msg = MIMEMultipart('alternative')
+          msg['Subject'] = subject
+          msg['From']    = sender
+          msg['To']      = to
+          msg.attach(MIMEText(html_body, 'html'))
+
+          try:
+              with smtplib.SMTP_SSL('smtp.gmail.com', 465) as server:
+                  server.login(sender, app_pw)
+                  server.sendmail(sender, to, msg.as_string())
+              print(f"Email sent to {to}")
+          except Exception as e:
+              print(f"Email failed: {e}")
+              # Don't fail the whole workflow for email issues
+          PYEOF
