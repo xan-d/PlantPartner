@@ -99,7 +99,7 @@ exports.updatePlant = async (req, res) => {
     const userID = req.session.userID;
     const { name, scientific, room, light, lastWatered, waterFreq, lastFed, health, careLink, color } = req.body;
 
-    // Convert "days ago" to actual dates (Matches your createPlant logic)
+    // Convert "days ago" to actual dates
     const lastWateredDate = new Date();
     lastWateredDate.setDate(lastWateredDate.getDate() - parseInt(lastWatered || 0));
     const lastWateredFormatted = lastWateredDate.toISOString().split('T')[0];
@@ -220,6 +220,9 @@ exports.waterPlant = async (req, res) => {
         if (conn) conn.release();
     }
 };
+
+// TODO: Check if section below is duplicate, I don't think pupeteer is
+//          being used anymore.
 
 // ─── GET care info by scraping careLink ───────────────────────────────────────
 const https = require('https');

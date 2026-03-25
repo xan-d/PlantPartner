@@ -11,32 +11,6 @@ exports.getVapidPublicKey = (req, res) => {
     res.json({ publicKey: process.env.VAPID_PUBLIC_KEY });
 };
 
-// exports.subscribe = async (req, res) => {
-//     console.log('subscribe hit!');
-//     const { endpoint, keys } = req.body;
-//     const userID = req.session.userID;
-
-//     if (!userID) return res.status(401).json({ error: 'Not logged in' });
-
-//     try {
-//         const result = await db.promise().query(
-//             'INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (?,?,?,?)',
-//             [userID, endpoint, keys.p256dh, keys.auth]
-//         );
-//         console.log('insert result:', result[0].insertId);
-
-//         const [check] = await db.promise().query(
-//             'SELECT * FROM push_subscriptions WHERE id = ?', [result[0].insertId]
-//         );
-//         console.log('check:', check);
-
-//         res.json({ success: true });
-//     } catch (err) {
-//         console.error('Insert error:', err.message);
-//         res.status(500).json({ error: err.message });
-//     }
-// };
-
 exports.subscribe = async (req, res) => {
     const { endpoint, keys } = req.body;
     const userID = req.session.userID;
@@ -56,6 +30,7 @@ exports.subscribe = async (req, res) => {
         res.status(500).json({ error: err.message });
     }
 };
+
 exports.unsubscribe = async (req, res) => {
     const { endpoint } = req.body;
     await db.promise().query(
