@@ -89,9 +89,7 @@ END //
 DELIMITER;
 
 -- ===========================
--- Get Plant (by plantID)
--- ===========================
-DROP IF PROCEDURE EXISTS GetPlantById;
+DROP PROCEDURE IF EXISTS GetPlantById;
 DELIMITER //
 
 CREATE PROCEDURE GetPlantById(
@@ -101,20 +99,18 @@ CREATE PROCEDURE GetPlantById(
 BEGIN
     SELECT *, DATEDIFF(CURDATE(), lastWatered) AS daysSinceWatered 
      FROM Plants 
-     WHERE plantID = ? AND userID = ?
+     WHERE plantID = p_plantID AND userID = p_userID;
 END //
 
 DELIMITER ;
 
 -- ===========================
--- Create Plant
--- ===========================
-DROP IF PROCEDURE EXISTS CreatePlant;
+DROP PROCEDURE IF EXISTS CreatePlant;
 DELIMITER //
 
 CREATE PROCEDURE CreatePlant(
     IN p_userID INT,
-    IN p_name VARCHAR(255)
+    IN p_name VARCHAR(255),
     IN p_scientific VARCHAR(255),
     IN p_image VARCHAR(255),
     IN p_room VARCHAR(255),
@@ -141,7 +137,7 @@ BEGIN
         careLink,
         color
     ) 
-     VALUES (
+    VALUES (
         p_userID,
         p_name,
         p_scientific,
@@ -154,7 +150,7 @@ BEGIN
         p_health,
         p_careLink,
         p_color
-     )
+    );
 END //
 
 DELIMITER ;
@@ -162,13 +158,13 @@ DELIMITER ;
 -- TODO: ensure update plant doesn't need an ID passed in
 
 -- ===========================
--- Update Plant (by id)
--- ===========================
 DROP PROCEDURE IF EXISTS UpdatePlant;
 DELIMITER //
 
 CREATE PROCEDURE UpdatePlant(
-    IN p_name VARCHAR(255)
+    IN p_plantID INT,
+    IN p_userID INT,
+    IN p_name VARCHAR(255),
     IN p_scientific VARCHAR(255),
     IN p_image VARCHAR(255),
     IN p_room VARCHAR(255),
@@ -182,64 +178,233 @@ CREATE PROCEDURE UpdatePlant(
 )
 BEGIN
     UPDATE Plants 
-    SET name=?,
-        scientific=?,
-        room=?,
-        light=?,
-        lastWatered=?,
-        waterFreq=?,
-        lastFed=?,
-        health=?,
-        careLink=?,
-        color=?
+    SET name = p_name,
+        scientific = p_scientific,
+        image = p_image,
+        room = p_room,
+        light = p_light,
+        lastWatered = p_lastWatered,
+        waterFreq = p_waterFreq,
+        lastFed = p_lastFed,
+        health = p_health,
+        careLink = p_careLink,
+        color = p_color
+    WHERE plantID = p_plantID AND userID = p_userID;
 END //
 
 DELIMITER ;
 
+
+
 -- delete plant by id
-DELETE FROM Plants WHERE plantID=? AND userID=?
+
+-- ===========================
+-- Delete Plant (by plantID & userID)
+-- ===========================
+DROP PROCEDURE IF EXISTS DeletePlant;
+DELIMITER //
+
+CREATE PROCEDURE DeletePlant(
+    IN p_plantID INT,
+    IN p_userID INT
+)
+BEGIN
+    DELETE FROM Plants WHERE plantID = p_plantID AND userID = p_userID;
+END //
+
+DELIMITER ;
 
 -- get image by plantID & userID
-SELECT image FROM Plants WHERE plantID=? AND userID=?
+
+-- ===========================
+-- Get Plant Image (by plantID & userID)
+-- ===========================
+DROP PROCEDURE IF EXISTS GetPlantImage;
+DELIMITER //
+
+CREATE PROCEDURE GetPlantImage(
+    IN p_plantID INT,
+    IN p_userID INT
+)
+BEGIN
+    SELECT image FROM Plants WHERE plantID = p_plantID AND userID = p_userID;
+END //
+
+DELIMITER ;
 
 -- update lastwatered by plantID & userID
-UPDATE Plants SET lastWatered = CURDATE() WHERE plantID = ? AND userID = ?
+
+-- ===========================
+-- Update LastWatered (by plantID & userID)
+-- ===========================
+DROP PROCEDURE IF EXISTS UpdateLastWatered;
+DELIMITER //
+
+CREATE PROCEDURE UpdateLastWatered(
+    IN p_plantID INT,
+    IN p_userID INT
+)
+BEGIN
+    UPDATE Plants SET lastWatered = CURDATE() WHERE plantID = p_plantID AND userID = p_userID;
+END //
+
+DELIMITER ;
 
 -- update times watered by userID
-UPDATE Users SET timesWatered = timesWatered + 1 WHERE userID = ?
+
+-- ===========================
+-- Increment TimesWatered (by userID)
+-- ===========================
+DROP PROCEDURE IF EXISTS IncrementTimesWatered;
+DELIMITER //
+
+CREATE PROCEDURE IncrementTimesWatered(
+    IN p_userID INT
+)
+BEGIN
+    UPDATE Users SET timesWatered = timesWatered + 1 WHERE userID = p_userID;
+END //
+
+DELIMITER ;
 
 /*
 pushController
 */
--- delete subscribtions by endpoint
-DELETE FROM push_subscriptions WHERE endpoint = ?, [endpoint]
 
--- add push subscription
-INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (?,?,?,?)
+-- ###################################
+--          PUSH CONTROLLER
+-- ###################################
 
--- get plant name & userID
- SELECT p.name, p.userID as user_id FROM Plants p WHERE DATE_ADD(p.lastWatered, INTERVAL p.waterFreq DAY) <= CURDATE()
+-- ===========================
+-- Delete Push Subscription (by endpoint)
+-- ===========================
+DROP PROCEDURE IF EXISTS DeletePushSubscriptionByEndpoint;
+DELIMITER //
 
--- get push subscription by userID
-SELECT * FROM push_subscriptions WHERE user_id = ? [userID]
+CREATE PROCEDURE DeletePushSubscriptionByEndpoint(
+    IN p_endpoint VARCHAR(255)
+)
+BEGIN
+    DELETE FROM push_subscriptions WHERE endpoint = p_endpoint;
+END //
 
--- delete push sub by id
-DELETE FROM push_subscriptions WHERE id = ? [sub.id]
+DELIMITER ;
+
+-- ===========================
+-- Add Push Subscription
+-- ===========================
+DROP PROCEDURE IF EXISTS AddPushSubscription;
+DELIMITER //
+
+CREATE PROCEDURE AddPushSubscription(
+    IN p_user_id INT,
+    IN p_endpoint VARCHAR(255),
+    IN p_p256dh VARCHAR(255),
+    IN p_auth VARCHAR(255)
+)
+BEGIN
+    INSERT INTO push_subscriptions (user_id, endpoint, p256dh, auth) VALUES (p_user_id, p_endpoint, p_p256dh, p_auth);
+END //
+
+DELIMITER ;
+
+-- ===========================
+-- Get Plants Needing Water (for notifications)
+-- ===========================
+DROP PROCEDURE IF EXISTS GetPlantsNeedingWater;
+DELIMITER //
+
+CREATE PROCEDURE GetPlantsNeedingWater()
+BEGIN
+    SELECT p.name, p.userID as user_id FROM Plants p WHERE DATE_ADD(p.lastWatered, INTERVAL p.waterFreq DAY) <= CURDATE();
+END //
+
+DELIMITER ;
+
+-- ===========================
+-- Get Push Subscriptions (by userID)
+-- ===========================
+DROP PROCEDURE IF EXISTS GetPushSubscriptionsByUserID;
+DELIMITER //
+
+CREATE PROCEDURE GetPushSubscriptionsByUserID(
+    IN p_user_id INT
+)
+BEGIN
+    SELECT * FROM push_subscriptions WHERE user_id = p_user_id;
+END //
+
+DELIMITER ;
+
+-- ===========================
+-- Delete Push Subscription (by id)
+-- ===========================
+DROP PROCEDURE IF EXISTS DeletePushSubscriptionByID;
+DELIMITER //
+
+CREATE PROCEDURE DeletePushSubscriptionByID(
+    IN p_id INT
+)
+BEGIN
+    DELETE FROM push_subscriptions WHERE id = p_id;
+END //
+
+DELIMITER ;
 
 /*
 userStatsController
 */
--- get timesWatered, inspectionDueDate, and notify_time by userID
-SELECT timesWatered, inspectionDueDate, notify_time AS notifyTime FROM Users WHERE userID = ?
 
--- update timesWatered by userID
-UPDATE Users SET timesWatered = timesWatered + 1 WHERE userID = ?
+-- ###################################
+--          USER STATS CONTROLLER
+-- ###################################
 
--- update inspectionDueDate by userID
-UPDATE Users SET inspectionDueDate = ? WHERE userID = ?
+-- ===========================
+-- Get User Stats (by userID)
+-- ===========================
+DROP PROCEDURE IF EXISTS GetUserStats;
+DELIMITER //
 
--- update notifytime by userID
-UPDATE Users SET notify_time = ? WHERE userID = ?
+CREATE PROCEDURE GetUserStats(
+    IN p_userID INT
+)
+BEGIN
+    SELECT timesWatered, inspectionDueDate, notify_time AS notifyTime FROM Users WHERE userID = p_userID;
+END //
+
+DELIMITER ;
+
+-- ===========================
+-- Update Inspection Due Date (by userID)
+-- ===========================
+DROP PROCEDURE IF EXISTS UpdateInspectionDueDate;
+DELIMITER //
+
+CREATE PROCEDURE UpdateInspectionDueDate(
+    IN p_userID INT,
+    IN p_inspectionDueDate DATE
+)
+BEGIN
+    UPDATE Users SET inspectionDueDate = p_inspectionDueDate WHERE userID = p_userID;
+END //
+
+DELIMITER ;
+
+-- ===========================
+-- Update Notify Time (by userID)
+-- ===========================
+DROP PROCEDURE IF EXISTS UpdateNotifyTime;
+DELIMITER //
+
+CREATE PROCEDURE UpdateNotifyTime(
+    IN p_userID INT,
+    IN p_notifyTime TIME
+)
+BEGIN
+    UPDATE Users SET notify_time = p_notifyTime WHERE userID = p_userID;
+END //
+
+DELIMITER ;
 
 -- 
 
