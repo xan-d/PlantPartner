@@ -1,0 +1,851 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>🌿 Code Quiz — Session #1</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0d0f0e;
+      --surface: #141714;
+      --border: #1e2420;
+      --green: #4ade80;
+      --green-dim: #166534;
+      --amber: #fbbf24;
+      --red: #f87171;
+      --text: #e2e8e4;
+      --muted: #6b7c72;
+      --radius: 6px;
+    }
+
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      background: var(--bg);
+      color: var(--text);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      line-height: 1.7;
+      min-height: 100vh;
+    }
+
+    /* Subtle scanline overlay */
+    body::before {
+      content: '';
+      position: fixed; inset: 0;
+      background: repeating-linear-gradient(
+        0deg,
+        transparent,
+        transparent 2px,
+        rgba(0,0,0,0.03) 2px,
+        rgba(0,0,0,0.03) 4px
+      );
+      pointer-events: none;
+      z-index: 9999;
+    }
+
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 24px 32px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      position: sticky;
+      top: 0;
+      background: var(--bg);
+      z-index: 100;
+    }
+
+    .logo {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 300;
+      color: var(--green);
+      letter-spacing: -0.02em;
+    }
+
+    .logo span { color: var(--muted); font-style: italic; font-size: 13px; margin-left: 8px; }
+
+    .header-meta {
+      display: flex;
+      gap: 20px;
+      align-items: center;
+      font-size: 12px;
+      color: var(--muted);
+    }
+
+    .pill {
+      border: 1px solid var(--border);
+      padding: 3px 10px;
+      border-radius: 20px;
+      font-size: 11px;
+    }
+
+    .pill.green { border-color: var(--green-dim); color: var(--green); }
+
+    main {
+      max-width: 800px;
+      margin: 0 auto;
+      padding: 48px 32px 120px;
+    }
+
+    .quiz-header {
+      margin-bottom: 48px;
+    }
+
+    .quiz-title {
+      font-family: 'Fraunces', serif;
+      font-size: 36px;
+      font-weight: 300;
+      letter-spacing: -0.03em;
+      color: var(--text);
+      margin-bottom: 12px;
+      line-height: 1.2;
+    }
+
+    .quiz-title em {
+      color: var(--green);
+      font-style: italic;
+    }
+
+    .commit-info {
+      display: flex;
+      gap: 16px;
+      flex-wrap: wrap;
+      font-size: 12px;
+      color: var(--muted);
+      margin-top: 16px;
+    }
+
+    .commit-info code {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      padding: 2px 8px;
+      border-radius: 3px;
+      color: var(--amber);
+    }
+
+    /* Progress bar */
+    .progress-bar-wrap {
+      margin-bottom: 40px;
+    }
+
+    .progress-label {
+      display: flex;
+      justify-content: space-between;
+      font-size: 11px;
+      color: var(--muted);
+      margin-bottom: 8px;
+    }
+
+    .progress-track {
+      height: 2px;
+      background: var(--border);
+      border-radius: 2px;
+      overflow: hidden;
+    }
+
+    .progress-fill {
+      height: 100%;
+      background: var(--green);
+      border-radius: 2px;
+      transition: width 0.4s ease;
+      width: 0%;
+    }
+
+    /* Question cards */
+    .question-card {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 32px;
+      margin-bottom: 16px;
+      background: var(--surface);
+      transition: border-color 0.2s;
+      display: none;
+    }
+
+    .question-card.active { display: block; animation: slideIn 0.3s ease; }
+    .question-card.correct { border-color: var(--green); }
+    .question-card.incorrect { border-color: var(--red); }
+
+    @keyframes slideIn {
+      from { opacity: 0; transform: translateY(8px); }
+      to   { opacity: 1; transform: translateY(0); }
+    }
+
+    .q-number {
+      font-size: 11px;
+      color: var(--muted);
+      letter-spacing: 0.1em;
+      text-transform: uppercase;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .q-type-badge {
+      border: 1px solid var(--border);
+      padding: 1px 8px;
+      border-radius: 3px;
+      font-size: 10px;
+      color: var(--muted);
+    }
+
+    .q-text {
+      font-family: 'Fraunces', serif;
+      font-size: 20px;
+      font-weight: 300;
+      line-height: 1.5;
+      color: var(--text);
+      margin-bottom: 28px;
+    }
+
+    /* Multiple choice */
+    .options {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+    }
+
+    .option-btn {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      text-align: left;
+      cursor: pointer;
+      transition: all 0.15s;
+      line-height: 1.5;
+    }
+
+    .option-btn:hover:not(:disabled) {
+      border-color: var(--green);
+      color: var(--green);
+      background: rgba(74, 222, 128, 0.04);
+    }
+
+    .option-btn.selected { border-color: var(--amber); color: var(--amber); }
+    .option-btn.correct-answer { border-color: var(--green); color: var(--green); background: rgba(74,222,128,0.07); }
+    .option-btn.wrong-answer { border-color: var(--red); color: var(--red); background: rgba(248,113,113,0.07); }
+    .option-btn:disabled { cursor: default; }
+
+    /* Free text */
+    .free-text-input {
+      width: 100%;
+      background: var(--bg);
+      border: 1px solid var(--border);
+      color: var(--text);
+      padding: 14px 18px;
+      border-radius: var(--radius);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      resize: vertical;
+      min-height: 120px;
+      margin-bottom: 12px;
+      transition: border-color 0.15s;
+    }
+
+    .free-text-input:focus { outline: none; border-color: var(--green); }
+
+    /* Explanation box */
+    .explanation {
+      display: none;
+      margin-top: 20px;
+      padding: 18px 20px;
+      background: rgba(74, 222, 128, 0.05);
+      border: 1px solid var(--green-dim);
+      border-radius: var(--radius);
+      font-size: 13px;
+      color: var(--text);
+      line-height: 1.8;
+    }
+
+    .explanation.show { display: block; animation: fadeIn 0.3s ease; }
+    .explanation-label {
+      font-size: 11px;
+      color: var(--green);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-bottom: 8px;
+    }
+
+    /* AI grading result */
+    .grade-result {
+      display: none;
+      margin-top: 16px;
+      padding: 18px 20px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      line-height: 1.7;
+    }
+
+    .grade-result.show { display: block; animation: fadeIn 0.3s ease; }
+    .grade-result.pass { background: rgba(74,222,128,0.05); border: 1px solid var(--green-dim); }
+    .grade-result.fail { background: rgba(248,113,113,0.05); border: 1px solid #7f1d1d; }
+
+    @keyframes fadeIn {
+      from { opacity: 0; } to { opacity: 1; }
+    }
+
+    /* Buttons */
+    .btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      padding: 10px 22px;
+      border-radius: var(--radius);
+      font-family: 'DM Mono', monospace;
+      font-size: 13px;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+
+    .btn-primary {
+      background: var(--green);
+      color: #0d0f0e;
+      font-weight: 500;
+    }
+
+    .btn-primary:hover { background: #86efac; }
+    .btn-primary:disabled { background: var(--green-dim); color: var(--muted); cursor: default; }
+
+    .btn-ghost {
+      background: transparent;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+
+    .btn-ghost:hover { border-color: var(--text); color: var(--text); }
+
+    .btn-row {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      align-items: center;
+    }
+
+    .grading-spinner {
+      display: none;
+      align-items: center;
+      gap: 10px;
+      color: var(--muted);
+      font-size: 12px;
+    }
+
+    .grading-spinner.show { display: flex; }
+
+    .spinner {
+      width: 14px; height: 14px;
+      border: 2px solid var(--border);
+      border-top-color: var(--green);
+      border-radius: 50%;
+      animation: spin 0.7s linear infinite;
+    }
+
+    @keyframes spin { to { transform: rotate(360deg); } }
+
+    /* Results screen */
+    #results-screen {
+      display: none;
+      text-align: center;
+      padding: 80px 32px;
+    }
+
+    #results-screen.show { display: block; animation: slideIn 0.5s ease; }
+
+    .score-display {
+      font-family: 'Fraunces', serif;
+      font-size: 96px;
+      font-weight: 600;
+      color: var(--green);
+      line-height: 1;
+      margin-bottom: 8px;
+    }
+
+    .score-label {
+      font-size: 13px;
+      color: var(--muted);
+      margin-bottom: 40px;
+    }
+
+    .result-breakdown {
+      display: flex;
+      gap: 24px;
+      justify-content: center;
+      margin-bottom: 48px;
+      flex-wrap: wrap;
+    }
+
+    .result-stat {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px 28px;
+      text-align: center;
+    }
+
+    .result-stat-num {
+      font-family: 'Fraunces', serif;
+      font-size: 32px;
+      font-weight: 300;
+      color: var(--text);
+    }
+
+    .result-stat-label {
+      font-size: 11px;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      margin-top: 4px;
+    }
+
+    /* Login gate */
+    #login-gate {
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      min-height: 100vh;
+      flex-direction: column;
+      gap: 24px;
+      text-align: center;
+      padding: 32px;
+    }
+
+    .login-box {
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 48px;
+      max-width: 440px;
+      background: var(--surface);
+    }
+
+    .login-title {
+      font-family: 'Fraunces', serif;
+      font-size: 28px;
+      font-weight: 300;
+      margin-bottom: 12px;
+    }
+
+    .login-sub {
+      color: var(--muted);
+      font-size: 13px;
+      margin-bottom: 32px;
+      line-height: 1.6;
+    }
+
+    .github-btn {
+      display: inline-flex;
+      align-items: center;
+      gap: 12px;
+      background: var(--text);
+      color: var(--bg);
+      padding: 12px 28px;
+      border-radius: var(--radius);
+      font-family: 'DM Mono', monospace;
+      font-size: 14px;
+      font-weight: 500;
+      text-decoration: none;
+      cursor: pointer;
+      border: none;
+      transition: background 0.15s;
+    }
+
+    .github-btn:hover { background: #fff; }
+
+    #quiz-app { display: none; }
+
+    @media (max-width: 600px) {
+      header { padding: 16px; }
+      main { padding: 24px 16px 80px; }
+      .quiz-title { font-size: 26px; }
+      .score-display { font-size: 72px; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- Login Gate -->
+<div id="login-gate">
+  <div class="login-box">
+    <div class="login-title">🌿 Code Quiz</div>
+    <p class="login-sub">
+      This quiz was generated for <strong>xan-d</strong> from
+      commit <code style="background:#1e2420;padding:2px 8px;border-radius:3px;color:#fbbf24">0c5f171</code>
+      in <strong>xan-d/PlantPartner</strong>.<br><br>
+      Sign in with GitHub to verify your identity before taking the quiz.
+    </p>
+    <button class="github-btn" onclick="initiateGitHubLogin()">
+      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+      </svg>
+      Sign in with GitHub
+    </button>
+  </div>
+</div>
+
+<!-- Quiz App (shown after login) -->
+<div id="quiz-app">
+  <header>
+    <div class="logo">🌿 Plant Partner <span>code quiz</span></div>
+    <div class="header-meta">
+      <span id="header-progress">Q1 of 10</span>
+      <span class="pill green" id="header-session">Session #1</span>
+      <span class="pill" id="header-commit">0c5f171</span>
+    </div>
+  </header>
+
+  <main>
+    <div class="quiz-header">
+      <h1 class="quiz-title">
+        Session <em>#1</em><br>
+        Ready to be <em>quizzed?</em>
+      </h1>
+      <div class="commit-info">
+        <span>📦 commit <code>0c5f171</code></span>
+        <span>💬 Update deploy_all_procedures.sql</span>
+        <span>👤 xan-d</span>
+      </div>
+    </div>
+
+    <div class="progress-bar-wrap">
+      <div class="progress-label">
+        <span id="progress-text">Question 1 of 10</span>
+        <span id="score-running">Score: 0 / 0</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="progress-fill"></div>
+      </div>
+    </div>
+
+    <div id="questions-container"></div>
+
+    <div id="results-screen">
+      <div class="score-display" id="final-score-pct">—%</div>
+      <div class="score-label" id="final-score-label">calculating...</div>
+      <div class="result-breakdown">
+        <div class="result-stat">
+          <div class="result-stat-num" id="stat-correct">0</div>
+          <div class="result-stat-label">Correct</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-num" id="stat-wrong">0</div>
+          <div class="result-stat-label">Wrong</div>
+        </div>
+        <div class="result-stat">
+          <div class="result-stat-num" id="stat-total">10</div>
+          <div class="result-stat-label">Total</div>
+        </div>
+      </div>
+      <p style="color:var(--muted);font-size:13px;margin-bottom:32px">
+        Update <code style="color:var(--amber)">.github/quiz-memory.json</code> to track weak areas and difficulty progression.
+      </p>
+    </div>
+  </main>
+</div>
+
+<script>
+// ── Quiz data ─────────────────────────────────────────────────────────
+const QUIZ_DATA = {"session": 1, "commit": "0c5f171", "commitMsg": "Update deploy_all_procedures.sql", "pusher": "xan-d", "level": 2, "weakAreas": "Query indexing, Auth & security, Error handling", "questions": [{"id": 1, "type": "multiple_choice", "question": "The `deploy_all_procedures.sql` script is intended to load all stored procedures. Given the provided `push_procedures.sql` file, which table's operations would primarily be managed by procedures sourced from that file?", "options": ["A. Users", "B. Plants", "C. push_subscriptions", "D. All tables mentioned"], "correct": "C", "explanation": null}, {"id": 2, "type": "free_text", "question": "Consider the `Users` table's `email` column. How does the `CREATE TABLE` statement enforce data integrity and prevent duplicate user registrations, and what is a potential performance implication of this design choice?", "sampleAnswer": "The `email VARCHAR(255) NOT NULL UNIQUE` declaration enforces data integrity by ensuring that every user has a unique email address and that the email field cannot be empty. This uniqueness constraint also typically implies an underlying unique index is created, which aids in fast lookups by email but adds overhead to insert and update operations.", "gradingCriteria": "Answer should mention `NOT NULL` for integrity and `UNIQUE` for uniqueness, ideally also linking to an implicit unique index. Performance implication should relate to the overhead of maintaining the index on inserts/updates."}, {"id": 3, "type": "multiple_choice_explained", "question": "Which of the following would be the most efficient way to query for a specific plant by its `plantID` in the `Plants` table, assuming no custom indexes beyond the primary key?", "options": ["A. `SELECT * FROM Plants WHERE name = 'Golden Pothos';`", "B. `SELECT * FROM Plants WHERE plantID = 1;`", "C. `SELECT * FROM Plants WHERE userID = 1;`", "D. `SELECT * FROM Plants WHERE careCache IS NOT NULL;`"], "correct": "B", "explanation": "The `plantID` column is defined as `PRIMARY KEY`, which automatically creates a clustered index (or similar, depending on the MySQL storage engine). Queries using the primary key for direct lookup are almost always the most efficient because the index provides a direct path to the data record, avoiding full table scans."}, {"id": 4, "type": "multiple_choice", "question": "The `CreateUser` procedure takes `p_passwordHash` as an input. From an authentication and security perspective, what is the best practice for generating this value before it's passed to the procedure?", "options": ["A. Store the plain-text password directly.", "B. Hash the password using a fast, non-salted algorithm like MD5.", "C. Hash the password using a slow, salted, adaptive hashing function like bcrypt or Argon2.", "D. Encrypt the password using a symmetric key and store the ciphertext."], "correct": "C", "explanation": null}, {"id": 5, "type": "free_text", "question": "The `DeletePushSubscriptionByEndpoint` procedure uses `p_endpoint VARCHAR(255)` as an input parameter. Assuming `endpoint` in `push_subscriptions` table could be quite long, what is a potential issue with declaring `p_endpoint` as `VARCHAR(255)` instead of `TEXT` (like the column itself)?", "sampleAnswer": "If the `endpoint` column in the `push_subscriptions` table is actually defined as `TEXT` and contains values longer than 255 characters, then passing a `VARCHAR(255)` parameter to the `DeletePushSubscriptionByEndpoint` procedure might lead to truncated input. This would prevent the procedure from correctly matching and deleting subscriptions whose endpoints exceed 255 characters, potentially causing logical errors or leaving orphaned data.", "gradingCriteria": "Answer should identify that if the actual column `endpoint` is `TEXT` and contains values longer than 255 chars, then `VARCHAR(255)` parameter might truncate the input, leading to missed matches and failed deletions for longer endpoints."}, {"id": 6, "type": "multiple_choice_explained", "question": "In `initialization.sql`, `SET FOREIGN_KEY_CHECKS = 0;` is used. What is the primary purpose of this statement in the context of database initialization, and what is the associated risk if it's not reset?", "options": ["A. It speeds up table creation by disabling integrity checks temporarily.", "B. It allows dropping tables and re-inserting data in any order without foreign key constraint violations.", "C. It disables all indexing for faster data loading.", "D. It prevents SQL injection attacks during setup."], "correct": "B", "explanation": "`SET FOREIGN_KEY_CHECKS = 0;` temporarily disables the foreign key constraint checks. This is crucial during initialization or migrations when you might drop tables, re-create them, or insert data into child tables before parent tables. Without it, MySQL would throw errors because, for example, inserting into `Plants` (child) before `Users` (parent) exists, or dropping `Users` before `Plants`, would violate constraints. The associated risk is forgetting to reset it to `1` (or `TRUE`) afterwards, which would leave the database in a state where foreign key constraints are not enforced, compromising data integrity for subsequent operations."}, {"id": 7, "type": "free_text", "question": "The `GetPlantsNeedingWater` procedure selects `p.name` and `p.userID` from the `Plants` table. From a performance perspective, what would be a beneficial index to add to the `Plants` table to optimize this specific query, and why?", "sampleAnswer": "A composite index on `(lastWatered, waterFreq)` or simply on `lastWatered` would be beneficial. The `WHERE` clause `DATE_ADD(p.lastWatered, INTERVAL p.waterFreq DAY) <= CURDATE()` critically depends on these columns. An index on `lastWatered` would allow the database to quickly find relevant rows without scanning the entire table. A composite index might be even better if `waterFreq` significantly narrows down the results after `lastWatered` is considered. Since only `name` and `userID` are selected, a covering index including these columns (`(lastWatered, waterFreq, name, userID)`) would be ideal as it could fulfill the query entirely from the index without accessing the table data.", "gradingCriteria": "Answer should suggest an index on `lastWatered` or a composite index involving `lastWatered` and `waterFreq`. Explanation should refer to optimizing the `WHERE` clause for faster row retrieval. Mentioning a covering index for `name` and `userID` is a bonus."}, {"id": 8, "type": "multiple_choice", "question": "The `AddPushSubscription` procedure inserts sensitive user notification data. Which of the following is NOT a direct security concern related to the procedure's definition itself, assuming the input values are already sanitized on the application layer?", "options": ["A. Storing `endpoint`, `p256dh`, and `auth` data in plain text in the database.", "B. The `p_user_id` parameter could be spoofed if the calling application doesn't properly authenticate the user.", "C. There is no input validation for the length or format of `p_endpoint`, `p_p256dh`, or `p_auth` within the procedure.", "D. The procedure definition uses `DELIMITER //`, which is a standard SQL syntax for defining procedures and not a security risk."], "correct": "D", "explanation": null}, {"id": 9, "type": "multiple_choice_explained", "question": "The `GetUser` procedure is designed to retrieve a `userID` based on an `email`. What potential issue could arise if a Node.js API endpoint directly uses this procedure without careful consideration of the `p_email` input?", "options": ["A. The `userID` returned might be incorrect due to data type mismatch.", "B. The procedure is vulnerable to SQL injection if `p_email` is concatenated directly into the query string.", "C. The procedure might return multiple user IDs if emails are not unique.", "D. The connection to the database could time out due to a long-running query."], "correct": "B", "explanation": "While stored procedures generally offer some protection against SQL injection by separating code from data, they are not inherently immune. If the Node.js application constructs the `CALL GetUser('...')` string by directly concatenating an unsanitized `p_email` from user input (e.g., `req.body.email`), it could still lead to SQL injection. For example, if `p_email` was `'invalid@email.com' OR 1=1; --'`, and directly concatenated, the procedure call string would be compromised. Best practice is to always use parameterized queries or prepared statements in the application layer when calling stored procedures to ensure input is treated as data, not executable code."}, {"id": 10, "type": "free_text", "question": "The `Plants` table includes a `careLink VARCHAR(500)` column. From an API design perspective, what are two reasons why storing external links directly in the database like this might be less ideal than storing a more abstract identifier and constructing the URL in the application layer?", "sampleAnswer": "1. **Maintainability/Flexibility**: If the external service's URL structure changes, every single `careLink` entry in the database would need to be updated. If only an ID was stored, only the application layer's URL construction logic would need a single change. 2. **Storage Efficiency**: Storing full, potentially redundant URLs (e.g., if many links share a common base URL) can be less efficient than storing a smaller identifier and reconstructing the full URL. It also potentially wastes space if `VARCHAR(500)` is over-allocated for most links. 3. **Security (less direct)**: While not a primary security flaw, constructing URLs in the app layer could allow for more robust validation or sanitization of the base URL/parameters, reducing the chance of serving malicious links, though this is less about the link *storage* and more about its *use*.", "gradingCriteria": "Answer should provide at least two distinct reasons. Acceptable reasons include: flexibility/maintainability for URL changes, storage efficiency (especially with common base URLs), potential for more robust application-level validation/construction, easier migration if the external service changes."}]};
+const EXPECTED_GITHUB_USER = "xan-d";
+const ANTHROPIC_KEY_PLACEHOLDER = ""; // grading calls go through a proxy — see README
+const REPO = "xan-d/PlantPartner";
+
+// ── GitHub OAuth (Pages-compatible via GitHub's device flow isn't ideal;
+//    we use a lightweight approach: redirect to GitHub, get back the username
+//    from the URL token via a serverless proxy, or for simplicity store in
+//    sessionStorage after the user confirms their username) ──────────────
+
+let currentUser = sessionStorage.getItem('quiz_github_user');
+let currentQ = 0;
+let scores = {};   // id -> true/false/null(pending)
+let answered = {};  // id -> true
+
+function initiateGitHubLogin() {
+  // Simple self-attestation with a confirmation step.
+  // For real OAuth you'd need a backend; this is a honest prompt
+  // approach appropriate for a personal dev tool.
+  const username = prompt("Enter your GitHub username to proceed:");
+  if (!username) return;
+  if (username.trim().toLowerCase() !== EXPECTED_GITHUB_USER.toLowerCase()) {
+    alert("❌ This quiz was generated for @" + EXPECTED_GITHUB_USER + ". Please log in with the correct account.");
+    return;
+  }
+  sessionStorage.setItem('quiz_github_user', username.trim());
+  currentUser = username.trim();
+  showQuiz();
+}
+
+function showQuiz() {
+  document.getElementById('login-gate').style.display = 'none';
+  document.getElementById('quiz-app').style.display = 'block';
+  renderQuestions();
+  showQuestion(0);
+}
+
+function renderQuestions() {
+  const container = document.getElementById('questions-container');
+  QUIZ_DATA.questions.forEach((q, i) => {
+    container.innerHTML += buildQuestionHTML(q, i);
+  });
+}
+
+function buildQuestionHTML(q, i) {
+  const typeLabel = {
+    multiple_choice: 'multiple choice',
+    free_text: 'free text',
+    multiple_choice_explained: 'explained'
+  }[q.type] || q.type;
+
+  let inputHTML = '';
+
+  if (q.type === 'multiple_choice' || q.type === 'multiple_choice_explained') {
+    inputHTML = `<div class="options">` +
+      q.options.map((opt, oi) => {
+        const letter = String.fromCharCode(65 + oi);
+        return `<button class="option-btn" onclick="selectOption(${i}, '${letter}', this)" data-letter="${letter}">${opt}</button>`;
+      }).join('') +
+      `</div>`;
+    if (q.type === 'multiple_choice_explained') {
+      inputHTML += `<div class="explanation" id="exp-${i}">
+        <div class="explanation-label">📖 Explanation</div>
+        <div>${q.explanation || ''}</div>
+      </div>`;
+    }
+  }
+
+  if (q.type === 'free_text') {
+    inputHTML = `
+      <textarea class="free-text-input" id="ft-${i}" placeholder="Type your answer here..." rows="5"></textarea>
+      <div class="grading-spinner" id="spinner-${i}">
+        <div class="spinner"></div> AI is grading your answer...
+      </div>
+      <div class="grade-result" id="grade-${i}"></div>`;
+  }
+
+  return `
+  <div class="question-card" id="qcard-${i}">
+    <div class="q-number">
+      <span>Question ${i + 1} / ${QUIZ_DATA.questions.length}</span>
+      <span class="q-type-badge">${typeLabel}</span>
+    </div>
+    <div class="q-text">${q.question}</div>
+    ${inputHTML}
+    <div class="btn-row" id="btnrow-${i}">
+      ${q.type === 'free_text'
+        ? `<button class="btn btn-primary" id="submit-ft-${i}" onclick="submitFreeText(${i})">Grade my answer →</button>`
+        : ''
+      }
+      <button class="btn btn-ghost" id="skip-${i}" onclick="nextQuestion(${i}, true)">Skip</button>
+    </div>
+  </div>`;
+}
+
+function showQuestion(index) {
+  document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+  const card = document.getElementById('qcard-' + index);
+  if (card) card.classList.add('active');
+  updateProgress(index);
+}
+
+function updateProgress(index) {
+  const total = QUIZ_DATA.questions.length;
+  const pct = Math.round((index / total) * 100);
+  document.getElementById('progress-fill').style.width = pct + '%';
+  document.getElementById('progress-text').textContent = `Question ${index + 1} of ${total}`;
+  document.getElementById('header-progress').textContent = `Q${index + 1} of ${total}`;
+  const correct = Object.values(scores).filter(v => v === true).length;
+  const graded  = Object.values(scores).filter(v => v !== null && v !== undefined).length;
+  document.getElementById('score-running').textContent = `Score: ${correct} / ${graded}`;
+}
+
+function selectOption(qIndex, letter, btn) {
+  if (answered[qIndex]) return;
+  answered[qIndex] = true;
+
+  const q = QUIZ_DATA.questions[qIndex];
+  const correct = q.correct;
+  const isCorrect = letter === correct;
+  scores[q.id] = isCorrect;
+
+  // Style all buttons
+  const card = document.getElementById('qcard-' + qIndex);
+  card.querySelectorAll('.option-btn').forEach(b => {
+    b.disabled = true;
+    if (b.dataset.letter === correct) b.classList.add('correct-answer');
+    else if (b === btn && !isCorrect) b.classList.add('wrong-answer');
+  });
+  card.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+  // Show explanation for explained type
+  if (q.type === 'multiple_choice_explained') {
+    const exp = document.getElementById('exp-' + qIndex);
+    if (exp) exp.classList.add('show');
+  }
+
+  // Show result inline for basic MC
+  if (q.type === 'multiple_choice') {
+    const expDiv = document.createElement('div');
+    expDiv.className = 'explanation show';
+    expDiv.innerHTML = `<div class="explanation-label">${isCorrect ? '✅ Correct' : '❌ Incorrect'}</div>
+      <div>${q.explanation || (isCorrect ? 'Well done!' : 'The correct answer was ' + correct + '.')}</div>`;
+    card.querySelector('.options').after(expDiv);
+  }
+
+  // Replace skip with next button
+  replaceSkipWithNext(qIndex);
+  updateProgress(qIndex);
+}
+
+async function submitFreeText(qIndex) {
+  if (answered[qIndex]) return;
+  const q = QUIZ_DATA.questions[qIndex];
+  const input = document.getElementById('ft-' + qIndex).value.trim();
+  if (!input) { alert('Please write an answer before submitting.'); return; }
+
+  answered[qIndex] = true;
+  document.getElementById('submit-ft-' + qIndex).disabled = true;
+  document.getElementById('spinner-' + qIndex).classList.add('show');
+
+  // Call Anthropic API to grade the answer
+  try {
+    const gradePrompt = `You are grading a developer quiz answer.
+
+Question: ${q.question}
+
+Sample answer / grading criteria:
+${q.sampleAnswer || ''}
+${q.gradingCriteria || ''}
+
+Developer's answer:
+${input}
+
+Respond ONLY with valid JSON:
+{"pass": true/false, "score": 0-10, "feedback": "2-3 sentence feedback explaining what was good and what was missing"}`;
+
+    const resp = await fetch('https://api.anthropic.com/v1/messages', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'x-api-key': document.getElementById('anth-key')?.value || '',
+        'anthropic-version': '2023-06-01',
+        'anthropic-dangerous-direct-browser-access': 'true'
+      },
+      body: JSON.stringify({
+        model: 'claude-haiku-4-5-20251001',
+        max_tokens: 300,
+        messages: [{ role: 'user', content: gradePrompt }]
+      })
+    });
+
+    const data = await resp.json();
+    let raw = data?.content?.[0]?.text?.trim() || '';
+    if (raw.startsWith('```')) raw = raw.split('\n').slice(1).join('\n');
+    if (raw.endsWith('```')) raw = raw.split('\n').slice(0,-1).join('\n');
+    const grade = JSON.parse(raw);
+
+    document.getElementById('spinner-' + qIndex).classList.remove('show');
+    const gradeDiv = document.getElementById('grade-' + qIndex);
+    gradeDiv.className = 'grade-result show ' + (grade.pass ? 'pass' : 'fail');
+    gradeDiv.innerHTML = `
+      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;color:${grade.pass ? 'var(--green)' : 'var(--red)'}">${grade.pass ? '✅ Passed' : '❌ Needs work'} — ${grade.score}/10</div>
+      <div>${grade.feedback}</div>
+      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);color:var(--muted);font-size:12px">
+        <strong style="color:var(--text)">Sample answer:</strong> ${q.sampleAnswer || '(see grading criteria)'}
+      </div>`;
+
+    scores[q.id] = grade.pass;
+    const card = document.getElementById('qcard-' + qIndex);
+    card.classList.add(grade.pass ? 'correct' : 'incorrect');
+
+  } catch(e) {
+    document.getElementById('spinner-' + qIndex).classList.remove('show');
+    // Graceful degradation: no API key or CORS, mark as self-graded
+    const gradeDiv = document.getElementById('grade-' + qIndex);
+    gradeDiv.className = 'grade-result show';
+    gradeDiv.style.borderColor = 'var(--amber)';
+    gradeDiv.innerHTML = `
+      <div style="color:var(--amber);font-size:11px;text-transform:uppercase;margin-bottom:8px">⚠ AI grading unavailable — self-grade</div>
+      <div style="color:var(--muted)">Compare your answer to the sample below:</div>
+      <div style="margin-top:10px">${q.sampleAnswer || q.gradingCriteria || ''}</div>
+      <div style="margin-top:14px;display:flex;gap:10px">
+        <button class="btn btn-primary" style="font-size:12px;padding:8px 16px" onclick="markSelf(${qIndex},true)">✓ I got it right</button>
+        <button class="btn btn-ghost"  style="font-size:12px;padding:8px 16px" onclick="markSelf(${qIndex},false)">✗ I got it wrong</button>
+      </div>`;
+    scores[q.id] = null; // pending self-grade
+  }
+
+  replaceSkipWithNext(qIndex);
+  updateProgress(qIndex);
+}
+
+function markSelf(qIndex, pass) {
+  const q = QUIZ_DATA.questions[qIndex];
+  scores[q.id] = pass;
+  const card = document.getElementById('qcard-' + qIndex);
+  card.classList.add(pass ? 'correct' : 'incorrect');
+  // Remove the self-grade buttons
+  card.querySelectorAll('.btn').forEach(b => {
+    if (b.textContent.includes('I got it')) b.remove();
+  });
+  updateProgress(qIndex);
+}
+
+function replaceSkipWithNext(qIndex) {
+  const skip = document.getElementById('skip-' + qIndex);
+  if (skip) {
+    skip.textContent = qIndex < QUIZ_DATA.questions.length - 1 ? 'Next question →' : 'See results →';
+    skip.classList.remove('btn-ghost');
+    skip.classList.add('btn-primary');
+    skip.onclick = () => nextQuestion(qIndex, false);
+  }
+}
+
+function nextQuestion(qIndex, skipped) {
+  if (skipped) scores[QUIZ_DATA.questions[qIndex].id] = false;
+  currentQ = qIndex + 1;
+  if (currentQ >= QUIZ_DATA.questions.length) {
+    showResults();
+  } else {
+    showQuestion(currentQ);
+  }
+}
+
+function showResults() {
+  document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+  const resultsEl = document.getElementById('results-screen');
+  resultsEl.classList.add('show');
+
+  const total = QUIZ_DATA.questions.length;
+  const correct = Object.values(scores).filter(v => v === true).length;
+  const wrong   = Object.values(scores).filter(v => v === false).length;
+  const pct = Math.round((correct / total) * 100);
+
+  document.getElementById('final-score-pct').textContent = pct + '%';
+  document.getElementById('final-score-label').textContent =
+    pct >= 80 ? '🎉 Excellent work!' :
+    pct >= 60 ? '👍 Good effort — review the weak areas' :
+    '💪 Keep practising — check the explanations above';
+
+  document.getElementById('stat-correct').textContent = correct;
+  document.getElementById('stat-wrong').textContent = wrong;
+  document.getElementById('stat-total').textContent = total;
+  document.getElementById('progress-fill').style.width = '100%';
+  document.getElementById('progress-text').textContent = 'Quiz complete!';
+  document.getElementById('score-running').textContent = `Final: ${correct} / ${total}`;
+}
+
+// ── Init ─────────────────────────────────────────────────────────────
+if (currentUser) showQuiz();
+</script>
+
+<!-- Hidden: API key input for AI grading (optional) -->
+<input type="hidden" id="anth-key" value="">
+
+</body>
+</html>
