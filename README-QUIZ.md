@@ -56,9 +56,17 @@ The `.vscode/settings.json` already does this. Just make sure you have the **Git
 | `harder` | Skip to a harder question |
 | `save session` | Agent outputs updated `quiz-memory.json` to paste back |
 
-### Option B: GitHub Action (automatic on every PR)
+### Option B: GitHub Action (toggle-controlled)
 
-Every time you open or update a PR:
+Auto quiz jobs are now OFF by default to avoid API usage.
+
+To enable auto quizzes again:
+1. Go to **GitHub repo → Settings → Secrets and variables → Actions → Variables**
+2. Add variable `ENABLE_AUTO_QUIZ` with value `true`
+
+To disable again, set `ENABLE_AUTO_QUIZ` to `false` (or delete the variable).
+
+When enabled, every time you open or update a PR:
 1. The action reads your changed files
 2. Loads your `quiz-memory.json` for difficulty + weak areas  
 3. Generates 3 targeted questions as a PR comment
