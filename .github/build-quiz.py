@@ -1,871 +1,871 @@
-#!/usr/bin/env python3
-"""Build the quiz HTML page from /tmp/quiz-data.json and env vars."""
-import json, os
-
-quiz = json.loads(open('/tmp/quiz-data.json').read())
-quiz_id = os.environ['QUIZ_ID']
-repo = os.environ['REPO']
-actor = os.environ['ACTOR']
-quiz_json_str = json.dumps(quiz)
-D = chr(36)  # dollar sign - avoids GH Actions treating JS template literals as expressions
-
-html = f"""<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>🌿 Code Quiz — Session #{quiz.get('session', '?')}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
-  <style>
-    :root {{
-      --bg: #0d0f0e;
-      --surface: #141714;
-      --border: #1e2420;
-      --green: #4ade80;
-      --green-dim: #166534;
-      --amber: #fbbf24;
-      --red: #f87171;
-      --text: #e2e8e4;
-      --muted: #6b7c72;
-      --radius: 6px;
-    }}
-
-    * {{ box-sizing: border-box; margin: 0; padding: 0; }}
-
-    body {{
-      background: var(--bg);
-      color: var(--text);
-      font-family: 'DM Mono', monospace;
-      font-size: 14px;
-      line-height: 1.7;
-      min-height: 100vh;
-    }}
-
-    /* Subtle scanline overlay */
-    body::before {{
-      content: '';
-      position: fixed; inset: 0;
-      background: repeating-linear-gradient(
-        0deg,
-        transparent,
-        transparent 2px,
-        rgba(0,0,0,0.03) 2px,
-        rgba(0,0,0,0.03) 4px
-      );
-      pointer-events: none;
-      z-index: 9999;
-    }}
-
-    header {{
-      border-bottom: 1px solid var(--border);
-      padding: 24px 32px;
-      display: flex;
-      align-items: center;
-      justify-content: space-between;
-      position: sticky;
-      top: 0;
-      background: var(--bg);
-      z-index: 100;
-    }}
-
-    .logo {{
-      font-family: 'Fraunces', serif;
-      font-size: 20px;
-      font-weight: 300;
-      color: var(--green);
-      letter-spacing: -0.02em;
-    }}
-
-    .logo span {{ color: var(--muted); font-style: italic; font-size: 13px; margin-left: 8px; }}
-
-    .header-meta {{
-      display: flex;
-      gap: 20px;
-      align-items: center;
-      font-size: 12px;
-      color: var(--muted);
-    }}
-
-    .pill {{
-      border: 1px solid var(--border);
-      padding: 3px 10px;
-      border-radius: 20px;
-      font-size: 11px;
-    }}
-
-    .pill.green {{ border-color: var(--green-dim); color: var(--green); }}
-
-    main {{
-      max-width: 800px;
-      margin: 0 auto;
-      padding: 48px 32px 120px;
-    }}
-
-    .quiz-header {{
-      margin-bottom: 48px;
-    }}
-
-    .quiz-title {{
-      font-family: 'Fraunces', serif;
-      font-size: 36px;
-      font-weight: 300;
-      letter-spacing: -0.03em;
-      color: var(--text);
-      margin-bottom: 12px;
-      line-height: 1.2;
-    }}
-
-    .quiz-title em {{
-      color: var(--green);
-      font-style: italic;
-    }}
-
-    .commit-info {{
-      display: flex;
-      gap: 16px;
-      flex-wrap: wrap;
-      font-size: 12px;
-      color: var(--muted);
-      margin-top: 16px;
-    }}
-
-    .commit-info code {{
-      background: var(--surface);
-      border: 1px solid var(--border);
-      padding: 2px 8px;
-      border-radius: 3px;
-      color: var(--amber);
-    }}
-
-    /* Progress bar */
-    .progress-bar-wrap {{
-      margin-bottom: 40px;
-    }}
-
-    .progress-label {{
-      display: flex;
-      justify-content: space-between;
-      font-size: 11px;
-      color: var(--muted);
-      margin-bottom: 8px;
-    }}
-
-    .progress-track {{
-      height: 2px;
-      background: var(--border);
-      border-radius: 2px;
-      overflow: hidden;
-    }}
-
-    .progress-fill {{
-      height: 100%;
-      background: var(--green);
-      border-radius: 2px;
-      transition: width 0.4s ease;
-      width: 0%;
-    }}
-
-    /* Question cards */
-    .question-card {{
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 32px;
-      margin-bottom: 16px;
-      background: var(--surface);
-      transition: border-color 0.2s;
-      display: none;
-    }}
-
-    .question-card.active {{ display: block; animation: slideIn 0.3s ease; }}
-    .question-card.correct {{ border-color: var(--green); }}
-    .question-card.incorrect {{ border-color: var(--red); }}
-
-    @keyframes slideIn {{
-      from {{ opacity: 0; transform: translateY(8px); }}
-      to   {{ opacity: 1; transform: translateY(0); }}
-    }}
-
-    .q-number {{
-      font-size: 11px;
-      color: var(--muted);
-      letter-spacing: 0.1em;
-      text-transform: uppercase;
-      margin-bottom: 16px;
-      display: flex;
-      align-items: center;
-      gap: 8px;
-    }}
-
-    .q-type-badge {{
-      border: 1px solid var(--border);
-      padding: 1px 8px;
-      border-radius: 3px;
-      font-size: 10px;
-      color: var(--muted);
-    }}
-
-    .q-text {{
-      font-family: 'Fraunces', serif;
-      font-size: 20px;
-      font-weight: 300;
-      line-height: 1.5;
-      color: var(--text);
-      margin-bottom: 28px;
-    }}
-
-    /* Multiple choice */
-    .options {{
-      display: flex;
-      flex-direction: column;
-      gap: 10px;
-    }}
-
-    .option-btn {{
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 14px 18px;
-      border-radius: var(--radius);
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      text-align: left;
-      cursor: pointer;
-      transition: all 0.15s;
-      line-height: 1.5;
-    }}
-
-    .option-btn:hover:not(:disabled) {{
-      border-color: var(--green);
-      color: var(--green);
-      background: rgba(74, 222, 128, 0.04);
-    }}
-
-    .option-btn.selected {{ border-color: var(--amber); color: var(--amber); }}
-    .option-btn.correct-answer {{ border-color: var(--green); color: var(--green); background: rgba(74,222,128,0.07); }}
-    .option-btn.wrong-answer {{ border-color: var(--red); color: var(--red); background: rgba(248,113,113,0.07); }}
-    .option-btn:disabled {{ cursor: default; }}
-
-    /* Free text */
-    .free-text-input {{
-      width: 100%;
-      background: var(--bg);
-      border: 1px solid var(--border);
-      color: var(--text);
-      padding: 14px 18px;
-      border-radius: var(--radius);
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      resize: vertical;
-      min-height: 120px;
-      margin-bottom: 12px;
-      transition: border-color 0.15s;
-    }}
-
-    .free-text-input:focus {{ outline: none; border-color: var(--green); }}
-
-    /* Explanation box */
-    .explanation {{
-      display: none;
-      margin-top: 20px;
-      padding: 18px 20px;
-      background: rgba(74, 222, 128, 0.05);
-      border: 1px solid var(--green-dim);
-      border-radius: var(--radius);
-      font-size: 13px;
-      color: var(--text);
-      line-height: 1.8;
-    }}
-
-    .explanation.show {{ display: block; animation: fadeIn 0.3s ease; }}
-    .explanation-label {{
-      font-size: 11px;
-      color: var(--green);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-bottom: 8px;
-    }}
-
-    /* AI grading result */
-    .grade-result {{
-      display: none;
-      margin-top: 16px;
-      padding: 18px 20px;
-      border-radius: var(--radius);
-      font-size: 13px;
-      line-height: 1.7;
-    }}
-
-    .grade-result.show {{ display: block; animation: fadeIn 0.3s ease; }}
-    .grade-result.pass {{ background: rgba(74,222,128,0.05); border: 1px solid var(--green-dim); }}
-    .grade-result.fail {{ background: rgba(248,113,113,0.05); border: 1px solid #7f1d1d; }}
-
-    @keyframes fadeIn {{
-      from {{ opacity: 0; }} to {{ opacity: 1; }}
-    }}
-
-    /* Buttons */
-    .btn {{
-      display: inline-flex;
-      align-items: center;
-      gap: 8px;
-      padding: 10px 22px;
-      border-radius: var(--radius);
-      font-family: 'DM Mono', monospace;
-      font-size: 13px;
-      cursor: pointer;
-      border: none;
-      transition: all 0.15s;
-    }}
-
-    .btn-primary {{
-      background: var(--green);
-      color: #0d0f0e;
-      font-weight: 500;
-    }}
-
-    .btn-primary:hover {{ background: #86efac; }}
-    .btn-primary:disabled {{ background: var(--green-dim); color: var(--muted); cursor: default; }}
-
-    .btn-ghost {{
-      background: transparent;
-      border: 1px solid var(--border);
-      color: var(--muted);
-    }}
-
-    .btn-ghost:hover {{ border-color: var(--text); color: var(--text); }}
-
-    .btn-row {{
-      display: flex;
-      gap: 12px;
-      margin-top: 24px;
-      align-items: center;
-    }}
-
-    .grading-spinner {{
-      display: none;
-      align-items: center;
-      gap: 10px;
-      color: var(--muted);
-      font-size: 12px;
-    }}
-
-    .grading-spinner.show {{ display: flex; }}
-
-    .spinner {{
-      width: 14px; height: 14px;
-      border: 2px solid var(--border);
-      border-top-color: var(--green);
-      border-radius: 50%;
-      animation: spin 0.7s linear infinite;
-    }}
-
-    @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
-
-    /* Results screen */
-    #results-screen {{
-      display: none;
-      text-align: center;
-      padding: 80px 32px;
-    }}
-
-    #results-screen.show {{ display: block; animation: slideIn 0.5s ease; }}
-
-    .score-display {{
-      font-family: 'Fraunces', serif;
-      font-size: 96px;
-      font-weight: 600;
-      color: var(--green);
-      line-height: 1;
-      margin-bottom: 8px;
-    }}
-
-    .score-label {{
-      font-size: 13px;
-      color: var(--muted);
-      margin-bottom: 40px;
-    }}
-
-    .result-breakdown {{
-      display: flex;
-      gap: 24px;
-      justify-content: center;
-      margin-bottom: 48px;
-      flex-wrap: wrap;
-    }}
-
-    .result-stat {{
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 20px 28px;
-      text-align: center;
-    }}
-
-    .result-stat-num {{
-      font-family: 'Fraunces', serif;
-      font-size: 32px;
-      font-weight: 300;
-      color: var(--text);
-    }}
-
-    .result-stat-label {{
-      font-size: 11px;
-      color: var(--muted);
-      text-transform: uppercase;
-      letter-spacing: 0.08em;
-      margin-top: 4px;
-    }}
-
-    /* Login gate */
-    #login-gate {{
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      min-height: 100vh;
-      flex-direction: column;
-      gap: 24px;
-      text-align: center;
-      padding: 32px;
-    }}
-
-    .login-box {{
-      border: 1px solid var(--border);
-      border-radius: var(--radius);
-      padding: 48px;
-      max-width: 440px;
-      background: var(--surface);
-    }}
-
-    .login-title {{
-      font-family: 'Fraunces', serif;
-      font-size: 28px;
-      font-weight: 300;
-      margin-bottom: 12px;
-    }}
-
-    .login-sub {{
-      color: var(--muted);
-      font-size: 13px;
-      margin-bottom: 32px;
-      line-height: 1.6;
-    }}
-
-    .github-btn {{
-      display: inline-flex;
-      align-items: center;
-      gap: 12px;
-      background: var(--text);
-      color: var(--bg);
-      padding: 12px 28px;
-      border-radius: var(--radius);
-      font-family: 'DM Mono', monospace;
-      font-size: 14px;
-      font-weight: 500;
-      text-decoration: none;
-      cursor: pointer;
-      border: none;
-      transition: background 0.15s;
-    }}
-
-    .github-btn:hover {{ background: #fff; }}
-
-    #quiz-app {{ display: none; }}
-
-    @media (max-width: 600px) {{
-      header {{ padding: 16px; }}
-      main {{ padding: 24px 16px 80px; }}
-      .quiz-title {{ font-size: 26px; }}
-      .score-display {{ font-size: 72px; }}
-    }}
-  </style>
-</head>
-<body>
-
-<!-- Login Gate -->
-<div id="login-gate">
-  <div class="login-box">
-    <div class="login-title">🌿 Code Quiz</div>
-    <p class="login-sub">
-      This quiz was generated for <strong>{actor}</strong> from
-      commit <code style="background:#1e2420;padding:2px 8px;border-radius:3px;color:#fbbf24">{quiz.get('commit','?')}</code>
-      in <strong>{repo}</strong>.<br><br>
-      Sign in with GitHub to verify your identity before taking the quiz.
-    </p>
-    <button class="github-btn" onclick="initiateGitHubLogin()">
-      <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-        <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
-      </svg>
-      Sign in with GitHub
-    </button>
-  </div>
-</div>
-
-<!-- Quiz App (shown after login) -->
-<div id="quiz-app">
-  <header>
-    <div class="logo">🌿 Plant Partner <span>code quiz</span></div>
-    <div class="header-meta">
-      <span id="header-progress">Q1 of 10</span>
-      <span class="pill green" id="header-session">Session #{quiz.get('session','?')}</span>
-      <span class="pill" id="header-commit">{quiz.get('commit','?')}</span>
-    </div>
-  </header>
-
-  <main>
-    <div class="quiz-header">
-      <h1 class="quiz-title">
-        Session <em>#{quiz.get('session','?')}</em><br>
-        Ready to be <em>quizzed?</em>
-      </h1>
-      <div class="commit-info">
-        <span>📦 commit <code>{quiz.get('commit','?')}</code></span>
-        <span>💬 {quiz.get('commitMsg','')[:60]}</span>
-        <span>👤 {quiz.get('pusher','')}</span>
-      </div>
-    </div>
-
-    <div class="progress-bar-wrap">
-      <div class="progress-label">
-        <span id="progress-text">Question 1 of 10</span>
-        <span id="score-running">Score: 0 / 0</span>
-      </div>
-      <div class="progress-track">
-        <div class="progress-fill" id="progress-fill"></div>
-      </div>
-    </div>
-
-    <div id="questions-container"></div>
-
-    <div id="results-screen">
-      <div class="score-display" id="final-score-pct">—%</div>
-      <div class="score-label" id="final-score-label">calculating...</div>
-      <div class="result-breakdown">
-        <div class="result-stat">
-          <div class="result-stat-num" id="stat-correct">0</div>
-          <div class="result-stat-label">Correct</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-num" id="stat-wrong">0</div>
-          <div class="result-stat-label">Wrong</div>
-        </div>
-        <div class="result-stat">
-          <div class="result-stat-num" id="stat-total">10</div>
-          <div class="result-stat-label">Total</div>
-        </div>
-      </div>
-      <p style="color:var(--muted);font-size:13px;margin-bottom:32px">
-        Update <code style="color:var(--amber)">.github/quiz-memory.json</code> to track weak areas and difficulty progression.
-      </p>
-    </div>
-  </main>
-</div>
-
-<script>
-// ── Quiz data ─────────────────────────────────────────────────────────
-const QUIZ_DATA = {quiz_json_str};
-const EXPECTED_GITHUB_USER = "{actor}";
-const ANTHROPIC_KEY_PLACEHOLDER = ""; // grading calls go through a proxy — see README
-const REPO = "{repo}";
-
-// ── GitHub OAuth (Pages-compatible via GitHub's device flow isn't ideal;
-//    we use a lightweight approach: redirect to GitHub, get back the username
-//    from the URL token via a serverless proxy, or for simplicity store in
-//    sessionStorage after the user confirms their username) ──────────────
-
-let currentUser = sessionStorage.getItem('quiz_github_user');
-let currentQ = 0;
-let scores = {{}};   // id -> true/false/null(pending)
-let answered = {{}};  // id -> true
-
-function initiateGitHubLogin() {{
-  // Simple self-attestation with a confirmation step.
-  // For real OAuth you'd need a backend; this is a honest prompt
-  // approach appropriate for a personal dev tool.
-  const username = prompt("Enter your GitHub username to proceed:");
-  if (!username) return;
-  if (username.trim().toLowerCase() !== EXPECTED_GITHUB_USER.toLowerCase()) {{
-    alert("❌ This quiz was generated for @" + EXPECTED_GITHUB_USER + ". Please log in with the correct account.");
-    return;
-  }}
-  sessionStorage.setItem('quiz_github_user', username.trim());
-  currentUser = username.trim();
-  showQuiz();
-}}
-
-function showQuiz() {{
-  document.getElementById('login-gate').style.display = 'none';
-  document.getElementById('quiz-app').style.display = 'block';
-  renderQuestions();
-  showQuestion(0);
-}}
-
-function renderQuestions() {{
-  const container = document.getElementById('questions-container');
-  QUIZ_DATA.questions.forEach((q, i) => {{
-    container.innerHTML += buildQuestionHTML(q, i);
-  }});
-}}
-
-function buildQuestionHTML(q, i) {{
-  const typeLabel = {{
-    multiple_choice: 'multiple choice',
-    free_text: 'free text',
-    multiple_choice_explained: 'explained'
-  }}[q.type] || q.type;
-
-  let inputHTML = '';
-
-  if (q.type === 'multiple_choice' || q.type === 'multiple_choice_explained') {{
-    inputHTML = `<div class="options">` +
-      q.options.map((opt, oi) => {{
-        const letter = String.fromCharCode(65 + oi);
-        return `<button class="option-btn" onclick="selectOption({D}{{i}}, '{D}{{letter}}', this)" data-letter="{D}{{letter}}">{D}{{opt}}</button>`;
-      }}).join('') +
-      `</div>`;
-    if (q.type === 'multiple_choice_explained') {{
-      inputHTML += `<div class="explanation" id="exp-{D}{{i}}">
-        <div class="explanation-label">📖 Explanation</div>
-        <div>{D}{{q.explanation || ''}}</div>
-      </div>`;
-    }}
-  }}
-
-  if (q.type === 'free_text') {{
-    inputHTML = `
-      <textarea class="free-text-input" id="ft-{D}{{i}}" placeholder="Type your answer here..." rows="5"></textarea>
-      <div class="grading-spinner" id="spinner-{D}{{i}}">
-        <div class="spinner"></div> AI is grading your answer...
-      </div>
-      <div class="grade-result" id="grade-{D}{{i}}"></div>`;
-  }}
-
-  return `
-  <div class="question-card" id="qcard-{D}{{i}}">
-    <div class="q-number">
-      <span>Question {D}{{i + 1}} / {D}{{QUIZ_DATA.questions.length}}</span>
-      <span class="q-type-badge">{D}{{typeLabel}}</span>
-    </div>
-    <div class="q-text">{D}{{q.question}}</div>
-    {D}{{inputHTML}}
-    <div class="btn-row" id="btnrow-{D}{{i}}">
-      {D}{{q.type === 'free_text'
-        ? `<button class="btn btn-primary" id="submit-ft-{D}{{i}}" onclick="submitFreeText({D}{{i}})">Grade my answer →</button>`
-        : ''
-      }}
-      <button class="btn btn-ghost" id="skip-{D}{{i}}" onclick="nextQuestion({D}{{i}}, true)">Skip</button>
-    </div>
-  </div>`;
-}}
-
-function showQuestion(index) {{
-  document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
-  const card = document.getElementById('qcard-' + index);
-  if (card) card.classList.add('active');
-  updateProgress(index);
-}}
-
-function updateProgress(index) {{
-  const total = QUIZ_DATA.questions.length;
-  const pct = Math.round((index / total) * 100);
-  document.getElementById('progress-fill').style.width = pct + '%';
-  document.getElementById('progress-text').textContent = `Question {D}{{index + 1}} of {D}{{total}}`;
-  document.getElementById('header-progress').textContent = `Q{D}{{index + 1}} of {D}{{total}}`;
-  const correct = Object.values(scores).filter(v => v === true).length;
-  const graded  = Object.values(scores).filter(v => v !== null && v !== undefined).length;
-  document.getElementById('score-running').textContent = `Score: {D}{{correct}} / {D}{{graded}}`;
-}}
-
-function selectOption(qIndex, letter, btn) {{
-  if (answered[qIndex]) return;
-  answered[qIndex] = true;
-
-  const q = QUIZ_DATA.questions[qIndex];
-  const correct = q.correct;
-  const isCorrect = letter === correct;
-  scores[q.id] = isCorrect;
-
-  // Style all buttons
-  const card = document.getElementById('qcard-' + qIndex);
-  card.querySelectorAll('.option-btn').forEach(b => {{
-    b.disabled = true;
-    if (b.dataset.letter === correct) b.classList.add('correct-answer');
-    else if (b === btn && !isCorrect) b.classList.add('wrong-answer');
-  }});
-  card.classList.add(isCorrect ? 'correct' : 'incorrect');
-
-  // Show explanation for explained type
-  if (q.type === 'multiple_choice_explained') {{
-    const exp = document.getElementById('exp-' + qIndex);
-    if (exp) exp.classList.add('show');
-  }}
-
-  // Show result inline for basic MC
-  if (q.type === 'multiple_choice') {{
-    const expDiv = document.createElement('div');
-    expDiv.className = 'explanation show';
-    expDiv.innerHTML = `<div class="explanation-label">{D}{{isCorrect ? '✅ Correct' : '❌ Incorrect'}}</div>
-      <div>{D}{{q.explanation || (isCorrect ? 'Well done!' : 'The correct answer was ' + correct + '.')}}</div>`;
-    card.querySelector('.options').after(expDiv);
-  }}
-
-  // Replace skip with next button
-  replaceSkipWithNext(qIndex);
-  updateProgress(qIndex);
-}}
-
-async function submitFreeText(qIndex) {{
-  if (answered[qIndex]) return;
-  const q = QUIZ_DATA.questions[qIndex];
-  const input = document.getElementById('ft-' + qIndex).value.trim();
-  if (!input) {{ alert('Please write an answer before submitting.'); return; }}
-
-  answered[qIndex] = true;
-  document.getElementById('submit-ft-' + qIndex).disabled = true;
-  document.getElementById('spinner-' + qIndex).classList.add('show');
-
-  // Call Anthropic API to grade the answer
-  try {{
-    const gradePrompt = `You are grading a developer quiz answer.
-
-Question: {D}{{q.question}}
-
-Sample answer / grading criteria:
-{D}{{q.sampleAnswer || ''}}
-{D}{{q.gradingCriteria || ''}}
-
-Developer's answer:
-{D}{{input}}
-
-Respond ONLY with valid JSON:
-{{"pass": true/false, "score": 0-10, "feedback": "2-3 sentence feedback explaining what was good and what was missing"}}`;
-
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {{
-      method: 'POST',
-      headers: {{
-        'Content-Type': 'application/json',
-        'x-api-key': document.getElementById('anth-key')?.value || '',
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true'
-      }},
-      body: JSON.stringify({{
-        model: 'claude-haiku-4-5-20251001',
-        max_tokens: 300,
-        messages: [{{ role: 'user', content: gradePrompt }}]
-      }})
-    }});
-
-    const data = await resp.json();
-    let raw = data?.content?.[0]?.text?.trim() || '';
-    if (raw.startsWith('```')) raw = raw.split('\\n').slice(1).join('\\n');
-    if (raw.endsWith('```')) raw = raw.split('\\n').slice(0,-1).join('\\n');
-    const grade = JSON.parse(raw);
-
-    document.getElementById('spinner-' + qIndex).classList.remove('show');
-    const gradeDiv = document.getElementById('grade-' + qIndex);
-    gradeDiv.className = 'grade-result show ' + (grade.pass ? 'pass' : 'fail');
-    gradeDiv.innerHTML = `
-      <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;color:{D}{{grade.pass ? 'var(--green)' : 'var(--red)'}}">{D}{{grade.pass ? '✅ Passed' : '❌ Needs work'}} — {D}{{grade.score}}/10</div>
-      <div>{D}{{grade.feedback}}</div>
-      <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);color:var(--muted);font-size:12px">
-        <strong style="color:var(--text)">Sample answer:</strong> {D}{{q.sampleAnswer || '(see grading criteria)'}}
-      </div>`;
-
-    scores[q.id] = grade.pass;
-    const card = document.getElementById('qcard-' + qIndex);
-    card.classList.add(grade.pass ? 'correct' : 'incorrect');
-
-  }} catch(e) {{
-    document.getElementById('spinner-' + qIndex).classList.remove('show');
-    // Graceful degradation: no API key or CORS, mark as self-graded
-    const gradeDiv = document.getElementById('grade-' + qIndex);
-    gradeDiv.className = 'grade-result show';
-    gradeDiv.style.borderColor = 'var(--amber)';
-    gradeDiv.innerHTML = `
-      <div style="color:var(--amber);font-size:11px;text-transform:uppercase;margin-bottom:8px">⚠ AI grading unavailable — self-grade</div>
-      <div style="color:var(--muted)">Compare your answer to the sample below:</div>
-      <div style="margin-top:10px">{D}{{q.sampleAnswer || q.gradingCriteria || ''}}</div>
-      <div style="margin-top:14px;display:flex;gap:10px">
-        <button class="btn btn-primary" style="font-size:12px;padding:8px 16px" onclick="markSelf({D}{{qIndex}},true)">✓ I got it right</button>
-        <button class="btn btn-ghost"  style="font-size:12px;padding:8px 16px" onclick="markSelf({D}{{qIndex}},false)">✗ I got it wrong</button>
-      </div>`;
-    scores[q.id] = null; // pending self-grade
-  }}
-
-  replaceSkipWithNext(qIndex);
-  updateProgress(qIndex);
-}}
-
-function markSelf(qIndex, pass) {{
-  const q = QUIZ_DATA.questions[qIndex];
-  scores[q.id] = pass;
-  const card = document.getElementById('qcard-' + qIndex);
-  card.classList.add(pass ? 'correct' : 'incorrect');
-  // Remove the self-grade buttons
-  card.querySelectorAll('.btn').forEach(b => {{
-    if (b.textContent.includes('I got it')) b.remove();
-  }});
-  updateProgress(qIndex);
-}}
-
-function replaceSkipWithNext(qIndex) {{
-  const skip = document.getElementById('skip-' + qIndex);
-  if (skip) {{
-    skip.textContent = qIndex < QUIZ_DATA.questions.length - 1 ? 'Next question →' : 'See results →';
-    skip.classList.remove('btn-ghost');
-    skip.classList.add('btn-primary');
-    skip.onclick = () => nextQuestion(qIndex, false);
-  }}
-}}
-
-function nextQuestion(qIndex, skipped) {{
-  if (skipped) scores[QUIZ_DATA.questions[qIndex].id] = false;
-  currentQ = qIndex + 1;
-  if (currentQ >= QUIZ_DATA.questions.length) {{
-    showResults();
-  }} else {{
-    showQuestion(currentQ);
-  }}
-}}
-
-function showResults() {{
-  document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
-  const resultsEl = document.getElementById('results-screen');
-  resultsEl.classList.add('show');
-
-  const total = QUIZ_DATA.questions.length;
-  const correct = Object.values(scores).filter(v => v === true).length;
-  const wrong   = Object.values(scores).filter(v => v === false).length;
-  const pct = Math.round((correct / total) * 100);
-
-  document.getElementById('final-score-pct').textContent = pct + '%';
-  document.getElementById('final-score-label').textContent =
-    pct >= 80 ? '🎉 Excellent work!' :
-    pct >= 60 ? '👍 Good effort — review the weak areas' :
-    '💪 Keep practising — check the explanations above';
-
-  document.getElementById('stat-correct').textContent = correct;
-  document.getElementById('stat-wrong').textContent = wrong;
-  document.getElementById('stat-total').textContent = total;
-  document.getElementById('progress-fill').style.width = '100%';
-  document.getElementById('progress-text').textContent = 'Quiz complete!';
-  document.getElementById('score-running').textContent = `Final: {D}{{correct}} / {D}{{total}}`;
-}}
-
-// ── Init ─────────────────────────────────────────────────────────────
-if (currentUser) showQuiz();
-</script>
-
-<!-- Hidden: API key input for AI grading (optional) -->
-<input type="hidden" id="anth-key" value="">
-
-</body>
-</html>"""
-
-os.makedirs('quiz-pages', exist_ok=True)
-out = f"quiz-pages/{os.environ['QUIZ_ID']}.html"
-open(out, 'w').write(html)
-
-# Also write/update the index page
-index_entry = f'<li><a href="{os.environ["QUIZ_ID"]}.html">Session #{quiz.get("session","?")} — commit {quiz.get("commit","?")} — {quiz.get("commitMsg","")[:50]}</a></li>'
-print(f"WRITTEN: {out}")
-print(f"INDEX_ENTRY: {index_entry}")
+# #!/usr/bin/env python3
+# """Build the quiz HTML page from /tmp/quiz-data.json and env vars."""
+# import json, os
+
+# quiz = json.loads(open('/tmp/quiz-data.json').read())
+# quiz_id = os.environ['QUIZ_ID']
+# repo = os.environ['REPO']
+# actor = os.environ['ACTOR']
+# quiz_json_str = json.dumps(quiz)
+# D = chr(36)  # dollar sign - avoids GH Actions treating JS template literals as expressions
+
+# html = f"""<!DOCTYPE html>
+# <html lang="en">
+# <head>
+#   <meta charset="UTF-8">
+#   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+#   <title>🌿 Code Quiz — Session #{quiz.get('session', '?')}</title>
+#   <link rel="preconnect" href="https://fonts.googleapis.com">
+#   <link href="https://fonts.googleapis.com/css2?family=DM+Mono:ital,wght@0,400;0,500;1,400&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,600;1,9..144,300&display=swap" rel="stylesheet">
+#   <style>
+#     :root {{
+#       --bg: #0d0f0e;
+#       --surface: #141714;
+#       --border: #1e2420;
+#       --green: #4ade80;
+#       --green-dim: #166534;
+#       --amber: #fbbf24;
+#       --red: #f87171;
+#       --text: #e2e8e4;
+#       --muted: #6b7c72;
+#       --radius: 6px;
+#     }}
+
+#     * {{ box-sizing: border-box; margin: 0; padding: 0; }}
+
+#     body {{
+#       background: var(--bg);
+#       color: var(--text);
+#       font-family: 'DM Mono', monospace;
+#       font-size: 14px;
+#       line-height: 1.7;
+#       min-height: 100vh;
+#     }}
+
+#     /* Subtle scanline overlay */
+#     body::before {{
+#       content: '';
+#       position: fixed; inset: 0;
+#       background: repeating-linear-gradient(
+#         0deg,
+#         transparent,
+#         transparent 2px,
+#         rgba(0,0,0,0.03) 2px,
+#         rgba(0,0,0,0.03) 4px
+#       );
+#       pointer-events: none;
+#       z-index: 9999;
+#     }}
+
+#     header {{
+#       border-bottom: 1px solid var(--border);
+#       padding: 24px 32px;
+#       display: flex;
+#       align-items: center;
+#       justify-content: space-between;
+#       position: sticky;
+#       top: 0;
+#       background: var(--bg);
+#       z-index: 100;
+#     }}
+
+#     .logo {{
+#       font-family: 'Fraunces', serif;
+#       font-size: 20px;
+#       font-weight: 300;
+#       color: var(--green);
+#       letter-spacing: -0.02em;
+#     }}
+
+#     .logo span {{ color: var(--muted); font-style: italic; font-size: 13px; margin-left: 8px; }}
+
+#     .header-meta {{
+#       display: flex;
+#       gap: 20px;
+#       align-items: center;
+#       font-size: 12px;
+#       color: var(--muted);
+#     }}
+
+#     .pill {{
+#       border: 1px solid var(--border);
+#       padding: 3px 10px;
+#       border-radius: 20px;
+#       font-size: 11px;
+#     }}
+
+#     .pill.green {{ border-color: var(--green-dim); color: var(--green); }}
+
+#     main {{
+#       max-width: 800px;
+#       margin: 0 auto;
+#       padding: 48px 32px 120px;
+#     }}
+
+#     .quiz-header {{
+#       margin-bottom: 48px;
+#     }}
+
+#     .quiz-title {{
+#       font-family: 'Fraunces', serif;
+#       font-size: 36px;
+#       font-weight: 300;
+#       letter-spacing: -0.03em;
+#       color: var(--text);
+#       margin-bottom: 12px;
+#       line-height: 1.2;
+#     }}
+
+#     .quiz-title em {{
+#       color: var(--green);
+#       font-style: italic;
+#     }}
+
+#     .commit-info {{
+#       display: flex;
+#       gap: 16px;
+#       flex-wrap: wrap;
+#       font-size: 12px;
+#       color: var(--muted);
+#       margin-top: 16px;
+#     }}
+
+#     .commit-info code {{
+#       background: var(--surface);
+#       border: 1px solid var(--border);
+#       padding: 2px 8px;
+#       border-radius: 3px;
+#       color: var(--amber);
+#     }}
+
+#     /* Progress bar */
+#     .progress-bar-wrap {{
+#       margin-bottom: 40px;
+#     }}
+
+#     .progress-label {{
+#       display: flex;
+#       justify-content: space-between;
+#       font-size: 11px;
+#       color: var(--muted);
+#       margin-bottom: 8px;
+#     }}
+
+#     .progress-track {{
+#       height: 2px;
+#       background: var(--border);
+#       border-radius: 2px;
+#       overflow: hidden;
+#     }}
+
+#     .progress-fill {{
+#       height: 100%;
+#       background: var(--green);
+#       border-radius: 2px;
+#       transition: width 0.4s ease;
+#       width: 0%;
+#     }}
+
+#     /* Question cards */
+#     .question-card {{
+#       border: 1px solid var(--border);
+#       border-radius: var(--radius);
+#       padding: 32px;
+#       margin-bottom: 16px;
+#       background: var(--surface);
+#       transition: border-color 0.2s;
+#       display: none;
+#     }}
+
+#     .question-card.active {{ display: block; animation: slideIn 0.3s ease; }}
+#     .question-card.correct {{ border-color: var(--green); }}
+#     .question-card.incorrect {{ border-color: var(--red); }}
+
+#     @keyframes slideIn {{
+#       from {{ opacity: 0; transform: translateY(8px); }}
+#       to   {{ opacity: 1; transform: translateY(0); }}
+#     }}
+
+#     .q-number {{
+#       font-size: 11px;
+#       color: var(--muted);
+#       letter-spacing: 0.1em;
+#       text-transform: uppercase;
+#       margin-bottom: 16px;
+#       display: flex;
+#       align-items: center;
+#       gap: 8px;
+#     }}
+
+#     .q-type-badge {{
+#       border: 1px solid var(--border);
+#       padding: 1px 8px;
+#       border-radius: 3px;
+#       font-size: 10px;
+#       color: var(--muted);
+#     }}
+
+#     .q-text {{
+#       font-family: 'Fraunces', serif;
+#       font-size: 20px;
+#       font-weight: 300;
+#       line-height: 1.5;
+#       color: var(--text);
+#       margin-bottom: 28px;
+#     }}
+
+#     /* Multiple choice */
+#     .options {{
+#       display: flex;
+#       flex-direction: column;
+#       gap: 10px;
+#     }}
+
+#     .option-btn {{
+#       background: transparent;
+#       border: 1px solid var(--border);
+#       color: var(--text);
+#       padding: 14px 18px;
+#       border-radius: var(--radius);
+#       font-family: 'DM Mono', monospace;
+#       font-size: 13px;
+#       text-align: left;
+#       cursor: pointer;
+#       transition: all 0.15s;
+#       line-height: 1.5;
+#     }}
+
+#     .option-btn:hover:not(:disabled) {{
+#       border-color: var(--green);
+#       color: var(--green);
+#       background: rgba(74, 222, 128, 0.04);
+#     }}
+
+#     .option-btn.selected {{ border-color: var(--amber); color: var(--amber); }}
+#     .option-btn.correct-answer {{ border-color: var(--green); color: var(--green); background: rgba(74,222,128,0.07); }}
+#     .option-btn.wrong-answer {{ border-color: var(--red); color: var(--red); background: rgba(248,113,113,0.07); }}
+#     .option-btn:disabled {{ cursor: default; }}
+
+#     /* Free text */
+#     .free-text-input {{
+#       width: 100%;
+#       background: var(--bg);
+#       border: 1px solid var(--border);
+#       color: var(--text);
+#       padding: 14px 18px;
+#       border-radius: var(--radius);
+#       font-family: 'DM Mono', monospace;
+#       font-size: 13px;
+#       resize: vertical;
+#       min-height: 120px;
+#       margin-bottom: 12px;
+#       transition: border-color 0.15s;
+#     }}
+
+#     .free-text-input:focus {{ outline: none; border-color: var(--green); }}
+
+#     /* Explanation box */
+#     .explanation {{
+#       display: none;
+#       margin-top: 20px;
+#       padding: 18px 20px;
+#       background: rgba(74, 222, 128, 0.05);
+#       border: 1px solid var(--green-dim);
+#       border-radius: var(--radius);
+#       font-size: 13px;
+#       color: var(--text);
+#       line-height: 1.8;
+#     }}
+
+#     .explanation.show {{ display: block; animation: fadeIn 0.3s ease; }}
+#     .explanation-label {{
+#       font-size: 11px;
+#       color: var(--green);
+#       text-transform: uppercase;
+#       letter-spacing: 0.08em;
+#       margin-bottom: 8px;
+#     }}
+
+#     /* AI grading result */
+#     .grade-result {{
+#       display: none;
+#       margin-top: 16px;
+#       padding: 18px 20px;
+#       border-radius: var(--radius);
+#       font-size: 13px;
+#       line-height: 1.7;
+#     }}
+
+#     .grade-result.show {{ display: block; animation: fadeIn 0.3s ease; }}
+#     .grade-result.pass {{ background: rgba(74,222,128,0.05); border: 1px solid var(--green-dim); }}
+#     .grade-result.fail {{ background: rgba(248,113,113,0.05); border: 1px solid #7f1d1d; }}
+
+#     @keyframes fadeIn {{
+#       from {{ opacity: 0; }} to {{ opacity: 1; }}
+#     }}
+
+#     /* Buttons */
+#     .btn {{
+#       display: inline-flex;
+#       align-items: center;
+#       gap: 8px;
+#       padding: 10px 22px;
+#       border-radius: var(--radius);
+#       font-family: 'DM Mono', monospace;
+#       font-size: 13px;
+#       cursor: pointer;
+#       border: none;
+#       transition: all 0.15s;
+#     }}
+
+#     .btn-primary {{
+#       background: var(--green);
+#       color: #0d0f0e;
+#       font-weight: 500;
+#     }}
+
+#     .btn-primary:hover {{ background: #86efac; }}
+#     .btn-primary:disabled {{ background: var(--green-dim); color: var(--muted); cursor: default; }}
+
+#     .btn-ghost {{
+#       background: transparent;
+#       border: 1px solid var(--border);
+#       color: var(--muted);
+#     }}
+
+#     .btn-ghost:hover {{ border-color: var(--text); color: var(--text); }}
+
+#     .btn-row {{
+#       display: flex;
+#       gap: 12px;
+#       margin-top: 24px;
+#       align-items: center;
+#     }}
+
+#     .grading-spinner {{
+#       display: none;
+#       align-items: center;
+#       gap: 10px;
+#       color: var(--muted);
+#       font-size: 12px;
+#     }}
+
+#     .grading-spinner.show {{ display: flex; }}
+
+#     .spinner {{
+#       width: 14px; height: 14px;
+#       border: 2px solid var(--border);
+#       border-top-color: var(--green);
+#       border-radius: 50%;
+#       animation: spin 0.7s linear infinite;
+#     }}
+
+#     @keyframes spin {{ to {{ transform: rotate(360deg); }} }}
+
+#     /* Results screen */
+#     #results-screen {{
+#       display: none;
+#       text-align: center;
+#       padding: 80px 32px;
+#     }}
+
+#     #results-screen.show {{ display: block; animation: slideIn 0.5s ease; }}
+
+#     .score-display {{
+#       font-family: 'Fraunces', serif;
+#       font-size: 96px;
+#       font-weight: 600;
+#       color: var(--green);
+#       line-height: 1;
+#       margin-bottom: 8px;
+#     }}
+
+#     .score-label {{
+#       font-size: 13px;
+#       color: var(--muted);
+#       margin-bottom: 40px;
+#     }}
+
+#     .result-breakdown {{
+#       display: flex;
+#       gap: 24px;
+#       justify-content: center;
+#       margin-bottom: 48px;
+#       flex-wrap: wrap;
+#     }}
+
+#     .result-stat {{
+#       border: 1px solid var(--border);
+#       border-radius: var(--radius);
+#       padding: 20px 28px;
+#       text-align: center;
+#     }}
+
+#     .result-stat-num {{
+#       font-family: 'Fraunces', serif;
+#       font-size: 32px;
+#       font-weight: 300;
+#       color: var(--text);
+#     }}
+
+#     .result-stat-label {{
+#       font-size: 11px;
+#       color: var(--muted);
+#       text-transform: uppercase;
+#       letter-spacing: 0.08em;
+#       margin-top: 4px;
+#     }}
+
+#     /* Login gate */
+#     #login-gate {{
+#       display: flex;
+#       align-items: center;
+#       justify-content: center;
+#       min-height: 100vh;
+#       flex-direction: column;
+#       gap: 24px;
+#       text-align: center;
+#       padding: 32px;
+#     }}
+
+#     .login-box {{
+#       border: 1px solid var(--border);
+#       border-radius: var(--radius);
+#       padding: 48px;
+#       max-width: 440px;
+#       background: var(--surface);
+#     }}
+
+#     .login-title {{
+#       font-family: 'Fraunces', serif;
+#       font-size: 28px;
+#       font-weight: 300;
+#       margin-bottom: 12px;
+#     }}
+
+#     .login-sub {{
+#       color: var(--muted);
+#       font-size: 13px;
+#       margin-bottom: 32px;
+#       line-height: 1.6;
+#     }}
+
+#     .github-btn {{
+#       display: inline-flex;
+#       align-items: center;
+#       gap: 12px;
+#       background: var(--text);
+#       color: var(--bg);
+#       padding: 12px 28px;
+#       border-radius: var(--radius);
+#       font-family: 'DM Mono', monospace;
+#       font-size: 14px;
+#       font-weight: 500;
+#       text-decoration: none;
+#       cursor: pointer;
+#       border: none;
+#       transition: background 0.15s;
+#     }}
+
+#     .github-btn:hover {{ background: #fff; }}
+
+#     #quiz-app {{ display: none; }}
+
+#     @media (max-width: 600px) {{
+#       header {{ padding: 16px; }}
+#       main {{ padding: 24px 16px 80px; }}
+#       .quiz-title {{ font-size: 26px; }}
+#       .score-display {{ font-size: 72px; }}
+#     }}
+#   </style>
+# </head>
+# <body>
+
+# <!-- Login Gate -->
+# <div id="login-gate">
+#   <div class="login-box">
+#     <div class="login-title">🌿 Code Quiz</div>
+#     <p class="login-sub">
+#       This quiz was generated for <strong>{actor}</strong> from
+#       commit <code style="background:#1e2420;padding:2px 8px;border-radius:3px;color:#fbbf24">{quiz.get('commit','?')}</code>
+#       in <strong>{repo}</strong>.<br><br>
+#       Sign in with GitHub to verify your identity before taking the quiz.
+#     </p>
+#     <button class="github-btn" onclick="initiateGitHubLogin()">
+#       <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+#         <path d="M12 2C6.477 2 2 6.477 2 12c0 4.42 2.865 8.166 6.839 9.489.5.092.682-.217.682-.482 0-.237-.008-.866-.013-1.7-2.782.603-3.369-1.342-3.369-1.342-.454-1.155-1.11-1.462-1.11-1.462-.908-.62.069-.608.069-.608 1.003.07 1.531 1.03 1.531 1.03.892 1.529 2.341 1.087 2.91.831.092-.646.35-1.086.636-1.336-2.22-.253-4.555-1.11-4.555-4.943 0-1.091.39-1.984 1.029-2.683-.103-.253-.446-1.27.098-2.647 0 0 .84-.269 2.75 1.025A9.578 9.578 0 0112 6.836c.85.004 1.705.114 2.504.336 1.909-1.294 2.747-1.025 2.747-1.025.546 1.377.202 2.394.1 2.647.64.699 1.028 1.592 1.028 2.683 0 3.842-2.339 4.687-4.566 4.935.359.309.678.919.678 1.852 0 1.336-.012 2.415-.012 2.741 0 .267.18.578.688.48C19.138 20.163 22 16.418 22 12c0-5.523-4.477-10-10-10z"/>
+#       </svg>
+#       Sign in with GitHub
+#     </button>
+#   </div>
+# </div>
+
+# <!-- Quiz App (shown after login) -->
+# <div id="quiz-app">
+#   <header>
+#     <div class="logo">🌿 Plant Partner <span>code quiz</span></div>
+#     <div class="header-meta">
+#       <span id="header-progress">Q1 of 10</span>
+#       <span class="pill green" id="header-session">Session #{quiz.get('session','?')}</span>
+#       <span class="pill" id="header-commit">{quiz.get('commit','?')}</span>
+#     </div>
+#   </header>
+
+#   <main>
+#     <div class="quiz-header">
+#       <h1 class="quiz-title">
+#         Session <em>#{quiz.get('session','?')}</em><br>
+#         Ready to be <em>quizzed?</em>
+#       </h1>
+#       <div class="commit-info">
+#         <span>📦 commit <code>{quiz.get('commit','?')}</code></span>
+#         <span>💬 {quiz.get('commitMsg','')[:60]}</span>
+#         <span>👤 {quiz.get('pusher','')}</span>
+#       </div>
+#     </div>
+
+#     <div class="progress-bar-wrap">
+#       <div class="progress-label">
+#         <span id="progress-text">Question 1 of 10</span>
+#         <span id="score-running">Score: 0 / 0</span>
+#       </div>
+#       <div class="progress-track">
+#         <div class="progress-fill" id="progress-fill"></div>
+#       </div>
+#     </div>
+
+#     <div id="questions-container"></div>
+
+#     <div id="results-screen">
+#       <div class="score-display" id="final-score-pct">—%</div>
+#       <div class="score-label" id="final-score-label">calculating...</div>
+#       <div class="result-breakdown">
+#         <div class="result-stat">
+#           <div class="result-stat-num" id="stat-correct">0</div>
+#           <div class="result-stat-label">Correct</div>
+#         </div>
+#         <div class="result-stat">
+#           <div class="result-stat-num" id="stat-wrong">0</div>
+#           <div class="result-stat-label">Wrong</div>
+#         </div>
+#         <div class="result-stat">
+#           <div class="result-stat-num" id="stat-total">10</div>
+#           <div class="result-stat-label">Total</div>
+#         </div>
+#       </div>
+#       <p style="color:var(--muted);font-size:13px;margin-bottom:32px">
+#         Update <code style="color:var(--amber)">.github/quiz-memory.json</code> to track weak areas and difficulty progression.
+#       </p>
+#     </div>
+#   </main>
+# </div>
+
+# <script>
+# // ── Quiz data ─────────────────────────────────────────────────────────
+# const QUIZ_DATA = {quiz_json_str};
+# const EXPECTED_GITHUB_USER = "{actor}";
+# const ANTHROPIC_KEY_PLACEHOLDER = ""; // grading calls go through a proxy — see README
+# const REPO = "{repo}";
+
+# // ── GitHub OAuth (Pages-compatible via GitHub's device flow isn't ideal;
+# //    we use a lightweight approach: redirect to GitHub, get back the username
+# //    from the URL token via a serverless proxy, or for simplicity store in
+# //    sessionStorage after the user confirms their username) ──────────────
+
+# let currentUser = sessionStorage.getItem('quiz_github_user');
+# let currentQ = 0;
+# let scores = {{}};   // id -> true/false/null(pending)
+# let answered = {{}};  // id -> true
+
+# function initiateGitHubLogin() {{
+#   // Simple self-attestation with a confirmation step.
+#   // For real OAuth you'd need a backend; this is a honest prompt
+#   // approach appropriate for a personal dev tool.
+#   const username = prompt("Enter your GitHub username to proceed:");
+#   if (!username) return;
+#   if (username.trim().toLowerCase() !== EXPECTED_GITHUB_USER.toLowerCase()) {{
+#     alert("❌ This quiz was generated for @" + EXPECTED_GITHUB_USER + ". Please log in with the correct account.");
+#     return;
+#   }}
+#   sessionStorage.setItem('quiz_github_user', username.trim());
+#   currentUser = username.trim();
+#   showQuiz();
+# }}
+
+# function showQuiz() {{
+#   document.getElementById('login-gate').style.display = 'none';
+#   document.getElementById('quiz-app').style.display = 'block';
+#   renderQuestions();
+#   showQuestion(0);
+# }}
+
+# function renderQuestions() {{
+#   const container = document.getElementById('questions-container');
+#   QUIZ_DATA.questions.forEach((q, i) => {{
+#     container.innerHTML += buildQuestionHTML(q, i);
+#   }});
+# }}
+
+# function buildQuestionHTML(q, i) {{
+#   const typeLabel = {{
+#     multiple_choice: 'multiple choice',
+#     free_text: 'free text',
+#     multiple_choice_explained: 'explained'
+#   }}[q.type] || q.type;
+
+#   let inputHTML = '';
+
+#   if (q.type === 'multiple_choice' || q.type === 'multiple_choice_explained') {{
+#     inputHTML = `<div class="options">` +
+#       q.options.map((opt, oi) => {{
+#         const letter = String.fromCharCode(65 + oi);
+#         return `<button class="option-btn" onclick="selectOption({D}{{i}}, '{D}{{letter}}', this)" data-letter="{D}{{letter}}">{D}{{opt}}</button>`;
+#       }}).join('') +
+#       `</div>`;
+#     if (q.type === 'multiple_choice_explained') {{
+#       inputHTML += `<div class="explanation" id="exp-{D}{{i}}">
+#         <div class="explanation-label">📖 Explanation</div>
+#         <div>{D}{{q.explanation || ''}}</div>
+#       </div>`;
+#     }}
+#   }}
+
+#   if (q.type === 'free_text') {{
+#     inputHTML = `
+#       <textarea class="free-text-input" id="ft-{D}{{i}}" placeholder="Type your answer here..." rows="5"></textarea>
+#       <div class="grading-spinner" id="spinner-{D}{{i}}">
+#         <div class="spinner"></div> AI is grading your answer...
+#       </div>
+#       <div class="grade-result" id="grade-{D}{{i}}"></div>`;
+#   }}
+
+#   return `
+#   <div class="question-card" id="qcard-{D}{{i}}">
+#     <div class="q-number">
+#       <span>Question {D}{{i + 1}} / {D}{{QUIZ_DATA.questions.length}}</span>
+#       <span class="q-type-badge">{D}{{typeLabel}}</span>
+#     </div>
+#     <div class="q-text">{D}{{q.question}}</div>
+#     {D}{{inputHTML}}
+#     <div class="btn-row" id="btnrow-{D}{{i}}">
+#       {D}{{q.type === 'free_text'
+#         ? `<button class="btn btn-primary" id="submit-ft-{D}{{i}}" onclick="submitFreeText({D}{{i}})">Grade my answer →</button>`
+#         : ''
+#       }}
+#       <button class="btn btn-ghost" id="skip-{D}{{i}}" onclick="nextQuestion({D}{{i}}, true)">Skip</button>
+#     </div>
+#   </div>`;
+# }}
+
+# function showQuestion(index) {{
+#   document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+#   const card = document.getElementById('qcard-' + index);
+#   if (card) card.classList.add('active');
+#   updateProgress(index);
+# }}
+
+# function updateProgress(index) {{
+#   const total = QUIZ_DATA.questions.length;
+#   const pct = Math.round((index / total) * 100);
+#   document.getElementById('progress-fill').style.width = pct + '%';
+#   document.getElementById('progress-text').textContent = `Question {D}{{index + 1}} of {D}{{total}}`;
+#   document.getElementById('header-progress').textContent = `Q{D}{{index + 1}} of {D}{{total}}`;
+#   const correct = Object.values(scores).filter(v => v === true).length;
+#   const graded  = Object.values(scores).filter(v => v !== null && v !== undefined).length;
+#   document.getElementById('score-running').textContent = `Score: {D}{{correct}} / {D}{{graded}}`;
+# }}
+
+# function selectOption(qIndex, letter, btn) {{
+#   if (answered[qIndex]) return;
+#   answered[qIndex] = true;
+
+#   const q = QUIZ_DATA.questions[qIndex];
+#   const correct = q.correct;
+#   const isCorrect = letter === correct;
+#   scores[q.id] = isCorrect;
+
+#   // Style all buttons
+#   const card = document.getElementById('qcard-' + qIndex);
+#   card.querySelectorAll('.option-btn').forEach(b => {{
+#     b.disabled = true;
+#     if (b.dataset.letter === correct) b.classList.add('correct-answer');
+#     else if (b === btn && !isCorrect) b.classList.add('wrong-answer');
+#   }});
+#   card.classList.add(isCorrect ? 'correct' : 'incorrect');
+
+#   // Show explanation for explained type
+#   if (q.type === 'multiple_choice_explained') {{
+#     const exp = document.getElementById('exp-' + qIndex);
+#     if (exp) exp.classList.add('show');
+#   }}
+
+#   // Show result inline for basic MC
+#   if (q.type === 'multiple_choice') {{
+#     const expDiv = document.createElement('div');
+#     expDiv.className = 'explanation show';
+#     expDiv.innerHTML = `<div class="explanation-label">{D}{{isCorrect ? '✅ Correct' : '❌ Incorrect'}}</div>
+#       <div>{D}{{q.explanation || (isCorrect ? 'Well done!' : 'The correct answer was ' + correct + '.')}}</div>`;
+#     card.querySelector('.options').after(expDiv);
+#   }}
+
+#   // Replace skip with next button
+#   replaceSkipWithNext(qIndex);
+#   updateProgress(qIndex);
+# }}
+
+# async function submitFreeText(qIndex) {{
+#   if (answered[qIndex]) return;
+#   const q = QUIZ_DATA.questions[qIndex];
+#   const input = document.getElementById('ft-' + qIndex).value.trim();
+#   if (!input) {{ alert('Please write an answer before submitting.'); return; }}
+
+#   answered[qIndex] = true;
+#   document.getElementById('submit-ft-' + qIndex).disabled = true;
+#   document.getElementById('spinner-' + qIndex).classList.add('show');
+
+#   // Call Anthropic API to grade the answer
+#   try {{
+#     const gradePrompt = `You are grading a developer quiz answer.
+
+# Question: {D}{{q.question}}
+
+# Sample answer / grading criteria:
+# {D}{{q.sampleAnswer || ''}}
+# {D}{{q.gradingCriteria || ''}}
+
+# Developer's answer:
+# {D}{{input}}
+
+# Respond ONLY with valid JSON:
+# {{"pass": true/false, "score": 0-10, "feedback": "2-3 sentence feedback explaining what was good and what was missing"}}`;
+
+#     const resp = await fetch('https://api.anthropic.com/v1/messages', {{
+#       method: 'POST',
+#       headers: {{
+#         'Content-Type': 'application/json',
+#         'x-api-key': document.getElementById('anth-key')?.value || '',
+#         'anthropic-version': '2023-06-01',
+#         'anthropic-dangerous-direct-browser-access': 'true'
+#       }},
+#       body: JSON.stringify({{
+#         model: 'claude-haiku-4-5-20251001',
+#         max_tokens: 300,
+#         messages: [{{ role: 'user', content: gradePrompt }}]
+#       }})
+#     }});
+
+#     const data = await resp.json();
+#     let raw = data?.content?.[0]?.text?.trim() || '';
+#     if (raw.startsWith('```')) raw = raw.split('\\n').slice(1).join('\\n');
+#     if (raw.endsWith('```')) raw = raw.split('\\n').slice(0,-1).join('\\n');
+#     const grade = JSON.parse(raw);
+
+#     document.getElementById('spinner-' + qIndex).classList.remove('show');
+#     const gradeDiv = document.getElementById('grade-' + qIndex);
+#     gradeDiv.className = 'grade-result show ' + (grade.pass ? 'pass' : 'fail');
+#     gradeDiv.innerHTML = `
+#       <div style="font-size:11px;text-transform:uppercase;letter-spacing:.08em;margin-bottom:8px;color:{D}{{grade.pass ? 'var(--green)' : 'var(--red)'}}">{D}{{grade.pass ? '✅ Passed' : '❌ Needs work'}} — {D}{{grade.score}}/10</div>
+#       <div>{D}{{grade.feedback}}</div>
+#       <div style="margin-top:12px;padding-top:12px;border-top:1px solid var(--border);color:var(--muted);font-size:12px">
+#         <strong style="color:var(--text)">Sample answer:</strong> {D}{{q.sampleAnswer || '(see grading criteria)'}}
+#       </div>`;
+
+#     scores[q.id] = grade.pass;
+#     const card = document.getElementById('qcard-' + qIndex);
+#     card.classList.add(grade.pass ? 'correct' : 'incorrect');
+
+#   }} catch(e) {{
+#     document.getElementById('spinner-' + qIndex).classList.remove('show');
+#     // Graceful degradation: no API key or CORS, mark as self-graded
+#     const gradeDiv = document.getElementById('grade-' + qIndex);
+#     gradeDiv.className = 'grade-result show';
+#     gradeDiv.style.borderColor = 'var(--amber)';
+#     gradeDiv.innerHTML = `
+#       <div style="color:var(--amber);font-size:11px;text-transform:uppercase;margin-bottom:8px">⚠ AI grading unavailable — self-grade</div>
+#       <div style="color:var(--muted)">Compare your answer to the sample below:</div>
+#       <div style="margin-top:10px">{D}{{q.sampleAnswer || q.gradingCriteria || ''}}</div>
+#       <div style="margin-top:14px;display:flex;gap:10px">
+#         <button class="btn btn-primary" style="font-size:12px;padding:8px 16px" onclick="markSelf({D}{{qIndex}},true)">✓ I got it right</button>
+#         <button class="btn btn-ghost"  style="font-size:12px;padding:8px 16px" onclick="markSelf({D}{{qIndex}},false)">✗ I got it wrong</button>
+#       </div>`;
+#     scores[q.id] = null; // pending self-grade
+#   }}
+
+#   replaceSkipWithNext(qIndex);
+#   updateProgress(qIndex);
+# }}
+
+# function markSelf(qIndex, pass) {{
+#   const q = QUIZ_DATA.questions[qIndex];
+#   scores[q.id] = pass;
+#   const card = document.getElementById('qcard-' + qIndex);
+#   card.classList.add(pass ? 'correct' : 'incorrect');
+#   // Remove the self-grade buttons
+#   card.querySelectorAll('.btn').forEach(b => {{
+#     if (b.textContent.includes('I got it')) b.remove();
+#   }});
+#   updateProgress(qIndex);
+# }}
+
+# function replaceSkipWithNext(qIndex) {{
+#   const skip = document.getElementById('skip-' + qIndex);
+#   if (skip) {{
+#     skip.textContent = qIndex < QUIZ_DATA.questions.length - 1 ? 'Next question →' : 'See results →';
+#     skip.classList.remove('btn-ghost');
+#     skip.classList.add('btn-primary');
+#     skip.onclick = () => nextQuestion(qIndex, false);
+#   }}
+# }}
+
+# function nextQuestion(qIndex, skipped) {{
+#   if (skipped) scores[QUIZ_DATA.questions[qIndex].id] = false;
+#   currentQ = qIndex + 1;
+#   if (currentQ >= QUIZ_DATA.questions.length) {{
+#     showResults();
+#   }} else {{
+#     showQuestion(currentQ);
+#   }}
+# }}
+
+# function showResults() {{
+#   document.querySelectorAll('.question-card').forEach(c => c.classList.remove('active'));
+#   const resultsEl = document.getElementById('results-screen');
+#   resultsEl.classList.add('show');
+
+#   const total = QUIZ_DATA.questions.length;
+#   const correct = Object.values(scores).filter(v => v === true).length;
+#   const wrong   = Object.values(scores).filter(v => v === false).length;
+#   const pct = Math.round((correct / total) * 100);
+
+#   document.getElementById('final-score-pct').textContent = pct + '%';
+#   document.getElementById('final-score-label').textContent =
+#     pct >= 80 ? '🎉 Excellent work!' :
+#     pct >= 60 ? '👍 Good effort — review the weak areas' :
+#     '💪 Keep practising — check the explanations above';
+
+#   document.getElementById('stat-correct').textContent = correct;
+#   document.getElementById('stat-wrong').textContent = wrong;
+#   document.getElementById('stat-total').textContent = total;
+#   document.getElementById('progress-fill').style.width = '100%';
+#   document.getElementById('progress-text').textContent = 'Quiz complete!';
+#   document.getElementById('score-running').textContent = `Final: {D}{{correct}} / {D}{{total}}`;
+# }}
+
+# // ── Init ─────────────────────────────────────────────────────────────
+# if (currentUser) showQuiz();
+# </script>
+
+# <!-- Hidden: API key input for AI grading (optional) -->
+# <input type="hidden" id="anth-key" value="">
+
+# </body>
+# </html>"""
+
+# os.makedirs('quiz-pages', exist_ok=True)
+# out = f"quiz-pages/{os.environ['QUIZ_ID']}.html"
+# open(out, 'w').write(html)
+
+# # Also write/update the index page
+# index_entry = f'<li><a href="{os.environ["QUIZ_ID"]}.html">Session #{quiz.get("session","?")} — commit {quiz.get("commit","?")} — {quiz.get("commitMsg","")[:50]}</a></li>'
+# print(f"WRITTEN: {out}")
+# print(f"INDEX_ENTRY: {index_entry}")
