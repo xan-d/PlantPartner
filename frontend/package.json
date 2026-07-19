@@ -1,4 +1,6 @@
 {
+  "_comment": "THIS FILE IS NOT USED, IT IS DEPRECATED AND MISLEADING",
+
   "name": "xdeno-a9-frontend",
   "version": "1.0.0",
   "private": true,
